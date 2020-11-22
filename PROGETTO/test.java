@@ -28,6 +28,12 @@ public class test{
 	Thread thread2 = new Thread(Th2);
 	vehicleList.add(vehicle2);
 	
+	Vehicle vehicle3 = new Vehicle(3, c, 0,4,0); 
+	VehicleThread Th3 = new VehicleThread(vehicle3); 
+	Thread thread3 = new Thread(Th3);
+	vehicleList.add(vehicle3);
+	
+	
 	double rMax = -1;
 	for (Vehicle vh : vehicleList){
 		double r = vh.getRadius();
@@ -37,8 +43,9 @@ public class test{
 		vh.setRadius(rMax);
 		vh.setVehicleList(vehicleList);
 		}	
-	
+	System.out.println("\n" + "Radius "  + rMax );
 	thread1.start();
 	thread2.start();
+	thread3.start();
 	}
 }
