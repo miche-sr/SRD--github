@@ -1,14 +1,16 @@
 package se.oru.coordination.coordination_oru.ourproject.models;
 
+import se.oru.coordination.coordination_oru.ourproject.algorithms.*;
+
 import org.metacsp.multi.spatioTemporal.paths.Pose;
 import org.metacsp.multi.spatioTemporal.paths.PoseSteering;
 import org.metacsp.multi.spatioTemporal.paths.TrajectoryEnvelope.SpatialEnvelope;
+import org.metacsp.multi.spatioTemporal.paths.TrajectoryEnvelope;
 
 import com.vividsolutions.jts.geom.Coordinate;
 
 import se.oru.coordination.coordination_oru.motionplanning.ompl.ReedsSheppCarPlanner;
 
-import org.metacsp.multi.spatioTemporal.paths.TrajectoryEnvelope;
 //import utils.Coordinate;
 import java.util.*;
 //import java.lang.Math.*;
@@ -47,7 +49,7 @@ public class Vehicle {
 	private ArrayList<Vehicle> vehicleNear = new ArrayList<Vehicle>();
 
 	private ArrayList<CriticalSection> cs = new ArrayList<CriticalSection>();
-	
+	private Intersection intersect;
 	
 	/* Constructor for a Vehicle Object:
 	 * @param pose The current pose of the robot.
@@ -203,6 +205,10 @@ public class Vehicle {
 	public void setCs(ArrayList<CriticalSection> cs) {
 		this.cs = cs;
 	}
-	
+	public void appendCs(Vehicle v2) {
+		if(intersect == null)
+			intersect = new Intersection();
+		this.cs.addAll(Arrays.asList(intersect.getCriticalSections(this, v2)));
+	}
 	
 }
