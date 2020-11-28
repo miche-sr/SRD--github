@@ -49,7 +49,7 @@ public class Vehicle {
 	private ArrayList<Vehicle> vehicleNear = new ArrayList<Vehicle>();
 
 	private ArrayList<CriticalSection> cs = new ArrayList<CriticalSection>();
-	private Intersection intersect;
+	private Intersection intersect = new Intersection();;
 	
 	/* Constructor for a Vehicle Object:
 	 * @param pose The current pose of the robot.
@@ -206,9 +206,10 @@ public class Vehicle {
 		this.cs = cs;
 	}
 	public void appendCs(Vehicle v2) {
-		if(intersect == null)
-			intersect = new Intersection();
 		this.cs.addAll(Arrays.asList(intersect.getCriticalSections(this, v2)));
+	}
+	public void clearCs() {
+		this.cs.clear();
 	}
 	
 }
