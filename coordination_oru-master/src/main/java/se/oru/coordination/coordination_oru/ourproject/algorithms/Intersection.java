@@ -14,7 +14,7 @@ import com.vividsolutions.jts.geom.Geometry;
 
 public class Intersection {
 	
-	public CriticalSection[] getCriticalSections(Vehicle v1, Vehicle v2) {
+	public ArrayList<CriticalSection> getCriticalSections(Vehicle v1, Vehicle v2) {
 
 		ArrayList<CriticalSection> css = new ArrayList<CriticalSection>();
 		
@@ -176,7 +176,7 @@ public class Intersection {
 			}
 		}
 		
-		return css.toArray(new CriticalSection[css.size()]);
+		return css; //.toArray(new CriticalSection[css.size()]);
 	}
 
 }

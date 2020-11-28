@@ -46,7 +46,7 @@ public class Vehicle {
 	private List<Vehicle> vehicleList = new ArrayList<Vehicle>();
 	private List<Vehicle> vehicleNear = new ArrayList<Vehicle>();
 
-	private CriticalSection[] cs;
+	private ArrayList<CriticalSection> cs;
 	
 	
 	/* Constructor for a Vehicle Object:
@@ -197,10 +197,10 @@ public class Vehicle {
 	}
 
 
-	public CriticalSection[] getCs() {
+	public ArrayList<CriticalSection> getCs() {
 		return cs;
 	}
-	public void setCs(CriticalSection[] cs) {
+	public void setCs(ArrayList<CriticalSection> cs) {
 		this.cs = cs;
 	}
 	
