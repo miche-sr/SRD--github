@@ -22,11 +22,11 @@ public class Test{
 	Vehicle.Category a = Vehicle.Category.AMBULANCE; 
 	Vehicle.Category c = Vehicle.Category.CAR; 
 	
-	Pose start1 = new Pose(0, 0, 0); Pose[] goal1 = {new Pose(30, 0, 0)};
+	Pose start1 = new Pose(0, 0, 0); Pose[] goal1 = {new Pose(10, 0, 0)};
 	//Pose start2 = new Pose(10, 10, -Math.PI/2); Pose[] goal2 = {new Pose(10, -10, -Math.PI/2)};
 	//Pose start3 = new Pose(5, -10, Math.PI/2); Pose[] goal3 = {new Pose(5, 10, Math.PI/2)};
 	Pose start2 = new Pose(5, 5, -Math.PI/2); Pose[] goal2 = {new Pose(5, -10, -Math.PI/2)};
-	Pose start3 = new Pose(0, -10, 0); Pose[] goal3 = {new Pose(10, 10, Math.PI/2)};
+	Pose start3 = new Pose(0, -10, 0); Pose[] goal3 = {new Pose(-10, -10, Math.PI/2)};
 	
 	Thread thread1 = initThread(1, a, start1, goal1);
 	Thread thread2 = initThread(2, c, start2, goal2);

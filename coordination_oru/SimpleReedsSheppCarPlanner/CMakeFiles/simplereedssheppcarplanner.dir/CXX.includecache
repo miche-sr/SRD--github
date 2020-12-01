@@ -1,4 +1,4 @@
-#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+#IncludeRegexLine: ^[ 	]*#[ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
 
 #IncludeRegexScan: ^.*$
 
@@ -6,9 +6,9 @@
 
 #IncludeRegexTransform: 
 
-/home/matteo/coordination_oru/SimpleReedsSheppCarPlanner/src/MultipleCircleReedsSheppCarPlanner.cpp
+/home/parallels/Desktop/coordination_oru/SimpleReedsSheppCarPlanner/src/MultipleCircleReedsSheppCarPlanner.cpp
 MultipleCircleStateValidityChecker.h
-/home/matteo/coordination_oru/SimpleReedsSheppCarPlanner/src/MultipleCircleStateValidityChecker.h
+/home/parallels/Desktop/coordination_oru/SimpleReedsSheppCarPlanner/src/MultipleCircleStateValidityChecker.h
 ompl/geometric/planners/rrt/RRTConnect.h
 -
 ompl/geometric/planners/rrt/RRTstar.h
@@ -32,9 +32,9 @@ boost/math/constants/constants.hpp
 stdio.h
 -
 
-/home/matteo/coordination_oru/SimpleReedsSheppCarPlanner/src/MultipleCircleStateValidityChecker.cpp
+/home/parallels/Desktop/coordination_oru/SimpleReedsSheppCarPlanner/src/MultipleCircleStateValidityChecker.cpp
 MultipleCircleStateValidityChecker.h
-/home/matteo/coordination_oru/SimpleReedsSheppCarPlanner/src/MultipleCircleStateValidityChecker.h
+/home/parallels/Desktop/coordination_oru/SimpleReedsSheppCarPlanner/src/MultipleCircleStateValidityChecker.h
 
 src/include/MultipleCircleStateValidityChecker.h
 ompl/base/spaces/ReedsSheppStateSpace.h

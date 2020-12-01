@@ -49,7 +49,7 @@ public class Vehicle {
 	private ArrayList<Vehicle> vehicleNear = new ArrayList<Vehicle>();
 
 	private ArrayList<CriticalSection> cs = new ArrayList<CriticalSection>();
-	private Intersection intersect = new Intersection();;
+	private Intersection intersect = new Intersection();
 	
 	/* Constructor for a Vehicle Object:
 	 * @param pose The current pose of the robot.
@@ -68,8 +68,8 @@ public class Vehicle {
 		
 		switch (category) {
 			case CAR:
-				this.velMax = 0;
-				this.accMax = 1.0;
+				this.velMax = 2;
+				this.accMax = 2.0;
 				this.priority = 1;
 				this.Tc = 2000;
 				this.footprint = fpCar;
@@ -111,12 +111,6 @@ public class Vehicle {
 	}
 		
 /*
-	public int getCriticalPoint() {
-		return criticalPoint;
-	}
-	public void setCriticalPoint(int criticalPoint) {
-		this.criticalPoint = criticalPoint;
-	}
 	public boolean getCsTooClose() {
 		return csTooClose;
 	}
@@ -147,6 +141,9 @@ public class Vehicle {
 		this.pose = new Pose(x,y,theta);
 	}
 
+	public void setPose(Pose pose) {
+		this.pose = pose;
+	}
 	
 	public void setVehicleList(ArrayList<Vehicle> vehicleList) {
 		this.vehicleList = vehicleList;
@@ -198,6 +195,48 @@ public class Vehicle {
 		this.pathIndex = pathIndex;
 	}
 
+	public void moveVehicle(Boolean prec) {
+
+		if (this.pathIndex < this.criticalPoint){
+			this.pathIndex = pathIndex + 1;
+		}
+		setNewCriticalPoint(prec);
+		if (this.pathIndex < this.getSpatialEnvelope().getPath().length-1){
+			setPose(this.getSpatialEnvelope().getPath()[pathIndex].getPose());
+		}
+		
+	}
+
+	public int getCriticalPoint() {
+		return criticalPoint;
+	}
+	public void setCriticalPoint(int criticalPoint) {
+		this.criticalPoint = criticalPoint;
+	}
+
+	public void setNewCriticalPoint(Boolean prec) {
+			if (this.cs.size() != 0){
+				int t1s = this.cs.get(0).getTe1Start();
+				int t1e = this.cs.get(0).getTe1End();
+				if (this.pathIndex == t1s){
+					if (prec){
+					this.criticalPoint = t1e +1;
+					}
+				}
+				else if (this.pathIndex > t1s && this.pathIndex <= t1e){
+					this.criticalPoint = t1e +1;
+				}
+				else{
+					this.criticalPoint = this.pathIndex + 1;
+				}
+			}
+			else {
+				this.criticalPoint = this.pathIndex + 1;
+			}
+		
+	}
+
+
 
 	public ArrayList<CriticalSection> getCs() {
 		return cs;
@@ -206,7 +245,11 @@ public class Vehicle {
 		this.cs = cs;
 	}
 	public void appendCs(Vehicle v2) {
-		this.cs.addAll(Arrays.asList(intersect.getCriticalSections(this, v2)));
+		CriticalSection[] cs = intersect.getCriticalSections(this, v2);
+		if (cs.length != 0) {
+			this.cs.addAll(Arrays.asList(cs));
+		}
+		//this.cs.addAll(Arrays.asList(intersect.getCriticalSections(this, v2)));
 	}
 	public void clearCs() {
 		this.cs.clear();
