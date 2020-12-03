@@ -1,7 +1,0 @@
-/home/parallels/Desktop/coordination_oru/SimpleReedsSheppCarPlanner/CMakeFiles/rebuild_cache.dir
-/home/parallels/Desktop/coordination_oru/SimpleReedsSheppCarPlanner/CMakeFiles/install.dir
-/home/parallels/Desktop/coordination_oru/SimpleReedsSheppCarPlanner/CMakeFiles/list_install_components.dir
-/home/parallels/Desktop/coordination_oru/SimpleReedsSheppCarPlanner/CMakeFiles/simplereedssheppcarplanner.dir
-/home/parallels/Desktop/coordination_oru/SimpleReedsSheppCarPlanner/CMakeFiles/install/strip.dir
-/home/parallels/Desktop/coordination_oru/SimpleReedsSheppCarPlanner/CMakeFiles/install/local.dir
-/home/parallels/Desktop/coordination_oru/SimpleReedsSheppCarPlanner/CMakeFiles/edit_cache.dir
