@@ -1,5 +1,7 @@
 package se.oru.coordination.coordination_oru.ourproject.models;
 
+import se.oru.coordination.coordination_oru.ourproject.algorithms.PrecedencesFounder;
+
 public class CriticalSection {
 	private int te1Start = -1;
 	private int te2Start = -1;
@@ -7,16 +9,19 @@ public class CriticalSection {
 	private int te2End = -1;
 	//private int te1Break = -1;
 	//private int te2Break = -1;
+	private Vehicle v1;
 	private Vehicle v2;
-	
-	public CriticalSection(Vehicle v2, int te1Start, int te2Start, int te1End, int te2End) {
+	private PrecedencesFounder prec = new PrecedencesFounder();
+
+	public CriticalSection(Vehicle v1, Vehicle v2, int te1Start, int te2Start, int te1End, int te2End) {
 		this.te1Start = te1Start;
 		this.te2Start = te2Start;
 		this.te1End = te1End;
 		this.te2End = te2End;
+		this.v1 = v1;
 		this.v2 = v2;
 	}
-	
+
 	public int getTe1Start() {
 		return te1Start;
 	}
@@ -41,11 +46,24 @@ public class CriticalSection {
 	public void setTe2End(int te2End) {
 		this.te2End = te2End;
 	}
+	public Vehicle getVehicle1() {
+		return v1;
+	}
+	public void setVehicle1(Vehicle v1) {
+		this.v1 = v1;
+	}
 	public Vehicle getVehicle2() {
 		return v2;
 	}
 	public void setVehicle2(Vehicle v2) {
 		this.v2 = v2;
+	}
+	
+	/********************************
+	** SET & GET PER LE PRECEDENZE **
+	*********************************/
+	public Boolean ComputePrecedences() {
+		return prec.ComputePrecedences(this);
 	}
 	
 

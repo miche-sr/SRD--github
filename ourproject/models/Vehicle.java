@@ -45,13 +45,16 @@ public class Vehicle {
 	
 	// VARIABILI PER LE SEZIONI CRITICHE
 	private int criticalPoint = -1;		// -1 if no critical point
-	private boolean csTooClose = false;
+	//private boolean csTooClose = false;
 	private ArrayList<CriticalSection> cs = new ArrayList<CriticalSection>();
+	private CriticalSectionsFounder intersect = new CriticalSectionsFounder();
 
 	// DA USARE PER I VICINI
 	private ArrayList<Vehicle> vehicleList = new ArrayList<Vehicle>();
 	private ArrayList<Vehicle> vehicleNear = new ArrayList<Vehicle>();
-	private Intersection intersect = new Intersection();
+	
+	private KinematicMotion km = new KinematicMotion();
+
 	
 	// COSTRUTTORE
 	// @param distanceTraveled The distance traveled so far along the current current path.
@@ -83,7 +86,7 @@ public class Vehicle {
 		}
 		double stopTimeMax = this.velMax/this.accMax;
 		this.radius = (2*this.Tc/1000 + stopTimeMax)*this.velMax;
-		this.path = create_path();
+		this.path = createWholePath();
 		//setmyTimes();
 		//setSpatialEnvelope();
 	}
@@ -139,7 +142,10 @@ public class Vehicle {
 	public void setPose(double x, double y, double theta) {
 		this.pose = new Pose(x,y,theta);
 	}
-	public PoseSteering[] create_path(){
+	public void setPose(Pose pose) {
+		this.pose = pose;
+	}
+	public PoseSteering[] createWholePath(){
 		ReedsSheppCarPlanner rsp = new ReedsSheppCarPlanner();
 		rsp.setRadius(0.2);
 		rsp.setTurningRadius(4.0);
@@ -150,18 +156,19 @@ public class Vehicle {
 		if (!rsp.plan()) throw new Error ("No path between " + this.start + " and " + this.goal);
 		return rsp.getPath();
 	}
+	public PoseSteering[] getWholePath() {
+		return path;
+	}
 	public SpatialEnvelope getSpatialEnvelope() {
 		return se;
 	}
 	public void setSpatialEnvelope() {
 		this.truncatedPath.clear();
-		this.truncatedPath.add(path[pathIndex]);
 		int i = 0;
-		do {
-			i++;
+		while((pathIndex+i < path.length) && (myTimes[pathIndex+i]-myTimes[pathIndex] <= secForSafety)) {
 			this.truncatedPath.add(path[pathIndex+i]);
-			System.out.println(myTimes[pathIndex+i]);
-		} while(myTimes[pathIndex+i] - myTimes[pathIndex] <= secForSafety);
+			i++;
+		}
 		PoseSteering[] truncatedPathArray = truncatedPath.toArray(new PoseSteering[truncatedPath.size()]);
 		this.se = TrajectoryEnvelope.createSpatialEnvelope(truncatedPathArray, this.footprint);
 	}	
@@ -171,10 +178,10 @@ public class Vehicle {
 	public void setPathIndex(int pathIndex) {
 		this.pathIndex = pathIndex;
 	}
-	public double[] getmyTimes() {
+	public double[] getMyTimes() {
 		return myTimes;
 	}
-	public void setmyTimes() {
+	public void setMyTimes() {
 		Trajectory traj = new Trajectory(path);
 		this.myTimes = traj.getDTs();
 		for(int i = 1; i < path.length; i++) {
@@ -189,22 +196,32 @@ public class Vehicle {
 	public ArrayList<CriticalSection> getCs() {
 		return cs;
 	}
-	public void setCs(ArrayList<CriticalSection> cs) {
-		this.cs = cs;
-	}
 	public void appendCs(Vehicle v2) {
-		this.cs.addAll(Arrays.asList(intersect.getCriticalSections(this, v2)));
+		CriticalSection[] cs = intersect.findCriticalSections(this, v2);
+		if (cs.length != 0) this.cs.addAll(Arrays.asList(cs));
 	}
 	public void clearCs() {
 		this.cs.clear();
 	}
-	/*
 	public int getCriticalPoint() {
 		return criticalPoint;
 	}
 	public void setCriticalPoint(int criticalPoint) {
 		this.criticalPoint = criticalPoint;
 	}
+	public void setCriticalPoint(Boolean prec) {
+			if (this.cs.size() != 0){
+				int t1s = this.cs.get(0).getTe1Start();
+				//int t1e = this.cs.get(0).getTe1End();
+				if (prec)
+					this.criticalPoint = -1;
+				else
+					this.criticalPoint = t1s;
+			}
+			else
+				this.criticalPoint = -1;
+	}
+	/*
 	public boolean getCsTooClose() {
 		return csTooClose;
 	}
@@ -213,9 +230,9 @@ public class Vehicle {
 	}	*/
 	
 	
-	/**************************
-	** DA USARE PER I VICINI **
-	***************************/
+	/***************************
+	** SET & GET PER I VICINI **
+	****************************/
 	public void setVehicleList(ArrayList<Vehicle> vehicleList) {
 		this.vehicleList = vehicleList;
 	}
@@ -234,4 +251,21 @@ public class Vehicle {
 		}
 		return vehicleNear;
 	}
+	
+	/*****************
+	** MOTO VEICOLO **
+	******************/
+	public void moveVehicle(Boolean prec) {
+		km.moveVehicle(prec, this);
+		/*
+		if (this.pathIndex < this.criticalPoint){
+			this.pathIndex = pathIndex + 1;
+		}
+		setNewCriticalPoint(prec);
+		if (this.pathIndex < this.getSpatialEnvelope().getPath().length-1){
+			setPose(this.getSpatialEnvelope().getPath()[pathIndex].getPose());
+		}
+		*/
+	}
+	
 }
