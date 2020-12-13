@@ -1,3 +1,4 @@
+// from "getCriticalSections" in "AbstractTrajectoryEnvelopeCoordinator": line 1169
 package se.oru.coordination.coordination_oru.ourproject.algorithms;
 
 import se.oru.coordination.coordination_oru.ourproject.models.CriticalSection;
@@ -12,18 +13,19 @@ import org.metacsp.multi.spatioTemporal.paths.TrajectoryEnvelope.SpatialEnvelope
 import com.vividsolutions.jts.geom.Geometry;
 
 
-public class Intersection {
+public class CriticalSectionsFounder {
 	
-	public CriticalSection[] getCriticalSections(Vehicle v1, Vehicle v2) {
+	public CriticalSection[] findCriticalSections(Vehicle v1, Vehicle v2) {
 
 		ArrayList<CriticalSection> css = new ArrayList<CriticalSection>();
 		
-		double smallestRobotDimension = Math.min(v1.getSpatialEnvelope().getFootprint().getArea(), v2.getSpatialEnvelope().getFootprint().getArea());
-		SpatialEnvelope se1 = v1.getSpatialEnvelope();
-		SpatialEnvelope se2 = v2.getSpatialEnvelope();
+		SpatialEnvelope se1 = v1.getTrajectoryEnvelope().getSpatialEnvelope();
+		SpatialEnvelope se2 = v2.getTrajectoryEnvelope().getSpatialEnvelope();
+
+		double smallestRobotDimension = Math.min(se1.getFootprint().getArea(), se2.getFootprint().getArea());
 		Geometry shape1 = se1.getPolygon();
 		Geometry shape2 = se2.getPolygon();
-				
+		
 		if (shape1.intersects(shape2)) {
 			PoseSteering[] path1 = se1.getPath();
 			PoseSteering[] path2 = se2.getPath();
@@ -94,31 +96,33 @@ public class Intersection {
 				boolean started = false;
 				for (int j = 0; j < path1.length; j++) {
 					Geometry placement1 = TrajectoryEnvelope.getFootprint(se1.getFootprint(), path1[j].getPose().getX(), path1[j].getPose().getY(), path1[j].getPose().getTheta());
-					if (!started && placement1.intersects(g)) {
+					int jAbs = j+v1.getPathIndex();		// LO SI RIPORTA RISPETTO A INDICE ASSOLUTO
+					if (!started && placement1.intersects(g)) {		// CALCOLO INIZIO S.C.
 						started = true;
-						te1Starts.add(j);
+						te1Starts.add(jAbs);
 					}
-					else if (started && !placement1.intersects(g)) {
-						te1Ends.add(j-1 > 0 ? j-1 : 0);
+					else if (started && !placement1.intersects(g)) {// NON INTERSECA XK IMPRONTA È USCITA DA SC
+						te1Ends.add(jAbs-1 > 0 ? jAbs-1 : 0);
 						started = false;
 					}
 					if (started && j == path1.length-1) {
-						te1Ends.add(path1.length-1);
+						te1Ends.add(jAbs);
 					}
 				}
 				started = false;
 				for (int j = 0; j < path2.length; j++) {
 					Geometry placement2 = TrajectoryEnvelope.getFootprint(se2.getFootprint(), path2[j].getPose().getX(), path2[j].getPose().getY(), path2[j].getPose().getTheta());
+					int jAbs = j+v2.getPathIndex();
 					if (!started && placement2.intersects(g)) {
 						started = true;
-						te2Starts.add(j);
+						te2Starts.add(jAbs);
 					}
 					else if (started && !placement2.intersects(g)) {
-						te2Ends.add(j-1 > 0 ? j-1 : 0);
+						te2Ends.add(jAbs-1 > 0 ? jAbs-1 : 0);
 						started = false;
 					}
 					if (started && j == path2.length-1) {
-						te2Ends.add(path2.length-1);
+						te2Ends.add(jAbs);
 					}
 				}
 				for (int k1 = 0; k1 < te1Starts.size(); k1++) {

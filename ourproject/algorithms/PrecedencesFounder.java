@@ -3,9 +3,9 @@ package se.oru.coordination.coordination_oru.ourproject.algorithms;
 import se.oru.coordination.coordination_oru.ourproject.models.CriticalSection;
 import se.oru.coordination.coordination_oru.ourproject.models.Vehicle;
 
-public class CalcoloPrecedenze {
+public class PrecedencesFounder {
 	
-	public Boolean  CalcoloPrecedenze(CriticalSection cs) {
+	public Boolean ComputePrecedences(CriticalSection cs) {
         Boolean prec;
         Vehicle v1 = cs.getVehicle1();
         Vehicle v2 = cs.getVehicle2();
@@ -17,7 +17,7 @@ public class CalcoloPrecedenze {
         int cp2 = v2.getCriticalPoint();
 
         if (cp1 > te1start && cp2 > te2start){
-            //ERRORE !! si stanno scontrando
+            // com'è possibile?
         }
         if (cp1 > te1start){
             prec = true;

@@ -1,74 +1,89 @@
 package se.oru.coordination.coordination_oru.ourproject.models;
 
-import se.oru.coordination.coordination_oru.ourproject.algorithms.*;
-
 public class VehicleThread implements Runnable {
 	
 	private Vehicle v;
+	private double elapsedTrackingTime = 0.0;
 	
-	public VehicleThread( Vehicle v){
+	public VehicleThread(Vehicle v){
 		this.v = v;
 	}
 	
 	// MAIN ALGORITHM
 	public void run() {
-		int i = 0;
 		String List;
-		CalcoloPrecedenze CompPrec = new CalcoloPrecedenze();
-		v.setPathIndex(0);
-		//System.out.println("\n" + this.v.getSpatialEnvelope().getPolygon().getEnvelope());
-
+		//v.setPathIndex(0);
+		//System.out.println(v.getSecForSafety());
 		try{
-			while(v.getPathIndex()< v.getSpatialEnvelope().getPath().length){		// this will be while true
-				List = " ";
+			while(v.getPathIndex() < v.getWholePath().length){		// this will be while true
+				v.setMyTimes();
+				v.setTrajectoryEnvelope();
+				Thread.sleep(v.getTc());
+				this.elapsedTrackingTime += v.getTc()/1000;
+				System.out.println(elapsedTrackingTime);
 				
+
+				//System.out.println(Arrays.toString(v.getMyTimes()));
+				//System.out.println(v.getSpatialEnvelope().getPath().length);
+								
 				v.clearCs();
+				List = "";
 				for (Vehicle vh : this.v.getNears()){
 					v.appendCs(vh);
-					List = (List + vh.getID()+" " );
+					List = (List + vh.getID() + " " );
 				}
-
+				
 				Boolean prec = true;
-				
-				for (CriticalSection cs : this.v.getCs()){ //devo averle ordinate
-					//prec = CompPrec.CalcoloPrecedenze(cs);
-					prec = CompPrec.CalcoloPrecedenze(this.v.getCs().get(0)); //momentaneamente calcolo solo la prima
+				v.setCriticalPoint(-1);
+				for (CriticalSection cs : this.v.getCs()){
+					prec = cs.ComputePrecedences();
+					if (prec == false)
+						v.setCriticalPoint(cs);
+						break;
 				}
+				v.setStoppingPoint();
+				if (v.getStoppingPoint() == v.getCriticalPoint())
+					v.setSlowingPoint(v.getPathIndex());
 				
-
-				v.moveVehicle(prec);
+				v.setPathIndex(elapsedTrackingTime);
+				System.out.println("PathIndex: " + v.getPathIndex()+"\n");
+				v.setPose(v.getWholePath()[v.getPathIndex()].getPose());
+				//v.moveVehicle(prec);
 				
-
-
-				
-				int nCs;
-				String CsString;
-				if (v.getCs().size() != 0){
-					nCs = v.getCs().size();
-					CsString = ("Inizio Cs " + nCs +" mia: " + v.getCs().get(0).getTe1End()+ "\tCs altrui: " + v.getCs().get(0).getTe2End());
-				}
-				else {
-					nCs = 0;
-					CsString = ("Cs " + nCs );
-				}
-				
-				System.out.println("\n R" + this.v.getID() + " : \n" + 
-					"List : "  + List + "\n" + 
-					"precedeza :" + prec + "\n" + 
-					"PathIndx : " 	+ v.getPathIndex() + "\n" + 
-					CsString	);
-				
-				i++;
-				Thread.sleep(v.getTc());
-				
+				//printLog(List, prec);
 			}
 			System.out.println("\n R" + this.v.getID() + " : GOAL RAGGIUNTO" );
 		}
+		
 		catch (InterruptedException e) {
 			System.out.println("Thread interrotto");
-		}
-		
+
+		}	
 	}
 
+	
+	public void printLog(String List, Boolean prec) {
+		String CsString = "";
+		if (v.getCs().size() != 0){
+			int i = 0;
+			for (CriticalSection cs : v.getCs()) {
+				CsString = CsString + (i+1 +"° Sezione Critica" +
+				"\t Mia: " + cs.getTe1Start()+"-"+cs.getTe1End() +
+				"\t R" + cs.getVehicle2().getID() + ":" +
+				"\t" + cs.getTe2Start()+"-"+cs.getTe2End()) + "\n";
+				i += 1;
+			}
+		}
+		else
+			CsString = ("0 Sezioni Critiche");
+		
+		System.out.println("\n R" + this.v.getID() + " : \n" + 
+			"Vicini: "  + List + "\n" + 
+			"Precedenza: " + prec + "\n" + 
+			"Path Index: " 	+ v.getPathIndex() + "\n" +
+			"Critical Point: " + v.getCriticalPoint() + "\n" +
+			CsString
+			);
+	}
 }
 
