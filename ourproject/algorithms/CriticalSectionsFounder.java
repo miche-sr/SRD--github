@@ -1,4 +1,4 @@
-// la fu getCriticalSections in AbstractTrajectoryEnvelopeCoordinator: 1169
+// from "getCriticalSections" in "AbstractTrajectoryEnvelopeCoordinator": line 1169
 package se.oru.coordination.coordination_oru.ourproject.algorithms;
 
 import se.oru.coordination.coordination_oru.ourproject.models.CriticalSection;

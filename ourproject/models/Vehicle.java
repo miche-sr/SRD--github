@@ -5,7 +5,6 @@ import se.oru.coordination.coordination_oru.motionplanning.ompl.ReedsSheppCarPla
 
 import org.metacsp.multi.spatioTemporal.paths.Pose;
 import org.metacsp.multi.spatioTemporal.paths.PoseSteering;
-import org.metacsp.multi.spatioTemporal.paths.TrajectoryEnvelope.SpatialEnvelope;
 import org.metacsp.multi.spatioTemporal.paths.TrajectoryEnvelope;
 import org.metacsp.multi.spatioTemporal.paths.TrajectoryEnvelopeSolver;
 import org.metacsp.multi.spatioTemporal.paths.Trajectory;
@@ -39,15 +38,18 @@ public class Vehicle {
 	private Pose start;
 	private Pose[] goal;
 	private PoseSteering[] path;
+	private double distanceTraveled = 0.0;
 	private double[] myTimes;
-	//private SpatialEnvelope se;			// path with envelope
 	private ArrayList<PoseSteering> truncatedPath = new ArrayList<PoseSteering>();
+	// from "AbstractTrajectoryEnvelopeCoordinator": line 1615
 	private TrajectoryEnvelopeSolver solver = new TrajectoryEnvelopeSolver(0, 100000000);
 	private TrajectoryEnvelope te = null;
 	
 	// VARIABILI PER LE SEZIONI CRITICHE
 	private int criticalPoint = -1;		// -1 if no critical point
 	//private boolean csTooClose = false;
+	private int stoppingPoint = -1;	// punto di fermata, a ogni ciclo: al quale mi fermo da dove sono
+	private int slowingPoint = -1; 	// punto di frenata, unico: per fermarsi prima del p. critico
     private TreeSet<CriticalSection> cs = new TreeSet<CriticalSection>();
 	private CriticalSectionsFounder intersect = new CriticalSectionsFounder();
 
@@ -55,7 +57,10 @@ public class Vehicle {
 	private ArrayList<Vehicle> vehicleList = new ArrayList<Vehicle>();
 	private ArrayList<Vehicle> vehicleNear = new ArrayList<Vehicle>();
 	
-	private KinematicMotion km = new KinematicMotion();
+	//from Trajectory EnvelopeCoordinatorSimulation
+	//TEMPORAL_RESOLUTION = 1000
+	//trackingPeriodInMillis = 30
+	private ConstantAccelerationForwardModel forward = new ConstantAccelerationForwardModel(this, 1000, 30);
 
 	
 	// COSTRUTTORE
@@ -89,8 +94,6 @@ public class Vehicle {
 		double stopTimeMax = this.velMax/this.accMax;
 		this.radius = (2*this.Tc/1000 + stopTimeMax)*this.velMax;
 		this.path = createWholePath();
-		//setmyTimes();
-		//setSpatialEnvelope();
 	}
 	
 	
@@ -161,10 +164,16 @@ public class Vehicle {
 	public PoseSteering[] getWholePath() {
 		return path;
 	}
+	public double getDistanceTraveled() {
+		return distanceTraveled;
+	}
+	public void setDistanceTraveled(double distanceTraveled) {
+		this.distanceTraveled = distanceTraveled;
+	}
 	public TrajectoryEnvelope getTrajectoryEnvelope() {
 		return te;
 	}
-	public void setSpatialEnvelope() {
+	public void setTrajectoryEnvelope() {
 		this.truncatedPath.clear();
 		int i = 0;
 		while((pathIndex+i < path.length) && (myTimes[pathIndex+i]-myTimes[pathIndex] <= secForSafety)) {
@@ -179,6 +188,13 @@ public class Vehicle {
 	}
 	public void setPathIndex(int pathIndex) {
 		this.pathIndex = pathIndex;
+	}
+	public void setPathIndex(double elapsedTrackingTime) {
+		State next_state = forward.updateState(this, elapsedTrackingTime);
+		setDistanceTraveled(next_state.getPosition());
+		setVelocity(next_state.getVelocity());
+		System.out.println(this.distanceTraveled);
+		this.pathIndex = forward.getPathIndex(this.path, next_state);
 	}
 	public double[] getMyTimes() {
 		return myTimes;
@@ -212,18 +228,6 @@ public class Vehicle {
 	public void setCriticalPoint(int criticalPoint) {
 		this.criticalPoint = criticalPoint;
 	}
-	/*public void setCriticalPoint(Boolean prec) {
-		if (this.cs.size() != 0){
-			int t1s = this.cs.first().getTe1Start();
-			if (prec)
-				this.criticalPoint = -1;
-			else
-				this.criticalPoint = t1s;
-		}
-		else
-			this.criticalPoint = -1;
-	}
-	*/
 	public void setCriticalPoint(CriticalSection cs) {
 		this.criticalPoint = cs.getTe1Start();
 	}
@@ -234,11 +238,23 @@ public class Vehicle {
 	public void setCsTooClose(boolean csTooClose) {
 		this.csTooClose = csTooClose;
 	}	*/
-	
-	
-	/***************************
-	** SET & GET PER I VICINI **
-	****************************/
+	public int getSlowingPoint() {
+		return slowingPoint;
+	}
+	public void setSlowingPoint(int slowingPoint) {
+		this.slowingPoint = slowingPoint;
+	}
+	public int getStoppingPoint() {
+		return stoppingPoint;
+	}
+	public void setStoppingPoint() {
+		this.stoppingPoint = forward.getEarliestStoppingPathIndex(this);
+	}
+
+
+	/*******************************
+	** SET & GET PER LISTA VICINI **
+	********************************/
 	public void setVehicleList(ArrayList<Vehicle> vehicleList) {
 		this.vehicleList = vehicleList;
 	}
@@ -258,20 +274,5 @@ public class Vehicle {
 		return vehicleNear;
 	}
 	
-	/*****************
-	** MOTO VEICOLO **
-	******************/
-	public void moveVehicle(Boolean prec) {
-		km.moveVehicle(prec, this);
-		/*
-		if (this.pathIndex < this.criticalPoint){
-			this.pathIndex = pathIndex + 1;
-		}
-		setNewCriticalPoint(prec);
-		if (this.pathIndex < this.getSpatialEnvelope().getPath().length-1){
-			setPose(this.getSpatialEnvelope().getPath()[pathIndex].getPose());
-		}
-		*/
-	}
 	
 }

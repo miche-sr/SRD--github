@@ -3,6 +3,7 @@ package se.oru.coordination.coordination_oru.ourproject.models;
 public class VehicleThread implements Runnable {
 	
 	private Vehicle v;
+	private double elapsedTrackingTime = 0.0;
 	
 	public VehicleThread(Vehicle v){
 		this.v = v;
@@ -16,15 +17,15 @@ public class VehicleThread implements Runnable {
 		try{
 			while(v.getPathIndex() < v.getWholePath().length){		// this will be while true
 				v.setMyTimes();
-				v.setSpatialEnvelope();
+				v.setTrajectoryEnvelope();
 				Thread.sleep(v.getTc());
+				this.elapsedTrackingTime =+ v.getTc();
 
 				//System.out.println(Arrays.toString(v.getMyTimes()));
 				//System.out.println(v.getSpatialEnvelope().getPath().length);
-				
-				List = "";
-				
+								
 				v.clearCs();
+				List = "";
 				for (Vehicle vh : this.v.getNears()){
 					v.appendCs(vh);
 					List = (List + vh.getID() + " " );
@@ -38,10 +39,15 @@ public class VehicleThread implements Runnable {
 						v.setCriticalPoint(cs);
 						break;
 				}
+				v.setStoppingPoint();
+				if (v.getStoppingPoint() == v.getCriticalPoint())
+					v.setSlowingPoint(v.getPathIndex());
 				
-				v.moveVehicle(prec);
+				v.setPathIndex(elapsedTrackingTime);
+				v.setPose(v.getWholePath()[v.getPathIndex()].getPose());
+				//v.moveVehicle(prec);
 				
-				printLog(List, prec);
+				//printLog(List, prec);
 			}
 			System.out.println("\n R" + this.v.getID() + " : GOAL RAGGIUNTO" );
 		}
