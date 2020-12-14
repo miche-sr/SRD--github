@@ -92,9 +92,9 @@ public class ConstantAccelerationForwardModel {
 		if (!skipIntegration) {
 			boolean slowingDown = false;
 			if (state.getPosition() >= this.positionToSlowDown) slowingDown = true;
-			System.out.println("pos " + state.getPosition()+ "   velo " + state.getVelocity());
+			//System.out.println("pos " + state.getPosition()+ "   velo " + state.getVelocity());
 			integrateRK4(state, elapsedTrackingTime, v.getTc()/1000, slowingDown, v.getVelMax(), 1.0, v.getAccMAx());
-			System.out.println("slowing "+ slowingDown);
+			//System.out.println("slowing "+ slowingDown);
 		}
 		return state;
 	}

@@ -193,7 +193,7 @@ public class Vehicle {
 		State next_state = forward.updateState(this, elapsedTrackingTime);
 		setDistanceTraveled(next_state.getPosition());
 		setVelocity(next_state.getVelocity());
-		System.out.println("dist " + this.distanceTraveled);
+		//System.out.println("dist " + this.distanceTraveled);
 		this.pathIndex = forward.getPathIndex(this.path, next_state);
 	}
 	public double[] getMyTimes() {

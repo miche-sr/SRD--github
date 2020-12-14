@@ -46,11 +46,10 @@ public class VehicleThread implements Runnable {
 					v.setSlowingPoint(v.getPathIndex());
 				
 				v.setPathIndex(elapsedTrackingTime);
-				System.out.println("PathIndex: " + v.getPathIndex()+"\n");
 				v.setPose(v.getWholePath()[v.getPathIndex()].getPose());
 				//v.moveVehicle(prec);
 				
-				//printLog(List, prec);
+				printLog(List, prec);
 			}
 			System.out.println("\n R" + this.v.getID() + " : GOAL RAGGIUNTO" );
 		}
@@ -76,12 +75,13 @@ public class VehicleThread implements Runnable {
 		}
 		else
 			CsString = ("0 Sezioni Critiche");
+		String Dist = String.format("%.2f", v.getDistanceTraveled());
+		String Vel = String.format("%.2f", v.getVelocity());
 		
 		System.out.println("\n R" + this.v.getID() + " : \n" + 
 			"Vicini: "  + List + "\n" + 
-			"Precedenza: " + prec + "\n" + 
-			"Path Index: " 	+ v.getPathIndex() + "\n" +
-			"Critical Point: " + v.getCriticalPoint() + "\n" +
+			"Precedenza: " + prec +  "\t Stopping Point: " + v.getStoppingPoint() + "\n" + 
+			"Path Index: " 	+ v.getPathIndex() + "\t Dist: "+ Dist  + "\t Vel: " + Vel+"\n" +
 			CsString
 			);
 	}
