@@ -15,11 +15,11 @@ public class ConstantAccelerationForwardModel {
 	private int trackingPeriodInMillis = 0;
 	private int controlPeriodInMillis = -1;
 	private static int MAX_TX_DELAY = 0;
-	private double positionToSlowDown = 10000.0;
+
 
 	public ConstantAccelerationForwardModel(Vehicle v, double temporalResolution, int trackingPeriodInMillis) {
-		this.maxAccel = 1.0; //v.getAccMAx();
-		this.maxVel = 1.0; //v.getVelMax();	
+		this.maxAccel = v.getAccMAx();
+		this.maxVel = v.getVelMax();	
 		this.temporalResolution = temporalResolution;
 		this.controlPeriodInMillis = v.getTc();
 		this.trackingPeriodInMillis = trackingPeriodInMillis;
@@ -60,7 +60,7 @@ public class ConstantAccelerationForwardModel {
 			}
 		}
 		while (auxState.getVelocity() > 0) {	// frenata
-			integrateRK4(auxState, time, deltaTime, true, maxVel, 0.5, maxAccel*0.9);
+			integrateRK4(auxState, time, deltaTime, true, maxVel, 1.0, maxAccel*0.9);
 			time += deltaTime;
 			//System.out.println("<5>" + auxState.getVelocity() + " " + maxVel);
 		}
@@ -86,15 +86,15 @@ public class ConstantAccelerationForwardModel {
 		State state = new State(v.getDistanceTraveled(), v.getVelocity());	// state attuale
 		boolean skipIntegration = false;
 		// modificata tanto tanto
-		if (v.getPathIndex() == v.getCriticalPoint()) {
+		if (v.getPathIndex() == v.getCriticalPoint() || v.getVelocity()<0 ) {
 			skipIntegration = true;
 		}	
 		if (!skipIntegration) {
 			boolean slowingDown = false;
-			if (state.getPosition() >= this.positionToSlowDown) slowingDown = true;
+			if (v.getPathIndex() >= v.getSlowingPoint()) slowingDown = true; //brutto 
 			//System.out.println("pos " + state.getPosition()+ "   velo " + state.getVelocity());
-			integrateRK4(state, elapsedTrackingTime, v.getTc()/1000, slowingDown, v.getVelMax(), 1.0, v.getAccMAx());
-			//System.out.println("slowing "+ slowingDown);
+			integrateRK4(state, elapsedTrackingTime, v.getTc()*Vehicle.mill2sec, slowingDown, v.getVelMax(), 1.0, v.getAccMAx());
+			System.out.println("slowing "+ slowingDown);
 		}
 		return state;
 	}

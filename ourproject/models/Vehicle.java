@@ -21,6 +21,9 @@ public class Vehicle {
 	private static final Coordinate[] fpAmb = {new Coordinate(0, 0), new Coordinate(0, 3), 
 			   								   new Coordinate(2, 3), new Coordinate(2, 0)};
 	
+	// CONSTANT
+	public static double mill2sec = 0.001;
+
 	// VARIABILI FISICHE E PROPRIE DEL VEICOLO
 	private int ID = -1;
 	private int priority = -1;
@@ -49,7 +52,7 @@ public class Vehicle {
 	private int criticalPoint = -1;		// -1 if no critical point
 	//private boolean csTooClose = false;
 	private int stoppingPoint = -1;	// punto di fermata, a ogni ciclo: al quale mi fermo da dove sono
-	private int slowingPoint = -1; 	// punto di frenata, unico: per fermarsi prima del p. critico
+	private int slowingPoint = 1000; 	// punto di frenata, unico: per fermarsi prima del p. critico
     private TreeSet<CriticalSection> cs = new TreeSet<CriticalSection>();
 	private CriticalSectionsFounder intersect = new CriticalSectionsFounder();
 
@@ -60,7 +63,7 @@ public class Vehicle {
 	//from Trajectory EnvelopeCoordinatorSimulation
 	//TEMPORAL_RESOLUTION = 1000
 	//trackingPeriodInMillis = 30
-	private ConstantAccelerationForwardModel forward = new ConstantAccelerationForwardModel(this, 1000, 30);
+	private ConstantAccelerationForwardModel forward ;
 
 	
 	// COSTRUTTORE
@@ -73,18 +76,18 @@ public class Vehicle {
 		
 		switch (category) {
 			case CAR:
-				this.velMax = 1.0;
+				this.velMax = 3.0;
 				this.accMax = 1.0;
 				this.priority = 1;
-				this.Tc = 2000;
+				this.Tc = 1000;
 				this.footprint = fpCar;
 				break;
 			
 			case AMBULANCE:
-				this.velMax = 1.0;
+				this.velMax = 4.0;
 				this.accMax = 1.0;
 				this.priority = 2;		// lowest priority wins
-				this.Tc = 1000;
+				this.Tc = 500;
 				this.footprint = fpAmb;
 				break;
 		
@@ -92,8 +95,9 @@ public class Vehicle {
             	System.out.println("Unknown vehicle");
 		}
 		double stopTimeMax = this.velMax/this.accMax;
-		this.radius = (2*this.Tc/1000 + stopTimeMax)*this.velMax;
+		this.radius = (2*this.Tc*mill2sec + stopTimeMax)*this.velMax;
 		this.path = createWholePath();
+		this.forward = new ConstantAccelerationForwardModel(this, 1000, 30);
 	}
 	
 	

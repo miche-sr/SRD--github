@@ -15,12 +15,12 @@ public class VehicleThread implements Runnable {
 		//v.setPathIndex(0);
 		//System.out.println(v.getSecForSafety());
 		try{
-			while(v.getPathIndex() < v.getWholePath().length){		// this will be while true
+			while(v.getPathIndex() < v.getWholePath().length-1){		// this will be while true
 				v.setMyTimes();
 				v.setTrajectoryEnvelope();
 				Thread.sleep(v.getTc());
-				this.elapsedTrackingTime += v.getTc()/1000;
-				System.out.println(elapsedTrackingTime);
+				this.elapsedTrackingTime += v.getTc()*Vehicle.mill2sec;
+				
 				
 
 				//System.out.println(Arrays.toString(v.getMyTimes()));
@@ -42,7 +42,7 @@ public class VehicleThread implements Runnable {
 						break;
 				}
 				v.setStoppingPoint();
-				if (v.getStoppingPoint() == v.getCriticalPoint())
+				if (v.getStoppingPoint() == v.getCriticalPoint() || v.getStoppingPoint() == v.getWholePath().length-1 )
 					v.setSlowingPoint(v.getPathIndex());
 				
 				v.setPathIndex(elapsedTrackingTime);
@@ -82,8 +82,8 @@ public class VehicleThread implements Runnable {
 			"Vicini: "  + List + "\n" + 
 			"Precedenza: " + prec +  "\t Stopping Point: " + v.getStoppingPoint() + "\n" + 
 			"Path Index: " 	+ v.getPathIndex() + "\t Dist: "+ Dist  + "\t Vel: " + Vel+"\n" +
+			"Punto Critio:" + v.getCriticalPoint() +  "\t SLowing Point: " + v.getSlowingPoint() + "\n" + 
 			CsString
 			);
 	}
 }
-
