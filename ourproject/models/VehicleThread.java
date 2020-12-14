@@ -41,12 +41,13 @@ public class VehicleThread implements Runnable {
 						v.setCriticalPoint(cs);
 						break;
 				}
-				v.setStoppingPoint();
-				if (v.getStoppingPoint() == v.getCriticalPoint() || v.getStoppingPoint() == v.getWholePath().length-1 )
-					v.setSlowingPoint(v.getPathIndex());
 				
+				//if (v.getStoppingPoint() == v.getCriticalPoint() || v.getStoppingPoint() == v.getWholePath().length-1 )
+				//	v.setSlowingPoint(v.getPathIndex());
+				v.setSlowingPoint();
 				v.setPathIndex(elapsedTrackingTime);
 				v.setPose(v.getWholePath()[v.getPathIndex()].getPose());
+				v.setStoppingPoint();
 				//v.moveVehicle(prec);
 				
 				printLog(List, prec);

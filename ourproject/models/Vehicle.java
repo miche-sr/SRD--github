@@ -7,6 +7,9 @@ import org.metacsp.multi.spatioTemporal.paths.Pose;
 import org.metacsp.multi.spatioTemporal.paths.PoseSteering;
 import org.metacsp.multi.spatioTemporal.paths.TrajectoryEnvelope;
 import org.metacsp.multi.spatioTemporal.paths.TrajectoryEnvelopeSolver;
+
+import EDU.oswego.cs.dl.util.concurrent.Sync;
+
 import org.metacsp.multi.spatioTemporal.paths.Trajectory;
 
 import com.vividsolutions.jts.geom.Coordinate;
@@ -79,7 +82,7 @@ public class Vehicle {
 				this.velMax = 3.0;
 				this.accMax = 1.0;
 				this.priority = 1;
-				this.Tc = 1000;
+				this.Tc = 400;
 				this.footprint = fpCar;
 				break;
 			
@@ -87,7 +90,7 @@ public class Vehicle {
 				this.velMax = 4.0;
 				this.accMax = 1.0;
 				this.priority = 2;		// lowest priority wins
-				this.Tc = 500;
+				this.Tc = 250;
 				this.footprint = fpAmb;
 				break;
 		
@@ -248,6 +251,24 @@ public class Vehicle {
 	public void setSlowingPoint(int slowingPoint) {
 		this.slowingPoint = slowingPoint;
 	}
+
+	public void setSlowingPoint() {
+		boolean stop = false;
+		int i = this.criticalPoint;
+		int cp = this.criticalPoint;
+		if (this.criticalPoint == -1) {
+			i = this.path.length;
+			cp = this.path.length;
+		}
+		//System.out.println("cp: " + this.criticalPoint + "  i-A = "+i);
+		while (!stop && i>0) {
+			i -= 1;
+			stop = forward.canStop(this.te, this, cp ,i, false);
+		}
+		//System.out.println("cp: " + cs+ "   i-B = "+i);
+		this.slowingPoint = i;
+	}
+
 	public int getStoppingPoint() {
 		return stoppingPoint;
 	}
