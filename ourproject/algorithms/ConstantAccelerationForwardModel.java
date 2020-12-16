@@ -1,5 +1,8 @@
 package se.oru.coordination.coordination_oru.ourproject.algorithms;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+
 import org.metacsp.multi.spatioTemporal.paths.Pose;
 import org.metacsp.multi.spatioTemporal.paths.PoseSteering;
 import org.metacsp.multi.spatioTemporal.paths.Trajectory;
@@ -112,7 +115,7 @@ public class ConstantAccelerationForwardModel {
 	public boolean canStop(TrajectoryEnvelope te, Vehicle v, int targetPathIndex,int StartPathIndex ,boolean useVelocity) {
 		if (useVelocity && v.getVelocity() <= 0.0) return true;
 		double distance = computeDistance(v.getWholePath(),StartPathIndex , targetPathIndex);
-		State state = new State(0.0, v.getVelMax());
+		State state = new State(0.0, 0.0);
 		double time = 0.0;
 		double deltaTime = v.getTc()*Vehicle.mill2sec;
 		//long lookaheadInMillis = 2*(this.controlPeriodInMillis + MAX_TX_DELAY + trackingPeriodInMillis);
@@ -144,5 +147,66 @@ public class ConstantAccelerationForwardModel {
 		}
 		return ret;
 	}
+
+
+
+	public  HashMap<Integer,Double> computeTs(Vehicle v) {
+		//double distance = traj.getPathLength();
+		//double distance = computeDistance(v.getWholePath() , v.getPathIndex(), targetPathIndex);
+		// State state = new State(0.0, 0.0);
+		// double time = 0.0;
+		// double deltaTime = 0.0001;
+		
+		//ArrayList<Double> dts = new ArrayList<Double>();
+		HashMap<Integer,Double> times = new HashMap<Integer, Double>();
+		// dts.add(0.0);
+		// times.put(0, 0.0);
+		
+		// //First compute time to stop (can do FW here...)
+		// while (state.getPosition() < distance/2.0 && state.getVelocity() < maxVel) {
+		// 	integrateRK4(state, time, deltaTime, false, maxVel, 1.0, maxAccel);
+		// 	time += deltaTime;
+		// }
+		// double positionToSlowDown = distance-state.getPosition();
+		// //System.out.println("Position to slow down is: " + MetaCSPLogging.printDouble(positionToSlowDown,4));
+		int currentPathIndex =  v.getPathIndex();
+		double distanceToSlow = computeDistance(v.getWholePath() , v.getPathIndex(), v.getSlowingPoint());
+		
+		State state = new State(v.getDistanceTraveled(),v.getVelocity());
+		double time =0.0;
+		double deltaTime = v.getTc()*Vehicle.mill2sec;
+		while (true) {
+			if (state.getVelocity() <= 0.0) break; // migliorare perchè poi noi ripartiamo
+			if (state.getPosition() >= distanceToSlow) {
+				integrateRK4(state, time, deltaTime, true, maxVel, 1.0, maxAccel);
+			}
+			else {
+				integrateRK4(state, time, deltaTime, false, maxVel, 1.0, maxAccel);				
+			}
+			//System.out.println("Time: " + time + " " + rr);
+			//System.out.println("Time: " + MetaCSPLogging.printDouble(time,4) + "\tpos: " + MetaCSPLogging.printDouble(state.getPosition(),4) + "\tvel: " + MetaCSPLogging.printDouble(state.getVelocity(),4));
+			time += deltaTime;
+			
+			//RobotReport rr = getRobotReport(traj, state);
+			currentPathIndex  = getPathIndex(v.getWholePath(), state);
+			if (!times.containsKey(currentPathIndex)) {
+				times.put(currentPathIndex, time);
+				// dts.add(time-times.get(currentPathIndex-1));
+			}
+		}
+		// if (dts.size() < traj.getPose().length) {
+		// 	times.put(traj.getPose().length-1, time);		
+		// 	dts.add(time-times.get(traj.getPose().length-2));
+		// }
+		
+		//System.out.println("Time: " + MetaCSPLogging.printDouble(time,4) + "\tpos: " + MetaCSPLogging.printDouble(state.getPosition(),4) + "\tvel: " + MetaCSPLogging.printDouble(state.getVelocity(),4));
+		
+		// double[] ret = new double[dts.size()];
+		// for (int i = 0; i < dts.size(); i++) ret[i] = dts.get(i);
+		// return ret;
+		return times;
+
+	}
+
 
 }

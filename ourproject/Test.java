@@ -23,7 +23,7 @@ public class Test{
 	Vehicle.Category c = Vehicle.Category.CAR; 
 	
 	Pose start1 = new Pose(0, 0, 0); Pose[] goal1 = {new Pose(30, 0, 0)};
-	Pose start2 = new Pose(5, 8, -Math.PI/2); Pose[] goal2 = {new Pose(5, -4, -Math.PI/2)};
+	Pose start2 = new Pose(4, 4, -Math.PI/2); Pose[] goal2 = {new Pose(4, -4, -Math.PI/2)};
 	Pose start3 = new Pose(8, -8, Math.PI/2); Pose[] goal3 = {new Pose(8, 8, Math.PI/2)};
 	//Pose start4 = new Pose(0, -5, -Math.PI/2); Pose[] goal4 = {new Pose(15, 10, -Math.PI/2)};
 	Pose start4 = new Pose(10, -10, -Math.PI/2); Pose[] goal4 = {new Pose(10, 10, -Math.PI/2)};

@@ -14,9 +14,12 @@ public class VehicleThread implements Runnable {
 		String List;
 		//v.setPathIndex(0);
 		//System.out.println(v.getSecForSafety());
+		
 		try{
 			while(v.getPathIndex() < v.getWholePath().length-1){		// this will be while true
 				v.setMyTimes();
+				v.setTimes();
+				System.out.print(v.getTimes());
 				v.setTrajectoryEnvelope();
 				Thread.sleep(v.getTc());
 				this.elapsedTrackingTime += v.getTc()*Vehicle.mill2sec;

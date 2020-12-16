@@ -50,6 +50,7 @@ public class Vehicle {
 	// from "AbstractTrajectoryEnvelopeCoordinator": line 1615
 	private TrajectoryEnvelopeSolver solver = new TrajectoryEnvelopeSolver(0, 100000000);
 	private TrajectoryEnvelope te = null;
+	private HashMap<Integer,Double>  Times;
 	
 	// VARIABILI PER LE SEZIONI CRITICHE
 	private int criticalPoint = -1;		// -1 if no critical point
@@ -212,6 +213,15 @@ public class Vehicle {
 		for(int i = 1; i < path.length; i++) {
 			this.myTimes[i] += this.myTimes[i-1];
 		}
+	}
+	
+	public  HashMap<Integer,Double> getTimes() {
+		return Times;
+	}
+
+	public void setTimes() {
+		Times = forward.computeTs(this);
+		
 	}
 	
 	
