@@ -22,10 +22,9 @@ public class Test{
 	Vehicle.Category a = Vehicle.Category.AMBULANCE; 
 	Vehicle.Category c = Vehicle.Category.CAR; 
 	
-	Pose start1 = new Pose(0, 0, 0); Pose[] goal1 = {new Pose(30, 0, 0)};
+	Pose start1 = new Pose(0, 0, 0); Pose[] goal1 = {new Pose(15, 0, 0)};
 	Pose start2 = new Pose(4, 4, -Math.PI/2); Pose[] goal2 = {new Pose(4, -4, -Math.PI/2)};
 	Pose start3 = new Pose(8, -8, Math.PI/2); Pose[] goal3 = {new Pose(8, 8, Math.PI/2)};
-	//Pose start4 = new Pose(0, -5, -Math.PI/2); Pose[] goal4 = {new Pose(15, 10, -Math.PI/2)};
 	Pose start4 = new Pose(10, -10, -Math.PI/2); Pose[] goal4 = {new Pose(10, 10, -Math.PI/2)};
 
 	Thread thread1 = initThread(1, a, start1, goal1);
@@ -50,7 +49,7 @@ public class Test{
 	
 	thread1.start();
 	//thread2.start();
-//	thread3.start();
+	//thread3.start();
 	//thread4.start();
 	}
 }

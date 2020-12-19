@@ -1,5 +1,7 @@
 package se.oru.coordination.coordination_oru.ourproject.algorithms;
 
+import java.util.Calendar;
+
 import org.metacsp.multi.spatioTemporal.paths.Pose;
 import org.metacsp.multi.spatioTemporal.paths.PoseSteering;
 import org.metacsp.multi.spatioTemporal.paths.Trajectory;
@@ -12,17 +14,19 @@ public class ConstantAccelerationForwardModel {
 		
 	private double maxAccel, maxVel;
 	private double temporalResolution = -1;
-	private int trackingPeriodInMillis = 0;
 	private int controlPeriodInMillis = -1;
+	private boolean atCP = false;
+	private boolean slowingDown = false;
+	private static int trackingPeriodInMillis = 0;
 	private static int MAX_TX_DELAY = 0;
-	private double positionToSlowDown = -1.0;
-
-	public ConstantAccelerationForwardModel(Vehicle v, double temporalResolution, int trackingPeriodInMillis) {
+	private State state;
+	
+	public ConstantAccelerationForwardModel(Vehicle v, double temporalResolution) {
 		this.maxAccel = v.getAccMAx();
 		this.maxVel = v.getVelMax();	
 		this.temporalResolution = temporalResolution;
 		this.controlPeriodInMillis = v.getTc();
-		this.trackingPeriodInMillis = trackingPeriodInMillis;
+		state = new State(v.getDistanceTraveled(), v.getVelocity());
 	}
 
 	public int getPathIndex(PoseSteering[] path, State state) {
@@ -51,15 +55,25 @@ public class ConstantAccelerationForwardModel {
 	public int getEarliestStoppingPathIndex(Vehicle v) {
 		State auxState = new State(v.getDistanceTraveled(), v.getVelocity());
 		double time = 0.0;
-		double deltaTime = 0.0001;
-		long lookaheadInMillis = 2*(this.controlPeriodInMillis + MAX_TX_DELAY + trackingPeriodInMillis);
-		if (lookaheadInMillis > 0) {
+		double deltaTime = v.getTc()*Vehicle.mill2sec;
+		// il periodo stesso lo considero xk ho acc di prima, al successivo già freno
+		long lookaheadInMillis = (this.controlPeriodInMillis + MAX_TX_DELAY + trackingPeriodInMillis);
+//		if (lookaheadInMillis > 0) {
+//			while (time*temporalResolution < lookaheadInMillis) {	// non frenata
+//				integrateRK4(auxState, time, deltaTime, false, maxVel, 1.0, maxAccel*1.1);
+//				time += deltaTime;
+//			}
+//		}
+//		while (auxState.getVelocity() > 0) {	// frenata
+//			integrateRK4(auxState, time, deltaTime, true, maxVel, 1.0, maxAccel*0.9);
+//			time += deltaTime;
+//		}
+		while (auxState.getVelocity() > 0) {
 			while (time*temporalResolution < lookaheadInMillis) {	// non frenata
 				integrateRK4(auxState, time, deltaTime, false, maxVel, 1.0, maxAccel*1.1);
 				time += deltaTime;
 			}
-		}
-		while (auxState.getVelocity() > 0) {	// frenata
+		// frenata
 			integrateRK4(auxState, time, deltaTime, true, maxVel, 1.0, maxAccel*0.9);
 			time += deltaTime;
 		}
@@ -81,24 +95,46 @@ public class ConstantAccelerationForwardModel {
 	}
 	
 	//from run in TrajectoryEnvelopeTrackerRK4: line 548
-	public State updateState(Vehicle v, double elapsedTrackingTime) {
-		State state = new State(v.getDistanceTraveled(), v.getVelocity());	// state attuale
+	public boolean updateState(Vehicle v, double elapsedTrackingTime) {
+		state.setPosition(v.getDistanceTraveled());
+		state.setVelocity(v.getVelocity());		// state attuale
 		boolean skipIntegration = false;
-		// modificata tanto tanto
-		if (v.getPathIndex() == v.getCriticalPoint()) {
+		boolean arrived = false;
+		if (state.getPosition() >= v.getSlowingPoint() && state.getVelocity() <= 0.0) {
+			if (v.getCriticalPoint() == -1 && !atCP) {
+				//set state to final position, just in case it didn't quite get there (it's certainly close enough)
+				state = new State(v.getDistanceTraveled(), 0.0);
+				arrived = true;
+			}
+							
+			//Vel < 0 hence we are at CP, thus we need to skip integration
+			int pathIndex = v.getPathIndex();
+			if (!atCP && pathIndex != v.getWholePath().length-1) {
+				System.out.println("At critical point (" + v.getTrajectoryEnvelope().getComponent() + "): " + v.getCriticalPoint( )+ " (" + pathIndex + ")");
+				if (pathIndex > v.getCriticalPoint()) 
+					System.out.println("* ATTENTION! STOPPED AFTER!! *");
+				atCP = true;
+			}
 			skipIntegration = true;
-		}	
-		if (!skipIntegration) {
-			boolean slowingDown = false;
-			if (state.getPosition() >= this.positionToSlowDown) slowingDown = true;
-			integrateRK4(state, elapsedTrackingTime, v.getTc(), slowingDown, v.getVelMax(), 1.0, v.getAccMAx());
 		}
-		return state;
+			
+		if (!skipIntegration) {
+			if (atCP) {
+				System.out.println("Resuming from critical point (" + v.getTrajectoryEnvelope().getComponent() + ")");
+				atCP = false;
+			}
+			slowingDown = false;
+			if (state.getPosition() >= v.getSlowingPoint()) slowingDown = true;
+			integrateRK4(state, elapsedTrackingTime, v.getTc()*Vehicle.mill2sec, slowingDown, maxVel, 1.0, maxAccel);
+			if (state.getVelocity() < 0) state.setVelocity(0.0);
+		}
+		
+		v.setDistanceTraveled(state.getPosition());
+		v.setVelocity(state.getVelocity());
+		v.setPathIndex(getPathIndex(v.getWholePath(), state));
+		return arrived;
 	}
 	
-	
-	//public double[] computeTimes() {
-	//}
 	
 	
 

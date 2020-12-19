@@ -4,7 +4,8 @@ public class VehicleThread implements Runnable {
 	
 	private Vehicle v;
 	private double elapsedTrackingTime = 0.0;
-	
+	private boolean arrived = false;
+
 	public VehicleThread(Vehicle v){
 		this.v = v;
 	}
@@ -12,18 +13,16 @@ public class VehicleThread implements Runnable {
 	// MAIN ALGORITHM
 	public void run() {
 		String List;
-		//v.setPathIndex(0);
-		//System.out.println(v.getSecForSafety());
+		Boolean prec;
+		
 		try{
-			while(v.getPathIndex() < v.getWholePath().length){		// this will be while true
+			while(true){ //v.getPathIndex() <= v.getWholePath().length-1
 				v.setMyTimes();
 				v.setTrajectoryEnvelope();
+				
 				Thread.sleep(v.getTc());
-				this.elapsedTrackingTime =+ v.getTc();
-
-				//System.out.println(Arrays.toString(v.getMyTimes()));
-				//System.out.println(v.getSpatialEnvelope().getPath().length);
 								
+				/********INIZIO INTERVALLO K********/	// comincio a stampare da t0
 				v.clearCs();
 				List = "";
 				for (Vehicle vh : this.v.getNears()){
@@ -31,7 +30,7 @@ public class VehicleThread implements Runnable {
 					List = (List + vh.getID() + " " );
 				}
 				
-				Boolean prec = true;
+				prec = true;
 				v.setCriticalPoint(-1);
 				for (CriticalSection cs : this.v.getCs()){
 					prec = cs.ComputePrecedences();
@@ -40,19 +39,28 @@ public class VehicleThread implements Runnable {
 						break;
 				}
 				v.setStoppingPoint();
-				if (v.getStoppingPoint() == v.getCriticalPoint())
-					v.setSlowingPoint(v.getPathIndex());
+				if (arrived == true) break;
+				if (v.getCriticalPoint() == -1)
+					v.setSlowingPoint(1000);
+				if (v.getStoppingPoint() == v.getCriticalPoint()|| v.getStoppingPoint() == v.getWholePath().length-1)
+					v.setSlowingPoint(v.getDistanceTraveled());
 				
-				v.setPathIndex(elapsedTrackingTime);
+				printLog(List, prec);
+				
+				/*********FINE INTERVALLO K*********/
+				this.elapsedTrackingTime += v.getTc()*Vehicle.mill2sec;
+				// valori del nuovo intervallo K+1, ovvero quelli alla fine del precedente,
+				// valori che assumerà nella realtà dopo il tempo di sleep
+				arrived = v.setPathIndex(elapsedTrackingTime); 
 				v.setPose(v.getWholePath()[v.getPathIndex()].getPose());
-				//v.moveVehicle(prec);
-				
-				//printLog(List, prec);
+
 			}
 			System.out.println("\n R" + this.v.getID() + " : GOAL RAGGIUNTO" );
 		}
+		
 		catch (InterruptedException e) {
 			System.out.println("Thread interrotto");
+
 		}	
 	}
 
@@ -64,21 +72,25 @@ public class VehicleThread implements Runnable {
 			for (CriticalSection cs : v.getCs()) {
 				CsString = CsString + (i+1 +"° Sezione Critica" +
 				"\t Mia: " + cs.getTe1Start()+"-"+cs.getTe1End() +
-				"\t R" + cs.getVehicle2().getID() + ":" +
-				"\t" + cs.getTe2Start()+"-"+cs.getTe2End()) + "\n";
+				"\t R" + cs.getVehicle2().getID() +
+				": " + cs.getTe2Start()+"-"+cs.getTe2End()) + "\n";
 				i += 1;
 			}
 		}
 		else
-			CsString = ("0 Sezioni Critiche");
-		
+			CsString = ("0 Sezioni Critiche\n");
+		String dist = String.format("%.2f", v.getDistanceTraveled());
+		String slow = String.format("%.2f", v.getSlowingPoint());
+		String vel = String.format("%.2f", v.getVelocity());
+
 		System.out.println("\n R" + this.v.getID() + " : \n" + 
-			"Vicini: "  + List + "\n" + 
-			"Precedenza: " + prec + "\n" + 
-			"Path Index: " 	+ v.getPathIndex() + "\n" +
-			"Critical Point: " + v.getCriticalPoint() + "\n" +
-			CsString
+			"Robot Vicini: "  + List + "\n" + 
+			CsString +
+			"Precedence: " + prec +  "\n" + 
+			"Velocity: " + vel + "\n" +
+			"Stopping Point: " + v.getStoppingPoint() + "\t Critical Point: " + v.getCriticalPoint() + "\n" +
+			"Path Index: " + v.getPathIndex() + "\t\t Last Index: " + (v.getWholePath().length-1) + "\n" +
+			"Distance Traveled: " + dist + "\t Slowing Point: " + slow + "\n"
 			);
 	}
 }
-
