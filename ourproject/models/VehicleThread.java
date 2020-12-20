@@ -4,9 +4,11 @@ public class VehicleThread implements Runnable {
 	
 	private Vehicle v;
 	private double elapsedTrackingTime = 0.0;
+	private int cp = -2;
 	
 	public VehicleThread(Vehicle v){
 		this.v = v;
+
 	}
 	
 	// MAIN ALGORITHM
@@ -18,16 +20,10 @@ public class VehicleThread implements Runnable {
 		try{
 			while(v.getPathIndex() < v.getWholePath().length-1){		// this will be while true
 				v.setMyTimes();
-				v.setTimes();
-				System.out.print(v.getTimes());
-				v.setTrajectoryEnvelope();
-				Thread.sleep(v.getTc());
-				this.elapsedTrackingTime += v.getTc()*Vehicle.mill2sec;
-				
+
+				//v.setSpatialEnvelope();
 				
 
-				//System.out.println(Arrays.toString(v.getMyTimes()));
-				//System.out.println(v.getSpatialEnvelope().getPath().length);
 								
 				v.clearCs();
 				List = "";
@@ -45,8 +41,14 @@ public class VehicleThread implements Runnable {
 						break;
 				}
 				
-				//if (v.getStoppingPoint() == v.getCriticalPoint() || v.getStoppingPoint() == v.getWholePath().length-1 )
-				//	v.setSlowingPoint(v.getPathIndex());
+				//if (cp != v.getCriticalPoint()){
+					cp = v.getCriticalPoint();
+					v.setTimes();
+				//}
+				v.setSpatialEnvelope();
+				//System.out.print(v.getTimes() + "\n");
+				//System.out.print(v.getTruncateTimes());
+
 				v.setSlowingPoint();
 				v.setPathIndex(elapsedTrackingTime);
 				v.setPose(v.getWholePath()[v.getPathIndex()].getPose());
@@ -54,6 +56,9 @@ public class VehicleThread implements Runnable {
 				//v.moveVehicle(prec);
 				
 				printLog(List, prec);
+
+				Thread.sleep(v.getTc());
+				this.elapsedTrackingTime += v.getTc()*Vehicle.mill2sec;
 			}
 			System.out.println("\n R" + this.v.getID() + " : GOAL RAGGIUNTO" );
 		}
@@ -67,6 +72,9 @@ public class VehicleThread implements Runnable {
 	
 	public void printLog(String List, Boolean prec) {
 		String CsString = "";
+		String Dist = String.format("%.2f", v.getDistanceTraveled());
+		String Vel = String.format("%.2f", v.getVelocity());
+
 		if (v.getCs().size() != 0){
 			int i = 0;
 			for (CriticalSection cs : v.getCs()) {
@@ -77,16 +85,14 @@ public class VehicleThread implements Runnable {
 				i += 1;
 			}
 		}
-		else
-			CsString = ("0 Sezioni Critiche");
-		String Dist = String.format("%.2f", v.getDistanceTraveled());
-		String Vel = String.format("%.2f", v.getVelocity());
-		
+		else	CsString = ("0 Sezioni Critiche");
+				
 		System.out.println("\n R" + this.v.getID() + " : \n" + 
 			"Vicini: "  + List + "\n" + 
-			"Precedenza: " + prec +  "\t Stopping Point: " + v.getStoppingPoint() + "\n" + 
-			"Path Index: " 	+ v.getPathIndex() + "\t Dist: "+ Dist  + "\t Vel: " + Vel+"\n" +
-			"Punto Critio:" + v.getCriticalPoint() +  "\t SLowing Point: " + v.getSlowingPoint() + "\n" + 
+			"Path Index: " 	+ v.getPathIndex() + "\t \t Stopping Point: " + v.getStoppingPoint() + "\n" +
+			"Distance: "+ Dist  + "\t \t Velocity: " + Vel + "\n" +
+			"Critical Point:" + v.getCriticalPoint() + "\t Last Index: "+ v.getWholePath().length + "\n" + 
+			"Precedenza: " + prec +  "\t SLowing Point: " + v.getSlowingPoint() + "\n" + 
 			CsString
 			);
 	}

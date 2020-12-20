@@ -5,12 +5,13 @@ import se.oru.coordination.coordination_oru.motionplanning.ompl.ReedsSheppCarPla
 
 import org.metacsp.multi.spatioTemporal.paths.Pose;
 import org.metacsp.multi.spatioTemporal.paths.PoseSteering;
-import org.metacsp.multi.spatioTemporal.paths.TrajectoryEnvelope;
+import org.metacsp.multi.spatioTemporal.paths.TrajectoryEnvelope.SpatialEnvelope;
 import org.metacsp.multi.spatioTemporal.paths.TrajectoryEnvelopeSolver;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
 import org.metacsp.multi.spatioTemporal.paths.Trajectory;
+import org.metacsp.multi.spatioTemporal.paths.TrajectoryEnvelope;
 
 import com.vividsolutions.jts.geom.Coordinate;
 
@@ -18,12 +19,15 @@ import java.util.*;
 
 public class Vehicle {
 
-	public static enum Category {CAR, AMBULANCE};
-	private static final Coordinate[] fpCar = {new Coordinate(0, 0), new Coordinate(0, 1), 
-											   new Coordinate(1, 1), new Coordinate(1, 0)};
-	private static final Coordinate[] fpAmb = {new Coordinate(0, 0), new Coordinate(0, 3), 
-			   								   new Coordinate(2, 3), new Coordinate(2, 0)};
-	
+	public static enum Category {
+		CAR, AMBULANCE
+	};
+
+	private static final Coordinate[] fpCar = { new Coordinate(0, 0), new Coordinate(0, 1), new Coordinate(1, 1),
+			new Coordinate(1, 0) };
+	private static final Coordinate[] fpAmb = { new Coordinate(0, 0), new Coordinate(0, 3), new Coordinate(2, 3),
+			new Coordinate(2, 0) };
+
 	// CONSTANT
 	public static double mill2sec = 0.001;
 
@@ -31,15 +35,15 @@ public class Vehicle {
 	private int ID = -1;
 	private int priority = -1;
 	private double radius = -1.0;
-	private double secForSafety = -1.0;	// length of trajectory to share
-	private int Tc;						// [ ms ]
-	private double velocity = 0.0;		// [  m/s  ]
-	private double velMax = 0.0;		// [  m/s  ]
-	private double accMax = 0.0;		// [ m/s^2 ]
+	private double secForSafety = -1.0; // length of trajectory to share
+	private int Tc; // [ ms ]
+	private double velocity = 0.0; // [ m/s ]
+	private double velMax = 0.0; // [ m/s ]
+	private double accMax = 0.0; // [ m/s^2 ]
 	private Coordinate[] footprint;
 
 	// VARIABILI DI PERCORSO E TRAIETTORIA
-	private int pathIndex = 0;			// index of the last pose passed
+	private int pathIndex = 0; // index of the last pose passed
 	private Pose pose;
 	private Pose start;
 	private Pose[] goal;
@@ -48,66 +52,72 @@ public class Vehicle {
 	private double[] myTimes;
 	private ArrayList<PoseSteering> truncatedPath = new ArrayList<PoseSteering>();
 	// from "AbstractTrajectoryEnvelopeCoordinator": line 1615
-	private TrajectoryEnvelopeSolver solver = new TrajectoryEnvelopeSolver(0, 100000000);
+	// private TrajectoryEnvelopeSolver solver = new TrajectoryEnvelopeSolver(0,
+	// 100000000);
 	private TrajectoryEnvelope te = null;
-	private HashMap<Integer,Double>  Times;
-	
+	private SpatialEnvelope se = null;
+	private HashMap<Integer, Double> times;
+	private HashMap<Integer, Double> TruncateTimes = new HashMap<Integer, Double>();
+
 	// VARIABILI PER LE SEZIONI CRITICHE
-	private int criticalPoint = -1;		// -1 if no critical point
-	//private boolean csTooClose = false;
-	private int stoppingPoint = -1;	// punto di fermata, a ogni ciclo: al quale mi fermo da dove sono
-	private int slowingPoint = 1000; 	// punto di frenata, unico: per fermarsi prima del p. critico
-    private TreeSet<CriticalSection> cs = new TreeSet<CriticalSection>();
+	private int criticalPoint = -1; // -1 if no critical point
+	// private boolean csTooClose = false;
+	private int stoppingPoint = -1; // punto di fermata, a ogni ciclo: al quale mi fermo da dove sono
+	private int slowingPoint = 1000; // punto di frenata, unico: per fermarsi prima del p. critico
+	private TreeSet<CriticalSection> cs = new TreeSet<CriticalSection>();
 	private CriticalSectionsFounder intersect = new CriticalSectionsFounder();
 
 	// DA USARE PER I VICINI
 	private ArrayList<Vehicle> vehicleList = new ArrayList<Vehicle>();
 	private ArrayList<Vehicle> vehicleNear = new ArrayList<Vehicle>();
-	
-	//from Trajectory EnvelopeCoordinatorSimulation
-	//TEMPORAL_RESOLUTION = 1000
-	//trackingPeriodInMillis = 30
-	private ConstantAccelerationForwardModel forward ;
 
-	
+	// from Trajectory EnvelopeCoordinatorSimulation
+	// TEMPORAL_RESOLUTION = 1000
+	// trackingPeriodInMillis = 30
+	private ConstantAccelerationForwardModel forward;
+
 	// COSTRUTTORE
-	// @param distanceTraveled The distance traveled so far along the current current path.
+	// @param distanceTraveled The distance traveled so far along the current
+	// current path.
 	public Vehicle(int ID, Category category, Pose start, Pose[] goal) {
 		this.ID = ID;
 		this.pose = start;
 		this.start = start;
 		this.goal = goal;
-		
+
 		switch (category) {
 			case CAR:
-				this.velMax = 3.0;
+				this.velMax = 2;
 				this.accMax = 1.0;
 				this.priority = 1;
 				this.Tc = 400;
 				this.footprint = fpCar;
 				break;
-			
+
 			case AMBULANCE:
 				this.velMax = 4.0;
 				this.accMax = 1.0;
-				this.priority = 2;		// lowest priority wins
+				this.priority = 2; // lowest priority wins
 				this.Tc = 250;
 				this.footprint = fpAmb;
 				break;
-		
+
 			default:
-            	System.out.println("Unknown vehicle");
+				System.out.println("Unknown vehicle");
 		}
-		double stopTimeMax = this.velMax/this.accMax;
-		this.radius = (2*this.Tc*mill2sec + stopTimeMax)*this.velMax;
+		double stopTimeMax = this.velMax / this.accMax;
+		this.radius = (2 * this.Tc * mill2sec + stopTimeMax) * this.velMax;
 		this.path = createWholePath();
 		this.forward = new ConstantAccelerationForwardModel(this, 1000, 30);
+		//PoseSteering[] init = new PoseSteering[] {path[0]};
+		se = TrajectoryEnvelope.createSpatialEnvelope(new PoseSteering[] {path[0]}, footprint);
 	}
-	
-	
+
+
+
 	/**********************************************
-	** SET & GET PER VARIABILI FISICHE E PROPRIE **
-	***********************************************/
+	 ** SET & GET PER VARIABILI FISICHE E PROPRIE **
+	 ***********************************************/
 	public int getID() {
 		return ID;
 	}
@@ -181,15 +191,25 @@ public class Vehicle {
 	public TrajectoryEnvelope getTrajectoryEnvelope() {
 		return te;
 	}
-	public void setTrajectoryEnvelope() {
+
+	public SpatialEnvelope getSpatialEnvelope() {
+		return se;
+	}
+
+	public void setSpatialEnvelope() {
 		this.truncatedPath.clear();
+		this.TruncateTimes.clear();
 		int i = 0;
-		while((pathIndex+i < path.length) && (myTimes[pathIndex+i]-myTimes[pathIndex] <= secForSafety)) {
+		//while((pathIndex+i < path.length) && (myTimes[pathIndex+i]-myTimes[pathIndex] <= secForSafety)) {
+		while(times.get(pathIndex+i) < secForSafety){
+			this.TruncateTimes.put(pathIndex+i,times.get(pathIndex+i));		
 			this.truncatedPath.add(path[pathIndex+i]);
 			i++;
+			if (!times.containsKey(pathIndex+i)) break;
 		}
 		PoseSteering[] truncatedPathArray = truncatedPath.toArray(new PoseSteering[truncatedPath.size()]);
-		this.te = solver.createEnvelopeNoParking(this.ID, truncatedPathArray, "Driving", this.footprint);
+		se = TrajectoryEnvelope.createSpatialEnvelope(truncatedPathArray, footprint);
+		//this.te = solver.createEnvelopeNoParking(this.ID, truncatedPathArray, "Driving", this.footprint);
 	}	
 	public int getPathIndex() {
 		return pathIndex;
@@ -216,12 +236,16 @@ public class Vehicle {
 	}
 	
 	public  HashMap<Integer,Double> getTimes() {
-		return Times;
+		return times;
 	}
 
 	public void setTimes() {
-		Times = forward.computeTs(this);
+		times = forward.computeTs(this);
 		
+	}
+
+	public HashMap<Integer,Double> getTruncateTimes(){
+		return TruncateTimes;
 	}
 	
 	

@@ -89,7 +89,7 @@ public class ConstantAccelerationForwardModel {
 		State state = new State(v.getDistanceTraveled(), v.getVelocity());	// state attuale
 		boolean skipIntegration = false;
 		// modificata tanto tanto
-		if (v.getPathIndex() == v.getCriticalPoint() ) {
+		if (v.getPathIndex() == v.getCriticalPoint() && state.getVelocity() <= 0.0) {
 			skipIntegration = true;
 		}	
 		if (!skipIntegration) {
@@ -102,7 +102,7 @@ public class ConstantAccelerationForwardModel {
 			if (state.getVelocity() < 0.0) state.setVelocity(0.0);
 			int cp = v.getCriticalPoint();
 			if (cp == -1) cp = v.getWholePath().length;
-			if (v.getPathIndex()> v.getSlowingPoint() && v.getPathIndex()< cp-1 && state.getVelocity()<0.9*v.getAccMAx())
+			if (v.getPathIndex() >= v.getSlowingPoint() && v.getPathIndex()< cp-1 && state.getVelocity()< 0.9*v.getAccMAx())
 				state.setVelocity(0.9*v.getAccMAx());
 			} 
 		return state;
@@ -144,11 +144,12 @@ public class ConstantAccelerationForwardModel {
 		HashMap<Integer,Double> times = new HashMap<Integer, Double>();
 
 		int currentPathIndex =  v.getPathIndex();
-		double distanceToSlow = computeDistance(v.getWholePath() , v.getPathIndex(), v.getSlowingPoint());
+		double distanceToSlow = computeDistance(v.getWholePath() ,0, v.getSlowingPoint());
 		
-		State state = new State(v.getDistanceTraveled(),v.getVelocity());
+		State state = new State(v.getDistanceTraveled(),v.getVelocity()+0.01);
 		double time =0.0;
 		double deltaTime = v.getTc()*Vehicle.mill2sec;
+		times.put(currentPathIndex, time);
 		while (true) {
 			if (state.getVelocity() <= 0.0) break; // migliorare perchè poi noi ripartiamo
 			if (state.getPosition() >= distanceToSlow) {
@@ -162,11 +163,25 @@ public class ConstantAccelerationForwardModel {
 			currentPathIndex  = getPathIndex(v.getWholePath(), state);
 			if (!times.containsKey(currentPathIndex)) {
 				times.put(currentPathIndex, time);
+				int i = 1;
+				while (i > 0){
+					if (!times.containsKey(currentPathIndex-i) && (currentPathIndex-i)!=0) {
+						times.put(currentPathIndex-i, time-deltaTime/(2*i));
+						
+						i = i+1;
+					}
+					else  i = -1;
+				}
 
 			}
+			
 		}
-
+		currentPathIndex  = getPathIndex(v.getWholePath(), state);
+		if (!times.containsKey(currentPathIndex)) {
+			times.put(currentPathIndex, time);
+		}
 		return times;
+		
 
 	}
 
