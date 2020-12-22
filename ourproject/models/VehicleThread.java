@@ -1,5 +1,7 @@
 package se.oru.coordination.coordination_oru.ourproject.models;
 
+import java.sql.Time;
+
 public class VehicleThread implements Runnable {
 	
 	private Vehicle v;
@@ -11,18 +13,31 @@ public class VehicleThread implements Runnable {
 
 	}
 	
+	
 	// MAIN ALGORITHM
 	public void run() {
 		String List;
 		//v.setPathIndex(0);
 		//System.out.println(v.getSecForSafety());
+		v.setTimes();
+		v.setSpatialEnvelope(); // in questo modo si sta calcolando setTime e seTspatial come se non ci fossero altri robot
 		
+		//Thread.sleep(v.getTc());
+		
+		// infatti volevo mettere uno sleep dato tipo con time
+		// questo sleep non gli piace, non so se serva effettivamente uno sleep
+		
+		
+		
+		
+
 		try{
 			while(v.getPathIndex() < v.getWholePath().length-1){		// this will be while true
-				v.setMyTimes();
+				//v.setMyTimes();
 
 				//v.setSpatialEnvelope();
-				
+				// v.setTimes();
+				// v.setSpatialEnvelope();
 
 								
 				v.clearCs();
@@ -43,18 +58,20 @@ public class VehicleThread implements Runnable {
 				
 				//if (cp != v.getCriticalPoint()){
 					cp = v.getCriticalPoint();
+					v.setSlowingPoint();
 					v.setTimes();
 				//}
-				v.setSpatialEnvelope();
+				
 				//System.out.print(v.getTimes() + "\n");
-				//System.out.print(v.getTruncateTimes());
+				//System.out.print(  "\n" +v.getTruncateTimes() +   "\n");
 
-				v.setSlowingPoint();
+				
 				v.setPathIndex(elapsedTrackingTime);
 				v.setPose(v.getWholePath()[v.getPathIndex()].getPose());
 				v.setStoppingPoint();
 				//v.moveVehicle(prec);
-				
+				v.setSpatialEnvelope();
+
 				printLog(List, prec);
 
 				Thread.sleep(v.getTc());
@@ -68,6 +85,8 @@ public class VehicleThread implements Runnable {
 
 		}	
 	}
+
+
 
 	
 	public void printLog(String List, Boolean prec) {
@@ -87,13 +106,16 @@ public class VehicleThread implements Runnable {
 		}
 		else	CsString = ("0 Sezioni Critiche");
 				
-		System.out.println("\n R" + this.v.getID() + " : \n" + 
-			"Vicini: "  + List + "\n" + 
+		System.out.println(
+			"\n============================================================\n"+
+			"\nInfo R" + this.v.getID() + " : \n" + 
+			"Last Index: "+ v.getWholePath().length + "\n" + 
+			"Vicini: "  + List + "\t \t Precedenza: " + prec +  "\n" + 
 			"Path Index: " 	+ v.getPathIndex() + "\t \t Stopping Point: " + v.getStoppingPoint() + "\n" +
 			"Distance: "+ Dist  + "\t \t Velocity: " + Vel + "\n" +
-			"Critical Point:" + v.getCriticalPoint() + "\t Last Index: "+ v.getWholePath().length + "\n" + 
-			"Precedenza: " + prec +  "\t SLowing Point: " + v.getSlowingPoint() + "\n" + 
-			CsString
+			"SLowing Point: " + v.getSlowingPoint() +"\t Critical Point:" + v.getCriticalPoint() + "\n" + 
+			CsString + "\n \n" +
+			"Percorso Trasmesso \n" +v.getTruncateTimes() +   "\n"
 			);
 	}
 }

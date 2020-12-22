@@ -109,7 +109,6 @@ public class Vehicle {
 		this.radius = (2 * this.Tc * mill2sec + stopTimeMax) * this.velMax;
 		this.path = createWholePath();
 		this.forward = new ConstantAccelerationForwardModel(this, 1000, 30);
-		//PoseSteering[] init = new PoseSteering[] {path[0]};
 		se = TrajectoryEnvelope.createSpatialEnvelope(new PoseSteering[] {path[0]}, footprint);
 	}
 
@@ -199,17 +198,22 @@ public class Vehicle {
 	public void setSpatialEnvelope() {
 		this.truncatedPath.clear();
 		this.TruncateTimes.clear();
+		int csEnd;
+		if (cs.size()!=0)
+		csEnd = this.cs.first().getTe1End();
+		else csEnd = -1;
 		int i = 0;
 		//while((pathIndex+i < path.length) && (myTimes[pathIndex+i]-myTimes[pathIndex] <= secForSafety)) {
-		while(times.get(pathIndex+i) < secForSafety){
+		while(times.get(pathIndex+i) < secForSafety || pathIndex+i<csEnd){
 			this.TruncateTimes.put(pathIndex+i,times.get(pathIndex+i));		
 			this.truncatedPath.add(path[pathIndex+i]);
 			i++;
-			if (!times.containsKey(pathIndex+i)) break;
+			if (!times.containsKey(pathIndex+i)) break;// questo forse serve per l'ultimo path index? 
+
 		}
 		PoseSteering[] truncatedPathArray = truncatedPath.toArray(new PoseSteering[truncatedPath.size()]);
 		se = TrajectoryEnvelope.createSpatialEnvelope(truncatedPathArray, footprint);
-		//this.te = solver.createEnvelopeNoParking(this.ID, truncatedPathArray, "Driving", this.footprint);
+		
 	}	
 	public int getPathIndex() {
 		return pathIndex;
