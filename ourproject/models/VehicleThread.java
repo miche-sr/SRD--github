@@ -93,7 +93,7 @@ public class VehicleThread implements Runnable {
 		String CsString = "";
 		String Dist = String.format("%.2f", v.getDistanceTraveled());
 		String Vel = String.format("%.2f", v.getVelocity());
-
+		String infoCs = this.infoCs();
 		if (v.getCs().size() != 0){
 			int i = 0;
 			for (CriticalSection cs : v.getCs()) {
@@ -109,7 +109,7 @@ public class VehicleThread implements Runnable {
 		System.out.println(
 			"\n============================================================\n"+
 			"\nInfo R" + this.v.getID() + " : \n" + 
-			"Last Index: "+ v.getWholePath().length + "\n" + 
+			"Last Index: "+ v.getWholePath().length + "\t \t " + infoCs + "\n" + 
 			"Vicini: "  + List + "\t \t Precedenza: " + prec +  "\n" + 
 			"Path Index: " 	+ v.getPathIndex() + "\t \t Stopping Point: " + v.getStoppingPoint() + "\n" +
 			"Distance: "+ Dist  + "\t \t Velocity: " + Vel + "\n" +
@@ -118,4 +118,27 @@ public class VehicleThread implements Runnable {
 			"Percorso Trasmesso \n" +v.getTruncateTimes() +   "\n"
 			);
 	}
+	public String infoCs() {
+		
+		String infoCs;
+		int cp = v.getCriticalPoint();
+		if (cp == -1) cp = v.getWholePath().length;
+		
+
+		if (v.getPathIndex() > v.getSlowingPoint() && v.getVelocity()>=v.getAccMAx())
+			infoCs = "Slowing";
+		else if(v.getPathIndex() > v.getSlowingPoint() && v.getVelocity()<v.getAccMAx())
+			infoCs = "Min Velocity";
+		else 
+			infoCs = "Moving on";
+		
+		if (v.getPathIndex() == cp && v.getVelocity() == 0)
+			infoCs = "Waiting";
+		if (v.getPathIndex() > cp)
+			infoCs = "ATTENTION ROBOT STOPPED AFTER CRITICAL POINT";
+		return infoCs;
+	}
+
+
+
 }
