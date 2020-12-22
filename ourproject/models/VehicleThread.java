@@ -1,13 +1,19 @@
 package se.oru.coordination.coordination_oru.ourproject.models;
 
+import java.lang.reflect.Array;
 import java.sql.Time;
+import java.util.ArrayList;
+import java.util.TreeSet;
 
 public class VehicleThread implements Runnable {
 	
 	private Vehicle v;
 	private double elapsedTrackingTime = 0.0;
 	private int cp = -2;
-	
+	private TreeSet<CriticalSection> csT = new TreeSet<CriticalSection>(); 
+	private ArrayList<Vehicle> vehicleCs = new ArrayList<Vehicle>();
+
+
 	public VehicleThread(Vehicle v){
 		this.v = v;
 
@@ -17,35 +23,31 @@ public class VehicleThread implements Runnable {
 	// MAIN ALGORITHM
 	public void run() {
 		String List;
-		//v.setPathIndex(0);
-		//System.out.println(v.getSecForSafety());
+
 		v.setTimes();
 		v.setSpatialEnvelope(); // in questo modo si sta calcolando setTime e seTspatial come se non ci fossero altri robot
-		
-		//Thread.sleep(v.getTc());
-		
-		// infatti volevo mettere uno sleep dato tipo con time
-		// questo sleep non gli piace, non so se serva effettivamente uno sleep
-		
-		
-		
-		
 
 		try{
-			while(v.getPathIndex() < v.getWholePath().length-1){		// this will be while true
-				//v.setMyTimes();
-
-				//v.setSpatialEnvelope();
-				// v.setTimes();
-				// v.setSpatialEnvelope();
-
-								
+			while(v.getPathIndex() < v.getWholePath().length-1){
+		
+				
+				//vehicleCs.clear();
+				//csT.clear();
+				for (CriticalSection csN : this.v.getCs()){
+					if (v.getPathIndex() < csN.getTe1End() && csN.getVehicle2().getPathIndex() < csN.getTe2End()){
+						csT.add(csN);
+						vehicleCs.add(csN.getVehicle2());
+					}
+				}
 				v.clearCs();
+				v.setCs(csT);
 				List = "";
 				for (Vehicle vh : this.v.getNears()){
-					v.appendCs(vh);
+					if (!vehicleCs.contains(vh))
+						v.appendCs(vh);
 					List = (List + vh.getID() + " " );
 				}
+
 				
 				Boolean prec = true;
 				v.setCriticalPoint(-1);
@@ -56,16 +58,12 @@ public class VehicleThread implements Runnable {
 						break;
 				}
 				
-				//if (cp != v.getCriticalPoint()){
+				//if (cp != v.getCriticalPoint()){  // in teoria potremmo calcolarle solo una volta
 					cp = v.getCriticalPoint();
 					v.setSlowingPoint();
 					v.setTimes();
 				//}
-				
-				//System.out.print(v.getTimes() + "\n");
-				//System.out.print(  "\n" +v.getTruncateTimes() +   "\n");
 
-				
 				v.setPathIndex(elapsedTrackingTime);
 				v.setPose(v.getWholePath()[v.getPathIndex()].getPose());
 				v.setStoppingPoint();

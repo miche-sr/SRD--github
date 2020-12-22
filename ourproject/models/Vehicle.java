@@ -259,6 +259,10 @@ public class Vehicle {
 	public TreeSet<CriticalSection> getCs() {
 		return cs;
 	}
+
+	public void setCs(TreeSet<CriticalSection> csNew) {
+		this.cs = csNew;
+	}
 	public void appendCs(Vehicle v2) {
 		CriticalSection[] cs = intersect.findCriticalSections(this, v2);
 		for (CriticalSection c : cs)

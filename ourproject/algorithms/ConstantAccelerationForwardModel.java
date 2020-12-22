@@ -91,24 +91,10 @@ public class ConstantAccelerationForwardModel {
 		boolean skipIntegration = false;
 		// modificata tanto tanto
 		if (v.getPathIndex() == v.getCriticalPoint() && state.getVelocity() <= 0.0) {
-			
-		// 	if (!atCP && v.getCriticalPoint() != -1) {    // We are stopped at CP
-        //         System.out.println("Because of CriticalPoint at Index "+ v.getCriticalPoint() +
-        //                            ", robot R" + v.getID() + " stopped at PathIndex " + v.getPathIndex());
-        //         if (v.getPathIndex() > v.getCriticalPoint())
-        //             System.out.println("* ATTENTION! ROBOT R" + v.getID() +" STOPPED AFTER!! *");
-        //         atCP = true;
-        //     }
-			
-			
+
 			skipIntegration = true;
 		}	
 		if (!skipIntegration) {
-			
-			// if (atCP) {
-            //     System.out.println("Robot" + v.getID() + " is resuming from its critical point");
-            //     atCP = false;
-            // }
 
 			
 			boolean slowingDown = false;
