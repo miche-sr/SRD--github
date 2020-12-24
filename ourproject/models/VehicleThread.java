@@ -19,8 +19,10 @@ public class VehicleThread implements Runnable {
 
 	}
 	
-	
-	// MAIN ALGORITHM
+	/************************** 
+	****  MAIN ALGORITHM   ****
+	***************************/
+
 	public void run() {
 		String List;
 
@@ -30,48 +32,61 @@ public class VehicleThread implements Runnable {
 		try{
 			while(v.getPathIndex() < v.getWholePath().length-1){
 		
-				
-				//vehicleCs.clear();
-				//csT.clear();
+				///// MEMORY OF CRITICAL SECTIONS ////
+				// if a cs has already been found and no one is inside the cs then I don't recalculate the cs //
+
+				vehicleCs.clear();									//clean old arrays
+				csT.clear();
 				for (CriticalSection csN : this.v.getCs()){
-					if (v.getPathIndex() < csN.getTe1End() && csN.getVehicle2().getPathIndex() < csN.getTe2End()){
-						csT.add(csN);
-						vehicleCs.add(csN.getVehicle2());
+					if (v.getPathIndex() < csN.getTe1Start() && csN.getVehicle2().getPathIndex() < csN.getTe2Start()){
+						csT.add(csN);								//add the Cs to a temporaney cs's array
+						vehicleCs.add(csN.getVehicle2());			//add the vehicle to a temporaney vehicles's array
 					}
 				}
 				v.clearCs();
-				v.setCs(csT);
+				for (CriticalSection csTN : csT)					//add the Cs selected to the cs's array
+					v.getCs().add(csTN);
+				
+
+				//// CALCULATE THE NEW CRITICAL SECTIONS ////
 				List = "";
 				for (Vehicle vh : this.v.getNears()){
-					if (!vehicleCs.contains(vh))
+					if (!vehicleCs.contains(vh))					//skip the cs already found
 						v.appendCs(vh);
 					List = (List + vh.getID() + " " );
 				}
 
 				
+				//// CALCULATE THE PRECEDENCES ////
 				Boolean prec = true;
 				v.setCriticalPoint(-1);
 				for (CriticalSection cs : this.v.getCs()){
 					prec = cs.ComputePrecedences();
-					if (prec == false)
-						v.setCriticalPoint(cs);
+					if (prec == false)								//calculate precedence as long as I have precedence
+						v.setCriticalPoint(cs);						//calcultate critical Point
 						break;
 				}
 				
-				//if (cp != v.getCriticalPoint()){  // in teoria potremmo calcolarle solo una volta
-					cp = v.getCriticalPoint();
-					v.setSlowingPoint();
-					v.setTimes();
-				//}
+				//// CALCULATE THE SLOWING POINT AND THE TRAJECTORY'S TIMES ////
 
+				//if (cp != v.getCriticalPoint()){  // in teoria potremmo calcolarle solo una volta
+					//cp = v.getCriticalPoint();
+				v.setSlowingPoint();
+				v.setTimes();
+				
+					
+				//// CALCULATE NEW POSITION ////
 				v.setPathIndex(elapsedTrackingTime);
 				v.setPose(v.getWholePath()[v.getPathIndex()].getPose());
 				v.setStoppingPoint();
-				//v.moveVehicle(prec);
+				
+				/// CALCULATE TRUNCATED TRAJECTORY ////
 				v.setSpatialEnvelope();
 
+				//// VISUALIZATION AND PRINT ////
 				printLog(List, prec);
 
+				/// SLEEPING TIME ////
 				Thread.sleep(v.getTc());
 				this.elapsedTrackingTime += v.getTc()*Vehicle.mill2sec;
 			}
@@ -86,7 +101,7 @@ public class VehicleThread implements Runnable {
 
 
 
-	
+	/// FUNCTION FOR PRINTING INFORMATIONS ////	
 	public void printLog(String List, Boolean prec) {
 		String CsString = "";
 		String Dist = String.format("%.2f", v.getDistanceTraveled());
@@ -116,6 +131,9 @@ public class VehicleThread implements Runnable {
 			"Percorso Trasmesso \n" +v.getTruncateTimes() +   "\n"
 			);
 	}
+	
+	
+	//// FUNCTION FOR PRINTING CRITICAL SECTIONS'S INFORMATIONS ////
 	public String infoCs() {
 		
 		String infoCs;

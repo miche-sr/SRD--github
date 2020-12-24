@@ -13,8 +13,8 @@ public class PrecedencesFounder {
         int pathIndx2 = v2.getPathIndex();
         int te1start = cs.getTe1Start();
         int te2start = cs.getTe2Start();
-        int cp1 = v1.getCriticalPoint();
-        int cp2 = v2.getCriticalPoint();
+        int cp1 = v1.getStoppingPoint();
+        int cp2 = v2.getStoppingPoint();
 
         if (cp1 > te1start && cp2 > te2start){
             // com'è possibile?

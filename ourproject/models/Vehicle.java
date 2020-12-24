@@ -109,10 +109,8 @@ public class Vehicle {
 		this.radius = (2 * this.Tc * mill2sec + stopTimeMax) * this.velMax;
 		this.path = createWholePath();
 		this.forward = new ConstantAccelerationForwardModel(this, 1000, 30);
-		se = TrajectoryEnvelope.createSpatialEnvelope(new PoseSteering[] {path[0]}, footprint);
+		se = TrajectoryEnvelope.createSpatialEnvelope(new PoseSteering[] { path[0] }, footprint);
 	}
-
-
 
 	/**********************************************
 	 ** SET & GET PER VARIABILI FISICHE E PROPRIE **
@@ -120,54 +118,67 @@ public class Vehicle {
 	public int getID() {
 		return ID;
 	}
+
 	public int getTc() {
 		return Tc;
 	}
+
 	public double getRadius() {
 		return radius;
 	}
+
 	public void setRadius(double radius) {
 		this.radius = radius;
 	}
+
 	public double getSecForSafety() {
 		return secForSafety;
 	}
+
 	public void setSecForSafety(double secForSafety) {
 		this.secForSafety = secForSafety;
 	}
+
 	public int getPriority() {
 		return priority;
 	}
+
 	public double getVelocity() {
 		return velocity;
 	}
+
 	public void setVelocity(double velocity) {
 		this.velocity = velocity;
 	}
+
 	public double getVelMax() {
 		return velMax;
 	}
+
 	public double getAccMAx() {
 		return accMax;
 	}
+
 	public Coordinate[] getFootprint() {
 		return footprint;
 	}
-	
-	
+
 	/*****************************************
-	** SET & GET PER PERCORSO E TRAIETTORIA **
-    ******************************************/
+	 ** SET & GET PER PERCORSO E TRAIETTORIA **
+	 ******************************************/
 	public Pose getPose() {
 		return pose;
 	}
+
 	public void setPose(double x, double y, double theta) {
-		this.pose = new Pose(x,y,theta);
+		this.pose = new Pose(x, y, theta);
 	}
+
 	public void setPose(Pose pose) {
 		this.pose = pose;
 	}
-	public PoseSteering[] createWholePath(){
+
+	public PoseSteering[] createWholePath() {
 		ReedsSheppCarPlanner rsp = new ReedsSheppCarPlanner();
 		rsp.setRadius(0.2);
 		rsp.setTurningRadius(4.0);
@@ -175,18 +186,23 @@ public class Vehicle {
 		rsp.setFootprint(this.footprint);
 		rsp.setStart(this.start);
 		rsp.setGoals(this.goal);
-		if (!rsp.plan()) throw new Error ("No path between " + this.start + " and " + this.goal);
+		if (!rsp.plan())
+			throw new Error("No path between " + this.start + " and " + this.goal);
 		return rsp.getPath();
 	}
+
 	public PoseSteering[] getWholePath() {
 		return path;
 	}
+
 	public double getDistanceTraveled() {
 		return distanceTraveled;
 	}
+
 	public void setDistanceTraveled(double distanceTraveled) {
 		this.distanceTraveled = distanceTraveled;
 	}
+
 	public TrajectoryEnvelope getTrajectoryEnvelope() {
 		return te;
 	}
@@ -199,97 +215,107 @@ public class Vehicle {
 		this.truncatedPath.clear();
 		this.TruncateTimes.clear();
 		int csEnd;
-		if (cs.size()!=0)
-		csEnd = this.cs.first().getTe1End();
-		else csEnd = -1;
+
+		// from cp to Pathndex //
+		if (cs.size() != 0)
+			csEnd = this.cs.first().getTe1End();
+		else
+			csEnd = -1;
+
 		int i = 0;
-		//while((pathIndex+i < path.length) && (myTimes[pathIndex+i]-myTimes[pathIndex] <= secForSafety)) {
-		while(times.get(pathIndex+i) < secForSafety || pathIndex+i<csEnd){
-			this.TruncateTimes.put(pathIndex+i,times.get(pathIndex+i));		
-			this.truncatedPath.add(path[pathIndex+i]);
+		// trasmetto solo traiettoria all'interno del raggio(in tempi) e comunque sempre fino alla fine della prima sezione critica //
+		while (times.get(pathIndex + i) < secForSafety || pathIndex + i < csEnd) {
+			this.TruncateTimes.put(pathIndex + i, times.get(pathIndex + i));
+			this.truncatedPath.add(path[pathIndex + i]);
 			i++;
-			if (!times.containsKey(pathIndex+i)) break;// questo forse serve per l'ultimo path index? 
+			if (!times.containsKey(pathIndex + i))
+				break;// questo forse serve per l'ultimo path index?
 
 		}
 		PoseSteering[] truncatedPathArray = truncatedPath.toArray(new PoseSteering[truncatedPath.size()]);
 		se = TrajectoryEnvelope.createSpatialEnvelope(truncatedPathArray, footprint);
-		
-	}	
+
+	}
+
 	public int getPathIndex() {
 		return pathIndex;
 	}
+
 	public void setPathIndex(int pathIndex) {
 		this.pathIndex = pathIndex;
 	}
+
+	// AGGIORNAMENTO POSIZIONE //
 	public void setPathIndex(double elapsedTrackingTime) {
-		State next_state = forward.updateState(this, elapsedTrackingTime);
+		State next_state = forward.updateState(this, elapsedTrackingTime);  //calcolo nuova velocità e posizione
 		setDistanceTraveled(next_state.getPosition());
 		setVelocity(next_state.getVelocity());
-		//System.out.println("dist " + this.distanceTraveled);
 		this.pathIndex = forward.getPathIndex(this.path, next_state);
 	}
-	public double[] getMyTimes() {
-		return myTimes;
-	}
-	public void setMyTimes() {
-		Trajectory traj = new Trajectory(path);
-		this.myTimes = traj.getDTs();
-		for(int i = 1; i < path.length; i++) {
-			this.myTimes[i] += this.myTimes[i-1];
-		}
-	}
-	
-	public  HashMap<Integer,Double> getTimes() {
+
+	// public double[] getMyTimes() {
+	// 	return myTimes;
+	// }
+
+	// public void setMyTimes() {
+	// 	Trajectory traj = new Trajectory(path);
+	// 	this.myTimes = traj.getDTs();
+	// 	for (int i = 1; i < path.length; i++) {
+	// 		this.myTimes[i] += this.myTimes[i - 1];
+	// 	}
+	// }
+
+	public HashMap<Integer, Double> getTimes() {
 		return times;
 	}
 
 	public void setTimes() {
 		times = forward.computeTs(this);
-		
+
 	}
 
-	public HashMap<Integer,Double> getTruncateTimes(){
+	public HashMap<Integer, Double> getTruncateTimes() {
 		return TruncateTimes;
 	}
-	
-	
+
 	/**************************************
-	** SET & GET PER LE SEZIONI CRITICHE **
-	***************************************/
+	 ** SET & GET PER LE SEZIONI CRITICHE **
+	 ***************************************/
 	public TreeSet<CriticalSection> getCs() {
 		return cs;
 	}
 
-	public void setCs(TreeSet<CriticalSection> csNew) {
-		this.cs = csNew;
-	}
+	// CALCOLO NUOVE SEZIONI CRITICHE //
 	public void appendCs(Vehicle v2) {
 		CriticalSection[] cs = intersect.findCriticalSections(this, v2);
 		for (CriticalSection c : cs)
-	        this.cs.add(c);
+			this.cs.add(c);
 	}
+
 	public void clearCs() {
 		this.cs.clear();
 	}
+
 	public int getCriticalPoint() {
 		return criticalPoint;
 	}
+
 	public void setCriticalPoint(int criticalPoint) {
 		this.criticalPoint = criticalPoint;
 	}
+
 	public void setCriticalPoint(CriticalSection cs) {
 		this.criticalPoint = cs.getTe1Start();
 	}
+
 	/*
-	public boolean getCsTooClose() {
-		return csTooClose;
-	}
-	public void setCsTooClose(boolean csTooClose) {
-		this.csTooClose = csTooClose;
-	}	*/
+	 * public boolean getCsTooClose() { return csTooClose; } public void
+	 * setCsTooClose(boolean csTooClose) { this.csTooClose = csTooClose; }
+	 */
 	public int getSlowingPoint() {
 		return slowingPoint;
 	}
+
 	public void setSlowingPoint(int slowingPoint) {
 		this.slowingPoint = slowingPoint;
 	}
@@ -298,48 +324,52 @@ public class Vehicle {
 		boolean stop = false;
 		int i = this.criticalPoint;
 		int cp = this.criticalPoint;
+		
+		
 		if (this.criticalPoint == -1) {
 			i = this.path.length;
 			cp = this.path.length;
 		}
-		//System.out.println("cp: " + this.criticalPoint + "  i-A = "+i);
-		while (!stop && i>0) {
+
+		// itero per tentativi partendo da cp-1 fino a che non trovo il punto dal quale frenando riesco a fermarmi
+		while (!stop && i > 0) {
 			i -= 1;
-			stop = forward.canStop(this.te, this, cp ,i, false);
+			stop = forward.canStop(this.te, this, cp, i, false);
 		}
-		//System.out.println("cp: " + cs+ "   i-B = "+i);
+
 		this.slowingPoint = i;
 	}
 
 	public int getStoppingPoint() {
 		return stoppingPoint;
 	}
+
 	public void setStoppingPoint() {
 		this.stoppingPoint = forward.getEarliestStoppingPathIndex(this);
 	}
 
-
 	/*******************************
-	** SET & GET PER LISTA VICINI **
-	********************************/
+	 ** SET & GET PER LISTA VICINI **
+	 ********************************/
 	public void setVehicleList(ArrayList<Vehicle> vehicleList) {
 		this.vehicleList = vehicleList;
 	}
-	public ArrayList<Vehicle> getNears (){
+
+	// CALCOLO QUALI SONO I ROBOT VICINI //
+	public ArrayList<Vehicle> getNears() {
 		this.vehicleNear.clear();
-		double vhX, vhY,dist;
+		double vhX, vhY, dist;
 		double x = this.getPose().getX();
 		double y = this.getPose().getY();
-		for (Vehicle vh : this.vehicleList){
+		for (Vehicle vh : this.vehicleList) {
 			vhX = vh.getPose().getX();
 			vhY = vh.getPose().getY();
-			dist = Math.sqrt(Math.pow((x - vhX),2.0) + Math.pow((y - vhY),2.0));
-			if (dist <= this.radius && dist > 0){
+			dist = Math.sqrt(Math.pow((x - vhX), 2.0) + Math.pow((y - vhY), 2.0));
+			if (dist <= this.radius && dist > 0) {
 				this.vehicleNear.add(vh);
 			}
 		}
 		return vehicleNear;
 	}
-	
-	
+
 }
