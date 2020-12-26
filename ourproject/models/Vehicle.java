@@ -1,7 +1,7 @@
 package se.oru.coordination.coordination_oru.ourproject.models;
 
 import se.oru.coordination.coordination_oru.ourproject.algorithms.*;
-//import se.oru.coordination.coordination_oru.util.BrowserVisualizationDist;
+import se.oru.coordination.coordination_oru.util.BrowserVisualizationDist;
 import se.oru.coordination.coordination_oru.motionplanning.ompl.ReedsSheppCarPlanner;
 
 import org.metacsp.multi.spatioTemporal.paths.Pose;
@@ -57,6 +57,7 @@ public class Vehicle {
 	// 100000000);
 	private TrajectoryEnvelope te = null;
 	private SpatialEnvelope se = null;
+	private SpatialEnvelope wholeSe = null;
 	private HashMap<Integer, Double> times;
 	private HashMap<Integer, Double> TruncateTimes = new HashMap<Integer, Double>();
 
@@ -77,7 +78,7 @@ public class Vehicle {
 	// trackingPeriodInMillis = 30
 	private ConstantAccelerationForwardModel forward;
 
-	//private BrowserVisualizationDist viz;
+	private BrowserVisualizationDist viz;
 
 	// COSTRUTTORE
 	// @param distanceTraveled The distance traveled so far along the current
@@ -205,6 +206,7 @@ public class Vehicle {
 		rsp.setGoals(this.goal);
 		if (!rsp.plan())
 			throw new Error("No path between " + this.start + " and " + this.goal);
+		wholeSe = TrajectoryEnvelope.createSpatialEnvelope(rsp.getPath(), this.footprint);
 		return rsp.getPath();
 	}
 
@@ -222,6 +224,10 @@ public class Vehicle {
 
 	public TrajectoryEnvelope getTrajectoryEnvelope() {
 		return te;
+	}
+
+	public SpatialEnvelope getWholeSpatialEnvelope() {
+		return wholeSe;
 	}
 
 	public SpatialEnvelope getSpatialEnvelope() {
@@ -323,7 +329,7 @@ public class Vehicle {
 	}
 
 	public void setCriticalPoint(CriticalSection cs) {
-		this.criticalPoint = cs.getTe1Start();
+		this.criticalPoint = cs.getTe1Start()-1;
 	}
 
 	/*
@@ -391,13 +397,13 @@ public class Vehicle {
 	}
 
 
-	// public void setVisualization(BrowserVisualizationDist viz){
-	// 	this.viz = viz;
-	// }
+	public void setVisualization(BrowserVisualizationDist viz){
+		this.viz = viz;
+	}
 
-	// public BrowserVisualizationDist getVisualization(){
-	// 	return this.viz;
-	// }
+	public BrowserVisualizationDist getVisualization(){
+		return this.viz;
+	}
 
 }
 

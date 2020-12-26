@@ -13,14 +13,20 @@ public class PrecedencesFounder {
         int pathIndx2 = v2.getPathIndex();
         int te1start = cs.getTe1Start();
         int te2start = cs.getTe2Start();
-        int cp1 = v1.getStoppingPoint();
-        int cp2 = v2.getStoppingPoint();
+        int cp1 = v1.getCriticalPoint();
+        int cp2 = v2.getCriticalPoint();
 
         if (cp1 > te1start && cp2 > te2start){
             // com'è possibile?
         }
         if (cp1 > te1start){
             prec = true;
+        }
+        else if (pathIndx1 > cp1 && cp1 != -1){
+            prec = true;
+        }
+        else if (pathIndx2 > cp2 && cp2 != -1){
+            prec = false;
         }
         else if (pathIndx2 > cs.getTe2End()){
             prec = true;

@@ -82,11 +82,16 @@ public class VehicleThread implements Runnable {
 
 				//// VISUALIZATION AND PRINT ////
 				printLog(List, prec);
-				// System.out.println("\n R" + this.v.getID() +" <1>");
-				// v.getVisualization().displayRobotState(v.getSpatialEnvelope().getFootprint(), v);
-				// System.out.println("\n R" + this.v.getID() +" <2>");
-				// v.getVisualization().updateVisualization();
-				// System.out.println("\n R" + this.v.getID() +" <3>");
+
+				int cp = v.getCriticalPoint();
+				if (cp == -1) cp = v.getWholePath().length;
+				
+				v.getVisualization().addEnvelope(v.getWholeSpatialEnvelope().getPolygon(),v,"#f600f6");
+				v.getVisualization().addEnvelope(v.getSpatialEnvelope().getPolygon(),v,"#efe007");
+				//v.getVisualization().updateVisualization();
+				v.getVisualization().displayPoint(v, cp-1, "#f60035");
+				v.getVisualization().displayPoint(v, v.getSlowingPoint()-1, "#0008f6");
+				v.getVisualization().displayRobotState(v.getSpatialEnvelope().getFootprint(), v,infoCs());
 
 				/// SLEEPING TIME ////
 				Thread.sleep(v.getTc());
