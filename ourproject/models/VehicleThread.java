@@ -9,7 +9,7 @@ public class VehicleThread implements Runnable {
 	
 	private Vehicle v;
 	private double elapsedTrackingTime = 0.0;
-	private int cp = -2;
+	//private int cp = -2;
 	private TreeSet<CriticalSection> csT = new TreeSet<CriticalSection>(); 
 	private ArrayList<Vehicle> vehicleCs = new ArrayList<Vehicle>();
 
@@ -25,9 +25,6 @@ public class VehicleThread implements Runnable {
 
 	public void run() {
 		String List;
-
-		v.setTimes();
-		v.setSpatialEnvelope(); // in questo modo si sta calcolando setTime e seTspatial come se non ci fossero altri robot
 
 		try{
 			while(v.getPathIndex() < v.getWholePath().length-1){
@@ -85,6 +82,11 @@ public class VehicleThread implements Runnable {
 
 				//// VISUALIZATION AND PRINT ////
 				printLog(List, prec);
+				// System.out.println("\n R" + this.v.getID() +" <1>");
+				// v.getVisualization().displayRobotState(v.getSpatialEnvelope().getFootprint(), v);
+				// System.out.println("\n R" + this.v.getID() +" <2>");
+				// v.getVisualization().updateVisualization();
+				// System.out.println("\n R" + this.v.getID() +" <3>");
 
 				/// SLEEPING TIME ////
 				Thread.sleep(v.getTc());

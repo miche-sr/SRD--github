@@ -1,6 +1,7 @@
 package se.oru.coordination.coordination_oru.ourproject.models;
 
 import se.oru.coordination.coordination_oru.ourproject.algorithms.*;
+//import se.oru.coordination.coordination_oru.util.BrowserVisualizationDist;
 import se.oru.coordination.coordination_oru.motionplanning.ompl.ReedsSheppCarPlanner;
 
 import org.metacsp.multi.spatioTemporal.paths.Pose;
@@ -76,6 +77,8 @@ public class Vehicle {
 	// trackingPeriodInMillis = 30
 	private ConstantAccelerationForwardModel forward;
 
+	//private BrowserVisualizationDist viz;
+
 	// COSTRUTTORE
 	// @param distanceTraveled The distance traveled so far along the current
 	// current path.
@@ -109,13 +112,17 @@ public class Vehicle {
 		this.radius = (2 * this.Tc * mill2sec + stopTimeMax) * this.velMax;
 		this.path = createWholePath();
 		this.forward = new ConstantAccelerationForwardModel(this, 1000, 30);
-		se = TrajectoryEnvelope.createSpatialEnvelope(new PoseSteering[] { path[0] }, footprint);
+
 	}
 
 	/**********************************************
 	 ** SET & GET PER VARIABILI FISICHE E PROPRIE **
 	 ***********************************************/
 	public int getID() {
+		return ID;
+	}
+
+	public int getRobotID() {
 		return ID;
 	}
 
@@ -166,7 +173,17 @@ public class Vehicle {
 	/*****************************************
 	 ** SET & GET PER PERCORSO E TRAIETTORIA **
 	 ******************************************/
-	public Pose getPose() {
+	public void PostInizialization(){
+		this.setTimes();
+		this.setSpatialEnvelope();
+		this.getNears();
+		// set RR
+		//for (Vehicle vh : this.vehicleNear){
+		// 	vh.setRR(this)
+		//}
+	}
+	
+	 public Pose getPose() {
 		return pose;
 	}
 
@@ -211,6 +228,7 @@ public class Vehicle {
 		return se;
 	}
 
+	// CALCOLO PATH TRAIETTORIA TRONCATA //
 	public void setSpatialEnvelope() {
 		this.truncatedPath.clear();
 		this.TruncateTimes.clear();
@@ -234,7 +252,7 @@ public class Vehicle {
 		}
 		PoseSteering[] truncatedPathArray = truncatedPath.toArray(new PoseSteering[truncatedPath.size()]);
 		se = TrajectoryEnvelope.createSpatialEnvelope(truncatedPathArray, footprint);
-
+		
 	}
 
 	public int getPathIndex() {
@@ -372,4 +390,14 @@ public class Vehicle {
 		return vehicleNear;
 	}
 
+
+	// public void setVisualization(BrowserVisualizationDist viz){
+	// 	this.viz = viz;
+	// }
+
+	// public BrowserVisualizationDist getVisualization(){
+	// 	return this.viz;
+	// }
+
 }
+

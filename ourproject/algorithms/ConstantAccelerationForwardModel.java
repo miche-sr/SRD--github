@@ -31,22 +31,19 @@ public class ConstantAccelerationForwardModel {
 
 	public int getPathIndex(PoseSteering[] path, State state) {
 		if (state == null) return -1;
-		Pose pose = null;
+
 		int currentPathIndex = -1;
 		double accumulatedDist = 0.0;
 		for (int i = 0; i < path.length-1; i++) {
 			double deltaS = path[i].getPose().distanceTo(path[i+1].getPose());
 			accumulatedDist += deltaS;
 			if (accumulatedDist > state.getPosition()) {
-				double ratio = 1.0-(accumulatedDist-state.getPosition())/deltaS;
-				pose = path[i].getPose().interpolate(path[i+1].getPose(), ratio);
 				currentPathIndex = i;
 				break;
 			}
 		}
 		if (currentPathIndex == -1) {
 			currentPathIndex = path.length-1;
-			pose = path[currentPathIndex].getPose();
 		}
 		return currentPathIndex;
 	}

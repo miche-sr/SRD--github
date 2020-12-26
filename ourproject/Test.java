@@ -1,6 +1,8 @@
 package se.oru.coordination.coordination_oru.ourproject;
 
 import se.oru.coordination.coordination_oru.ourproject.models.*;
+//import se.oru.coordination.coordination_oru.util.BrowserVisualizationDist;
+
 import java.util.*;
 
 import org.metacsp.multi.spatioTemporal.paths.Pose;
@@ -26,13 +28,16 @@ public class Test{
 	//Pose start2 = new Pose(4, 0, 0); Pose[] goal2 = {new Pose(14, 0, 0)};
 	Pose start2 = new Pose(4, 5, -Math.PI/2); Pose[] goal2 = {new Pose(4, -5, -Math.PI/2)};
 	Pose start3 = new Pose(8, -8, Math.PI/2); Pose[] goal3 = {new Pose(8, 8, Math.PI/2)};
-	//Pose start4 = new Pose(0, -5, -Math.PI/2); Pose[] goal4 = {new Pose(15, 10, -Math.PI/2)};
-	Pose start4 = new Pose(10, -10, -Math.PI/2); Pose[] goal4 = {new Pose(10, 10, -Math.PI/2)};
+	//Pose start4 = new Pose(10, -10, -Math.PI/2); Pose[] goal4 = {new Pose(10, 10, -Math.PI/2)};
 
 	Thread thread1 = initThread(1, a, start1, goal1);
-	Thread thread3 = initThread(3, c, start3, goal3);
-	//Thread thread4 = initThread(4, c, start4, goal4);
 	Thread thread2 = initThread(2, c, start2, goal2);
+	//Thread thread3 = initThread(3, c, start3, goal3);
+	//Thread thread4 = initThread(4, c, start4, goal4);
+
+
+	// BrowserVisualizationDist viz = new BrowserVisualizationDist();
+	// viz.setInitialTransform(49, 5, 0);
 	
 	double rMax = -1; double tMax = -1;
 	for (Vehicle vh : vehicleList){
@@ -46,12 +51,13 @@ public class Test{
 		vh.setRadius(rMax);
 		vh.setSecForSafety(tMax);
 		vh.setVehicleList(vehicleList);
+		vh.PostInizialization();
 	}
 	System.out.println("\n" + "Radius "  + rMax );
 	
 	thread1.start();
 	thread2.start();
-	thread3.start();
+	//thread3.start();
 	//thread4.start();
 	}
 }
