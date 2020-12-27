@@ -9,7 +9,8 @@ public class VehicleThread implements Runnable {
 	
 	private Vehicle v;
 	private double elapsedTrackingTime = 0.0;
-	//private int cp = -2;
+	private int cp = -2;
+	private int sp = -1;
 	private TreeSet<CriticalSection> csT = new TreeSet<CriticalSection>(); 
 	private ArrayList<Vehicle> vehicleCs = new ArrayList<Vehicle>();
 
@@ -63,12 +64,15 @@ public class VehicleThread implements Runnable {
 						v.setCriticalPoint(cs);						//calcultate critical Point
 						break;
 				}
+				cp = v.getCriticalPoint();
+				if (cp == -1) cp = v.getWholePath().length;
 				
 				//// CALCULATE THE SLOWING POINT AND THE TRAJECTORY'S TIMES ////
-
-				//if (cp != v.getCriticalPoint()){  // in teoria potremmo calcolarle solo una volta
-					//cp = v.getCriticalPoint();
+				 // in teoria potremmo calcolarle solo una volta
 				v.setSlowingPoint();
+				sp = v.getSlowingPoint();
+				if (sp == 0) sp = 1;
+
 				v.setTimes();
 				
 					
@@ -82,15 +86,13 @@ public class VehicleThread implements Runnable {
 
 				//// VISUALIZATION AND PRINT ////
 				printLog(List, prec);
-
-				int cp = v.getCriticalPoint();
-				if (cp == -1) cp = v.getWholePath().length;
 				
 				v.getVisualization().addEnvelope(v.getWholeSpatialEnvelope().getPolygon(),v,"#f600f6");
 				v.getVisualization().addEnvelope(v.getSpatialEnvelope().getPolygon(),v,"#efe007");
-				//v.getVisualization().updateVisualization();
-				v.getVisualization().displayPoint(v, cp-1, "#f60035");
-				v.getVisualization().displayPoint(v, v.getSlowingPoint()-1, "#0008f6");
+
+				v.getVisualization().displayPoint(v, cp-1, "#f60035"); //-1 perche array parte da zero
+				v.getVisualization().displayPoint(v, sp-1, "#0008f6");
+				
 				v.getVisualization().displayRobotState(v.getSpatialEnvelope().getFootprint(), v,infoCs());
 
 				/// SLEEPING TIME ////
@@ -144,9 +146,6 @@ public class VehicleThread implements Runnable {
 	public String infoCs() {
 		
 		String infoCs;
-		int cp = v.getCriticalPoint();
-		if (cp == -1) cp = v.getWholePath().length;
-		
 
 		if (v.getPathIndex() > v.getSlowingPoint() && v.getVelocity()>=v.getAccMAx())
 			infoCs = "Slowing";
