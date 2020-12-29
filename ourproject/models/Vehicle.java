@@ -93,7 +93,7 @@ public class Vehicle {
 			case CAR:
 				this.velMax = 2;
 				this.accMax = 1.0;
-				this.priority = 1;
+				this.priority = 2;
 				this.Tc = 400;
 				this.footprint = fpCar;
 				break;
@@ -101,7 +101,7 @@ public class Vehicle {
 			case AMBULANCE:
 				this.velMax = 4.0;
 				this.accMax = 1.0;
-				this.priority = 2; // lowest priority wins
+				this.priority = 2; 
 				this.Tc = 250;
 				this.footprint = fpAmb;
 				break;
@@ -110,7 +110,7 @@ public class Vehicle {
 				System.out.println("Unknown vehicle");
 		}
 		double stopTimeMax = this.velMax / this.accMax;
-		this.radius = (2 * this.Tc * mill2sec + stopTimeMax) * this.velMax;
+		this.radius = 2*(2 * this.Tc * mill2sec + stopTimeMax) * this.velMax;
 		this.path = createWholePath();
 		this.forward = new ConstantAccelerationForwardModel(this, 1000, 30);
 
@@ -242,13 +242,14 @@ public class Vehicle {
 
 		// from cp to Pathndex //
 		if (cs.size() != 0)
-			csEnd = this.cs.first().getTe1End();
+			csEnd = this.cs.last().getTe1End();
 		else
 			csEnd = -1;
 
 		int i = 0;
 		// trasmetto solo traiettoria all'interno del raggio(in tempi) e comunque sempre fino alla fine della prima sezione critica //
-		while (times.get(pathIndex + i) < secForSafety || pathIndex + i < csEnd) {
+	
+		while ( times.get(pathIndex + i) <= secForSafety || pathIndex + i <= csEnd ) {
 			this.TruncateTimes.put(pathIndex + i, times.get(pathIndex + i));
 			this.truncatedPath.add(path[pathIndex + i]);
 			i++;
@@ -269,6 +270,9 @@ public class Vehicle {
 		this.pathIndex = pathIndex;
 	}
 
+	public ConstantAccelerationForwardModel getForwardModel(){
+		return forward;
+	}
 	// AGGIORNAMENTO POSIZIONE //
 	public void setPathIndex(double elapsedTrackingTime) {
 		State next_state = forward.updateState(this, elapsedTrackingTime);  //calcolo nuova velocità e posizione
@@ -389,7 +393,7 @@ public class Vehicle {
 			vhX = vh.getPose().getX();
 			vhY = vh.getPose().getY();
 			dist = Math.sqrt(Math.pow((x - vhX), 2.0) + Math.pow((y - vhY), 2.0));
-			if (dist <= this.radius && dist > 0) {
+			if (dist <=this.radius && dist > 0) {
 				this.vehicleNear.add(vh);
 			}
 		}

@@ -62,21 +62,26 @@ public class VehicleThread implements Runnable {
 					prec = cs.ComputePrecedences();
 					if (prec == false)								//calculate precedence as long as I have precedence
 						v.setCriticalPoint(cs);						//calcultate critical Point
+						
 						break;
 				}
+				v.setSlowingPoint();
 				cp = v.getCriticalPoint();
 				if (cp == -1) cp = v.getWholePath().length;
 				
 				//// CALCULATE THE SLOWING POINT AND THE TRAJECTORY'S TIMES ////
 				 // in teoria potremmo calcolarle solo una volta
-				v.setSlowingPoint();
+				
 				sp = v.getSlowingPoint();
 				if (sp == 0) sp = 1;
+				
 
 				v.setTimes();
 				
 					
 				//// CALCULATE NEW POSITION ////
+				
+
 				v.setPathIndex(elapsedTrackingTime);
 				v.setPose(v.getWholePath()[v.getPathIndex()].getPose());
 				v.setStoppingPoint();
@@ -89,11 +94,14 @@ public class VehicleThread implements Runnable {
 				
 				v.getVisualization().addEnvelope(v.getWholeSpatialEnvelope().getPolygon(),v,"#f600f6");
 				v.getVisualization().addEnvelope(v.getSpatialEnvelope().getPolygon(),v,"#efe007");
+				
 
 				v.getVisualization().displayPoint(v, cp-1, "#f60035"); //-1 perche array parte da zero
 				v.getVisualization().displayPoint(v, sp-1, "#0008f6");
-				
-				v.getVisualization().displayRobotState(v.getSpatialEnvelope().getFootprint(), v,infoCs());
+				v.getVisualization().displayPoint(v, v.getStoppingPoint(), "#f600b9");
+
+				String infoCs = v.getForwardModel().getRobotBehavior().toString();
+				v.getVisualization().displayRobotState(v.getSpatialEnvelope().getFootprint(), v,infoCs);
 
 				/// SLEEPING TIME ////
 				Thread.sleep(v.getTc());
@@ -115,7 +123,8 @@ public class VehicleThread implements Runnable {
 		String CsString = "";
 		String Dist = String.format("%.2f", v.getDistanceTraveled());
 		String Vel = String.format("%.2f", v.getVelocity());
-		String infoCs = this.infoCs();
+		//String infoCs = this.infoCs();
+		String infoCs = v.getForwardModel().getRobotBehavior().toString();
 		if (v.getCs().size() != 0){
 			int i = 0;
 			for (CriticalSection cs : v.getCs()) {
@@ -135,7 +144,7 @@ public class VehicleThread implements Runnable {
 			"Vicini: "  + List + "\t \t Precedenza: " + prec +  "\n" + 
 			"Path Index: " 	+ v.getPathIndex() + "\t \t Stopping Point: " + v.getStoppingPoint() + "\n" +
 			"Distance: "+ Dist  + "\t \t Velocity: " + Vel + "\n" +
-			"SLowing Point: " + v.getSlowingPoint() +"\t Critical Point:" + v.getCriticalPoint() + "\n" + 
+			"SLowing Point: " + v.getSlowingPoint() +"\t Critical Point:" + v.getCriticalPoint()+"-"+ cp + "\n" + 
 			CsString + "\n \n" +
 			"Percorso Trasmesso \n" +v.getTruncateTimes() +   "\n"
 			);
@@ -143,23 +152,23 @@ public class VehicleThread implements Runnable {
 	
 	
 	//// FUNCTION FOR PRINTING CRITICAL SECTIONS'S INFORMATIONS ////
-	public String infoCs() {
+	// public String infoCs() {
 		
-		String infoCs;
+	// 	String infoCs;
 
-		if (v.getPathIndex() > v.getSlowingPoint() && v.getVelocity()>=v.getAccMAx())
-			infoCs = "Slowing";
-		else if(v.getPathIndex() > v.getSlowingPoint() && v.getVelocity()<v.getAccMAx())
-			infoCs = "Min Velocity";
-		else 
-			infoCs = "Moving on";
+	// 	if (v.getPathIndex() > v.getSlowingPoint() && v.getVelocity()>=v.getAccMAx())
+	// 		infoCs = "Slowing";
+	// 	else if(v.getPathIndex() > v.getSlowingPoint() && v.getVelocity()<v.getAccMAx())
+	// 		infoCs = "Min Velocity";
+	// 	else 
+	// 		infoCs = "Moving on";
 		
-		if (v.getPathIndex() == cp && v.getVelocity() == 0)
-			infoCs = "Waiting";
-		if (v.getPathIndex() > cp)
-			infoCs = "ATTENTION ROBOT STOPPED AFTER CRITICAL POINT";
-		return infoCs;
-	}
+	// 	if (v.getPathIndex() == cp && v.getVelocity() == 0)
+	// 		infoCs = "Waiting";
+	// 	if (v.getPathIndex() > cp)
+	// 		infoCs = "ATTENTION ROBOT STOPPED AFTER CRITICAL POINT";
+	// 	return infoCs;
+	// }
 
 
 
