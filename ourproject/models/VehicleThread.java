@@ -144,7 +144,7 @@ public class VehicleThread implements Runnable {
 			"Vicini: "  + List + "\t \t Precedenza: " + prec +  "\n" + 
 			"Path Index: " 	+ v.getPathIndex() + "\t \t Stopping Point: " + v.getStoppingPoint() + "\n" +
 			"Distance: "+ Dist  + "\t \t Velocity: " + Vel + "\n" +
-			"SLowing Point: " + v.getSlowingPoint() +"\t Critical Point:" + v.getCriticalPoint()+"-"+ cp + "\n" + 
+			"SLowing Point: " + v.getSlowingPoint() +"\t Critical Point:" + v.getCriticalPoint()+ "\n" + 
 			CsString + "\n \n" +
 			"Percorso Trasmesso \n" +v.getTruncateTimes() +   "\n"
 			);

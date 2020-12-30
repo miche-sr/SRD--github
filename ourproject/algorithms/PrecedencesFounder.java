@@ -18,6 +18,9 @@ public class PrecedencesFounder {
         
         double timeAtCsStart1 = v1.getTruncateTimes().get(cs.getTe1Start());
         double timeAtCsEnd1 = v1.getTruncateTimes().get(cs.getTe1End());
+        
+        //System.out.print(v2.getTruncateTimes()+ "\n"+ cs.getTe2Start()+" - " + cs.getTe2End() + "\n");
+        
         double timeAtCsStart2 = v2.getTruncateTimes().get(cs.getTe2Start());
         //System.out.print(v2.getTruncateTimes()+ "\n" + cs.getTe2End());
         double timeAtCsEnd2 = v2.getTruncateTimes().get(cs.getTe2End());

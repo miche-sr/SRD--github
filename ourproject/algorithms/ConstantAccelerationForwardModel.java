@@ -104,7 +104,7 @@ public class ConstantAccelerationForwardModel {
 			integrateRK4(state, elapsedTrackingTime, v.getTc()*Vehicle.mill2sec, slowingDown, velMaxL, 1.0, v.getAccMAx());
 			
 			//saturazioni velocità
-			if (state.getVelocity() < 0.0) {
+			if (state.getVelocity() < 0.1) {
 				state.setVelocity(0.0);
 				robotBehavior = Behavior.stop; // fermo
 			} 	
@@ -188,7 +188,9 @@ public class ConstantAccelerationForwardModel {
 	// calcola una previsione dei tempi della traiettoria futura, considera anche le saturazioni di velocità
 	public  HashMap<Integer,Double> computeTs(Vehicle v) {
 
-		HashMap<Integer,Double> times = new HashMap<Integer, Double>();
+		//HashMap<Integer,Double> times = new HashMap<Integer, Double>();
+		HashMap<Integer,Double> times = v.getTimes();
+		times.clear();
 		int csEnd;
 		int currentPathIndex =  v.getPathIndex();
 		
@@ -201,6 +203,7 @@ public class ConstantAccelerationForwardModel {
 		State state = new State(v.getDistanceTraveled(),v.getVelocity()+0.01);
 		double time =0.0;
 		double deltaTime = v.getTc()*Vehicle.mill2sec;
+		
 		times.put(currentPathIndex, time);
 		
 		while (true) {
@@ -244,10 +247,10 @@ public class ConstantAccelerationForwardModel {
 
 		//inserisco anche PathIndx tra CP e fine SC inserndo come tempo -1
 		if (v.getCs().size()!=0)
-		csEnd = v.getCs().last().getTe1End();
+			csEnd = v.getCs().last().getTe1End();
 		else csEnd = -1;
-		currentPathIndex += 1;
-		while (currentPathIndex <= csEnd){
+			currentPathIndex += 1;
+		while (currentPathIndex <= csEnd+1){
 			times.put(currentPathIndex, -1.0);
 			currentPathIndex += 1;
 		}

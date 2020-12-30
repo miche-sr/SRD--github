@@ -58,7 +58,7 @@ public class Vehicle {
 	private TrajectoryEnvelope te = null;
 	private SpatialEnvelope se = null;
 	private SpatialEnvelope wholeSe = null;
-	private HashMap<Integer, Double> times;
+	private HashMap<Integer, Double> times = new HashMap<Integer, Double>();
 	private HashMap<Integer, Double> TruncateTimes = new HashMap<Integer, Double>();
 
 	// VARIABILI PER LE SEZIONI CRITICHE
@@ -93,7 +93,7 @@ public class Vehicle {
 			case CAR:
 				this.velMax = 2;
 				this.accMax = 1.0;
-				this.priority = 2;
+				this.priority = 1;
 				this.Tc = 400;
 				this.footprint = fpCar;
 				break;
@@ -248,14 +248,15 @@ public class Vehicle {
 
 		int i = 0;
 		// trasmetto solo traiettoria all'interno del raggio(in tempi) e comunque sempre fino alla fine della prima sezione critica //
-	
-		while ( times.get(pathIndex + i) <= secForSafety || pathIndex + i <= csEnd ) {
+		//System.out.print(this.getRobotID() + "SPatial " + pathIndex+ "\n"+times );
+		while ( times.get(pathIndex + i) <= secForSafety || pathIndex + i <= csEnd+1 ) {
 			this.TruncateTimes.put(pathIndex + i, times.get(pathIndex + i));
 			this.truncatedPath.add(path[pathIndex + i]);
 			i++;
-			if (!times.containsKey(pathIndex + i))
+			//System.out.print("\n "+this.getRobotID()+" path+i  " + (pathIndex+i) + "\n" + times);
+			if (!times.containsKey(pathIndex + i)){
 				break;// questo forse serve per l'ultimo path index?
-
+			}
 		}
 		PoseSteering[] truncatedPathArray = truncatedPath.toArray(new PoseSteering[truncatedPath.size()]);
 		se = TrajectoryEnvelope.createSpatialEnvelope(truncatedPathArray, footprint);
