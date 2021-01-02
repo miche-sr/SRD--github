@@ -24,10 +24,10 @@ public class Vehicle {
 		CAR, AMBULANCE
 	};
 
-	private static final Coordinate[] fpCar = { new Coordinate(0, 0), new Coordinate(0, 1), new Coordinate(1, 1),
-			new Coordinate(1, 0) };
-	private static final Coordinate[] fpAmb = { new Coordinate(0, 0), new Coordinate(0, 3), new Coordinate(2, 3),
-			new Coordinate(2, 0) };
+	private static final Coordinate[] fpCar = { new Coordinate(0, 0), new Coordinate(2, 0), new Coordinate(2, 1),
+			new Coordinate(0, 1) };
+	private static final Coordinate[] fpAmb = { new Coordinate(0, 0), new Coordinate(0, 2), new Coordinate(3, 2),
+			new Coordinate(3, 0) };
 
 	// CONSTANT
 	public static double mill2sec = 0.001;
@@ -94,7 +94,7 @@ public class Vehicle {
 				this.velMax = 2;
 				this.accMax = 1.0;
 				this.priority = 1;
-				this.Tc = 400;
+				this.Tc = 200;
 				this.footprint = fpCar;
 				break;
 
@@ -102,7 +102,7 @@ public class Vehicle {
 				this.velMax = 4.0;
 				this.accMax = 1.0;
 				this.priority = 2; 
-				this.Tc = 250;
+				this.Tc = 200;
 				this.footprint = fpAmb;
 				break;
 

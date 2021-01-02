@@ -19,9 +19,10 @@ public class PrecedencesFounder {
         double timeAtCsStart1 = v1.getTruncateTimes().get(cs.getTe1Start());
         double timeAtCsEnd1 = v1.getTruncateTimes().get(cs.getTe1End());
         
-        //System.out.print(v2.getTruncateTimes()+ "\n"+ cs.getTe2Start()+" - " + cs.getTe2End() + "\n");
+        System.out.print(v2.getTruncateTimes()+ "\n"+ cs.getTe2Start()+" - " + cs.getTe2End() + "\n");
         
         double timeAtCsStart2 = v2.getTruncateTimes().get(cs.getTe2Start());
+        
         //System.out.print(v2.getTruncateTimes()+ "\n" + cs.getTe2End());
         double timeAtCsEnd2 = v2.getTruncateTimes().get(cs.getTe2End());
         double braking1 = timeAtCsEnd2 - timeAtCsStart1;
@@ -33,8 +34,9 @@ public class PrecedencesFounder {
     //        }
         
         /*SE UNO DEI DUE GIÀ NON PUÒ FERMARSI PRIMA DI SC*/
-        if (v1.getStoppingPoint() > te1start) { prec = true; System.out.println("io entrerei"); }
-        else if (v2.getStoppingPoint() > te2start) { prec = false; System.out.println("altro entrerebbe"); }
+        if (v2.getStoppingPoint() > te2start) { prec = false; System.out.println("altro entrerebbe"); }
+        else if (v1.getStoppingPoint() > te1start) { prec = true; System.out.println("io entrerei"); }
+        //else if (v2.getStoppingPoint() > te2start) { prec = false; System.out.println("altro entrerebbe"); }
         
     //        else if (pathIndx2 > cs.getTe2End()){
     //            prec = true;		
@@ -49,7 +51,8 @@ public class PrecedencesFounder {
             else if (v1.getPriority() < v2.getPriority()) prec = false;
             else{	// A PARITÀ DI PRIORITÀ, SI PROCEDE PER DISTANZA TEMPORALE
                 System.out.println("medesima priorità");
-                if (timeAtCsStart2 == -1) prec = true;
+                if (timeAtCsEnd1<timeAtCsStart2) prec = true;
+                else if (timeAtCsStart2 == -1) prec = true;
                 else if (braking1 < braking2) {prec = true; System.out.println("nel frenaare");}
                 else prec = false;	// TODO il caso ==
 

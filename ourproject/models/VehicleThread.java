@@ -36,7 +36,8 @@ public class VehicleThread implements Runnable {
 				vehicleCs.clear();									//clean old arrays
 				csT.clear();
 				for (CriticalSection csN : this.v.getCs()){
-					if (v.getPathIndex() < csN.getTe1Start() && csN.getVehicle2().getPathIndex() < csN.getTe2Start()){
+					if (v.getPathIndex() < csN.getTe1Start() && csN.getVehicle2().getPathIndex() < csN.getTe2Start() 
+						&& csN.getVehicle2().getTruncateTimes().containsKey(csN.getTe2End()+1) ){ //mantengo solo sezioni critiche definitive e non quelle troncate
 						csT.add(csN);								//add the Cs to a temporaney cs's array
 						vehicleCs.add(csN.getVehicle2());			//add the vehicle to a temporaney vehicles's array
 					}
@@ -44,13 +45,14 @@ public class VehicleThread implements Runnable {
 				v.clearCs();
 				for (CriticalSection csTN : csT)					//add the Cs selected to the cs's array
 					v.getCs().add(csTN);
-				
+
 
 				//// CALCULATE THE NEW CRITICAL SECTIONS ////
 				List = "";
 				for (Vehicle vh : this.v.getNears()){
-					if (!vehicleCs.contains(vh))					//skip the cs already found
+					if (!vehicleCs.contains(vh)){					//skip the cs already found
 						v.appendCs(vh);
+						System.out.print(" \n NUOVA CS CALCOLATA \n");}
 					List = (List + vh.getID() + " " );
 				}
 
