@@ -11,41 +11,50 @@ public class PrecedencesFounder {
         Vehicle v2 = cs.getVehicle2();
         int pathIndx1 = v1.getPathIndex();
         int pathIndx2 = v2.getPathIndex();
+        
         int te1start = cs.getTe1Start();
+        int te1end = cs.getTe1End();
         int te2start = cs.getTe2Start();
-        int cp1 = v1.getCriticalPoint();
-        int cp2 = v2.getCriticalPoint();
+        int te2end = cs.getTe2End();
+        
+        double timeAtCsStart1 = v1.getTruncateTimes().get(cs.getTe1Start());
+        double timeAtCsEnd1 = v1.getTruncateTimes().get(cs.getTe1End());
+        double timeAtCsStart2 = v2.getTruncateTimes().get(cs.getTe2Start());
+        double timeAtCsEnd2 = v2.getTruncateTimes().get(cs.getTe2End());
+    	double braking1 = timeAtCsEnd2 - timeAtCsStart1;
+    	double braking2 = timeAtCsEnd1 - timeAtCsStart2;
 
-        if (cp1 > te1start && cp2 > te2start){
-            // com'è possibile?
-        }
-        if (cp1 > te1start){
-            prec = true;
-        }
-        else if (pathIndx2 > cs.getTe2End()){
-            prec = true;
-        }
-        else if (cp2 > te2start ){
+        if (v1.getStoppingPoint() > te1start && v2.getStoppingPoint() > te2start){
+            System.out.println("ATTENZIONEEEEEEEEEEEEEEEEEE\n"
+            		+ "SIETE ANDATI A SBAAAATTEEEEEREEEEEEEE"
+            		+ "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
             prec = false;
         }
-        else{
-            if (v1.getPriority() > v2.getPriority()){
-                prec = true;
-            }
-            else if (v2.getPriority() > v1.getPriority()){
-                prec = false;
-            }
-            else{
-                if ((te1start - pathIndx1) < (te2start - pathIndx2)){
-                    prec = true;
-                }
-                else{
-                    prec = false;
-                }
-            }
+        
+        /**SE UNO DEI DUE GIÀ NON PUÒ FERMARSI PRIMA DI SC**/
+        else if (v1.getStoppingPoint() > te1start) prec = true;
+        else if (v2.getStoppingPoint() > te2start) prec = false;
 
+        /**SE ENTRAMBI IN T_stop DOVRANNO ANCORA ACCEDERE,
+         SI PUÒ PASSARE A ORDINAMENTI SECONDARI EURISTICI **/
+        else{
+        	if (timeAtCsStart2 == -1) prec = true;
+        	else if (braking1 < 0 || braking2 < 0) prec = true;
+        	else if (v1.getPriority() > v2.getPriority()) prec = true;
+            else if (v1.getPriority() < v2.getPriority()) prec = false;
+            else{	// A PARITÀ DI PRIORITÀ, SI PROCEDE PER DISTANZA TEMPORALE
+            	if (braking1 > braking2) prec = true;
+            	else if (braking1 < braking2) prec = false;
+            	else { // if same brakingtime, then we use idzz
+            		if(v1.getID() > v2.getID()) prec = true;
+            		else prec = false;
+            	}
+
+            }
         }
         
         return prec;
     }
+	
+	
 }

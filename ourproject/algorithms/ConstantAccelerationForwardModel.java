@@ -1,6 +1,7 @@
 package se.oru.coordination.coordination_oru.ourproject.algorithms;
 
-import java.util.Calendar;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 import org.metacsp.multi.spatioTemporal.paths.Pose;
 import org.metacsp.multi.spatioTemporal.paths.PoseSteering;
@@ -14,71 +15,43 @@ public class ConstantAccelerationForwardModel {
 		
 	private double maxAccel, maxVel;
 	private double temporalResolution = -1;
+	private int trackingPeriodInMillis = 0;
 	private int controlPeriodInMillis = -1;
-	private boolean atCP = false;
-	private boolean slowingDown = false;
-	private static int trackingPeriodInMillis = 0;
 	private static int MAX_TX_DELAY = 0;
-	private State state;
 	
-	public ConstantAccelerationForwardModel(Vehicle v, double temporalResolution) {
+	public static enum Behavior {
+		stop,moving,slowing,minVelocity
+	};
+	
+	private Behavior robotBehavior;
+	
+	public ConstantAccelerationForwardModel(Vehicle v, double temporalResolution, int trackingPeriodInMillis) {
 		this.maxAccel = v.getAccMAx();
 		this.maxVel = v.getVelMax();	
 		this.temporalResolution = temporalResolution;
 		this.controlPeriodInMillis = v.getTc();
-		state = new State(v.getDistanceTraveled(), v.getVelocity());
+		this.trackingPeriodInMillis = trackingPeriodInMillis;
 	}
 
 	public int getPathIndex(PoseSteering[] path, State state) {
 		if (state == null) return -1;
-		Pose pose = null;
+
 		int currentPathIndex = -1;
 		double accumulatedDist = 0.0;
 		for (int i = 0; i < path.length-1; i++) {
 			double deltaS = path[i].getPose().distanceTo(path[i+1].getPose());
 			accumulatedDist += deltaS;
 			if (accumulatedDist > state.getPosition()) {
-				double ratio = 1.0-(accumulatedDist-state.getPosition())/deltaS;
-				pose = path[i].getPose().interpolate(path[i+1].getPose(), ratio);
 				currentPathIndex = i;
 				break;
 			}
 		}
 		if (currentPathIndex == -1) {
 			currentPathIndex = path.length-1;
-			pose = path[currentPathIndex].getPose();
 		}
 		return currentPathIndex;
 	}
 	
-	// fornisce il path index sul quale ci si fermerà date le condizioni attuali
-	public int getEarliestStoppingPathIndex(Vehicle v) {
-		State auxState = new State(v.getDistanceTraveled(), v.getVelocity());
-		double time = 0.0;
-		double deltaTime = v.getTc()*Vehicle.mill2sec;
-		// il periodo stesso lo considero xk ho acc di prima, al successivo già freno
-		long lookaheadInMillis = (this.controlPeriodInMillis + MAX_TX_DELAY + trackingPeriodInMillis);
-//		if (lookaheadInMillis > 0) {
-//			while (time*temporalResolution < lookaheadInMillis) {	// non frenata
-//				integrateRK4(auxState, time, deltaTime, false, maxVel, 1.0, maxAccel*1.1);
-//				time += deltaTime;
-//			}
-//		}
-//		while (auxState.getVelocity() > 0) {	// frenata
-//			integrateRK4(auxState, time, deltaTime, true, maxVel, 1.0, maxAccel*0.9);
-//			time += deltaTime;
-//		}
-		while (auxState.getVelocity() > 0) {
-			while (time*temporalResolution < lookaheadInMillis) {	// non frenata
-				integrateRK4(auxState, time, deltaTime, false, maxVel, 1.0, maxAccel*1.1);
-				time += deltaTime;
-			}
-		// frenata
-			integrateRK4(auxState, time, deltaTime, true, maxVel, 1.0, maxAccel*0.9);
-			time += deltaTime;
-		}
-		return getPathIndex(v.getWholePath(), auxState);
-	}
 	
 	// from integrateRK4 in TrajectoryEnvelopeTrackerRK4: line 337
 	public static void integrateRK4(State state, double time, double deltaTime, boolean slowDown, double MAX_VELOCITY, double MAX_VELOCITY_DAMPENING_FACTOR, double MAX_ACCELERATION) {
@@ -90,52 +63,195 @@ public class ConstantAccelerationForwardModel {
 			double dxdt = (1.0f / 6.0f) * ( a.getVelocity() + 2.0f*(b.getVelocity() + c.getVelocity()) + d.getVelocity() ); 
 		    double dvdt = (1.0f / 6.0f) * ( a.getAcceleration() + 2.0f*(b.getAcceleration() + c.getAcceleration()) + d.getAcceleration() );
 			
-		    state.setPosition(state.getPosition()+dxdt*deltaTime);
-		    state.setVelocity(state.getVelocity()+dvdt*deltaTime);
+//		    if(state.getVelocity() >= deltaTime*MAX_ACCELERATION) {
+			    state.setPosition(state.getPosition()+dxdt*deltaTime);
+			    state.setVelocity(state.getVelocity()+dvdt*deltaTime);
+//		    }
 	}
 	
 	//from run in TrajectoryEnvelopeTrackerRK4: line 548
-	public boolean updateState(Vehicle v, double elapsedTrackingTime) {
-		state.setPosition(v.getDistanceTraveled());
-		state.setVelocity(v.getVelocity());		// state attuale
-		boolean skipIntegration = false;
-		boolean arrived = false;
-		if (state.getPosition() >= v.getSlowingPoint() && state.getVelocity() <= 0.0) {
-			if (v.getCriticalPoint() == -1 && !atCP) {
-				//set state to final position, just in case it didn't quite get there (it's certainly close enough)
-				state = new State(v.getDistanceTraveled(), 0.0);
-				arrived = true;
-			}
-							
-			//Vel < 0 hence we are at CP, thus we need to skip integration
-			int pathIndex = v.getPathIndex();
-			if (!atCP && pathIndex != v.getWholePath().length-1) {
-				System.out.println("At critical point (" + v.getTrajectoryEnvelope().getComponent() + "): " + v.getCriticalPoint( )+ " (" + pathIndex + ")");
-				if (pathIndex > v.getCriticalPoint()) 
-					System.out.println("* ATTENTION! STOPPED AFTER!! *");
-				atCP = true;
-			}
-			skipIntegration = true;
-		}
-			
-		if (!skipIntegration) {
-			if (atCP) {
-				System.out.println("Resuming from critical point (" + v.getTrajectoryEnvelope().getComponent() + ")");
-				atCP = false;
-			}
-			slowingDown = false;
-			if (state.getPosition() >= v.getSlowingPoint()) slowingDown = true;
-			integrateRK4(state, elapsedTrackingTime, v.getTc()*Vehicle.mill2sec, slowingDown, maxVel, 1.0, maxAccel);
-			if (state.getVelocity() < 0) state.setVelocity(0.0);
-		}
+	public State updateState(Vehicle v, double elapsedTrackingTime) {
 		
-		v.setDistanceTraveled(state.getPosition());
-		v.setVelocity(state.getVelocity());
-		v.setPathIndex(getPathIndex(v.getWholePath(), state));
-		return arrived;
-	}
-	
-	
-	
+		State state = new State(v.getDistanceTraveled(), v.getVelocity());	// state attuale
+		double velMaxL = v.getVelMax();
+		int cp = v.getCriticalPoint();
+		if (cp == -1) cp = v.getWholePath().length-1;
+		
+		boolean skipIntegration = false;
+		
+		if (v.getPathIndex() == v.getCriticalPoint() && state.getVelocity() <= 0.0) {
+			skipIntegration = true;
+			robotBehavior = Behavior.stop; // sono fermo
+		}	
+		if (!skipIntegration) {
+			// caso accelerazione - vMax
+			boolean slowingDown = false;
+			robotBehavior = Behavior.moving; //accelero
 
+			// caso Vmin
+			if (v.getPathIndex() >= v.getSlowingPoint() && v.getPathIndex()< cp-1 && state.getVelocity()<= 0.9*v.getAccMAx()){
+				robotBehavior = Behavior.minVelocity; // vel minima
+				velMaxL = 0.8*v.getAccMAx();
+			}
+			
+			// caso Frenata
+			else if (v.getPathIndex() >= v.getSlowingPoint()) {
+				slowingDown = true; 
+				robotBehavior = Behavior.slowing; 
+			}
+			integrateRK4(state, elapsedTrackingTime, v.getTc()*Vehicle.mill2sec, slowingDown, velMaxL, 1.0, v.getAccMAx());
+			
+			//saturazioni velocità
+			if (state.getVelocity() < 0.1) {
+				state.setVelocity(0.0);
+				robotBehavior = Behavior.stop; // fermo
+			} 				
+		} 
+		return state;
+	}
+
+		// fornisce il path index sul quale ci si fermerà date le condizioni attuali
+		public int getEarliestStoppingPathIndex(Vehicle v) {
+			State auxState = new State(v.getDistanceTraveled(), v.getVelocity());
+			double time = 0.0;
+			double deltaTime =v.getTc()*Vehicle.mill2sec;
+			double velMaxL = maxVel;
+			boolean slowingDown = false;
+
+			// considero ritardi dovuti a periodo di controllo e tempo di aggiornamento del ciclo //
+			
+			long lookaheadInMillis = (this.controlPeriodInMillis);// + MAX_TX_DELAY + trackingPeriodInMillis);
+			//avanzamento nel periodo di ritardo
+			if (lookaheadInMillis > 0) {
+				while (time*temporalResolution < lookaheadInMillis) {	
+					switch(robotBehavior){
+						case stop:	 		break; 
+						case moving: 		{slowingDown = false; velMaxL = maxVel;}
+						case slowing: 		break; //{slowingDown = true; velMaxL = maxVel;}
+						case minVelocity:  	{slowingDown = false; velMaxL = 0.9*maxAccel;}
+					}
+					
+					integrateRK4(auxState, time, deltaTime, slowingDown, velMaxL, 1.0, maxAccel*1.1);
+					time += deltaTime;
+				}
+			}
+			
+			
+			//Frenata
+			while (auxState.getVelocity() > 0) {
+				integrateRK4(auxState, time, deltaTime, true, maxVel, 1.0, maxAccel*0.9);
+				time += deltaTime;
+			}
+			return getPathIndex(v.getWholePath(), auxState);
+		}
+	
+	public boolean canStop(Vehicle v, int targetPathIndex,int StartPathIndex ,boolean useVelocity) {
+		// dati due pathIndex relativi ad un path, considerando un certo stato di partenza, 
+		//calcolo se partendo dal primo è possibile fermarsi prima del secondo
+		if (useVelocity && v.getVelocity() <= 0.0) return true;
+		double distance = computeDistance(v.getWholePath(),StartPathIndex , targetPathIndex);
+		State state = new State(0.0, v.getVelMax());
+		double time = 0.0;
+		double deltaTime = v.getTc()*Vehicle.mill2sec;
+		
+		// considero ritardi dovuti a periodo di controllo e tempo di aggiornamento del ciclo //
+		long lookaheadInMillis = (this.controlPeriodInMillis + MAX_TX_DELAY + trackingPeriodInMillis);
+		if (lookaheadInMillis > 0) {
+			while (time*this.temporalResolution < lookaheadInMillis) {
+				integrateRK4(state, time, deltaTime, false, maxVel, 1.0, maxAccel);
+				time += deltaTime;
+			}
+		}
+		//decelerate from maximum to stop
+
+		while (state.getVelocity() > 0) {
+			if (state.getPosition() > distance) return false;
+			integrateRK4(state, time, deltaTime, true, maxVel, 1.0, maxAccel);
+			time += deltaTime;
+		}
+		return true;
+	}
+
+	public static double computeDistance(PoseSteering[] path, int startIndex, int endIndex) {
+		double ret = 0.0;
+		for (int i = startIndex; i < Math.min(endIndex,path.length-1); i++) {
+			ret += path[i].getPose().distanceTo(path[i+1].getPose());
+		}
+		return ret;
+	}
+
+	// calcola una previsione dei tempi della traiettoria futura, considera anche le saturazioni di velocità
+	public  HashMap<Integer,Double> computeTs(Vehicle v) {
+
+		//HashMap<Integer,Double> times = new HashMap<Integer, Double>();
+		HashMap<Integer,Double> times = v.getTimes();
+		times.clear();
+		int csEnd;
+		int currentPathIndex =  v.getPathIndex();
+		
+		int cp = v.getCriticalPoint();
+		if (cp == -1) cp = v.getWholePath().length-1;
+		
+		double distanceToCp = computeDistance(v.getWholePath() ,0, cp);
+		double distanceToSlow = computeDistance(v.getWholePath() ,0, v.getSlowingPoint());
+
+		State state = new State(v.getDistanceTraveled(),v.getVelocity()+0.01);
+		double time =0.0;
+		double deltaTime = v.getTc()*Vehicle.mill2sec;
+		
+		times.put(currentPathIndex, time);
+		
+		while (true) {
+			if (state.getPosition() >= distanceToCp ) break;  //calcolo fino al punto critico
+			if (state.getPosition() >= distanceToSlow) {
+				integrateRK4(state, time, deltaTime, true, maxVel, 1.0, maxAccel);
+				//saturazioni velocità
+				if (state.getVelocity() < 0.0) state.setVelocity(0.0);
+				if (state.getPosition()<  distanceToCp && state.getVelocity()< 0.9*v.getAccMAx()){
+					state.setVelocity(0.9*v.getAccMAx());
+				}
+			}
+			else {
+				integrateRK4(state, time, deltaTime, false, maxVel, 1.0, maxAccel);				
+			}
+			time += deltaTime;
+		
+			//inserisco la previsione fatta in un hashMap(PathiIndex,TIme)
+			currentPathIndex  = getPathIndex(v.getWholePath(), state);
+			if (!times.containsKey(currentPathIndex)) {
+				times.put(currentPathIndex, time);
+				
+				//inserisco anche gli eventuali pathIndex saltati
+				int i = 1;
+				while (i > 0){
+					if (!times.containsKey(currentPathIndex-i) && (currentPathIndex-i)!=0) {
+						times.put(currentPathIndex-i, time-deltaTime/(2*i));
+						
+						i = i+1;
+					}
+					else  i = -1; //break
+				}
+			}	
+		}
+		//inserisco anche il pathIndex relativo al CP
+		currentPathIndex  = getPathIndex(v.getWholePath(), state);
+		if (!times.containsKey(currentPathIndex)) {
+			times.put(currentPathIndex, time);
+		}
+
+		//inserisco anche PathIndx tra CP e fine SC inserndo come tempo -1
+		if (v.getCs().size()!=0)
+			csEnd = v.getCs().last().getTe1End();
+		else csEnd = -1;
+			currentPathIndex += 1;
+		while (currentPathIndex <= csEnd){
+			times.put(currentPathIndex, -1.0);
+			currentPathIndex += 1;
+		}
+		return times;
+	}
+
+	public Behavior getRobotBehavior(){
+		return robotBehavior;
+	}
 }

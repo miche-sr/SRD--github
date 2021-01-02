@@ -19,8 +19,8 @@ public class CriticalSectionsFounder {
 
 		ArrayList<CriticalSection> css = new ArrayList<CriticalSection>();
 		
-		SpatialEnvelope se1 = v1.getTrajectoryEnvelope().getSpatialEnvelope();
-		SpatialEnvelope se2 = v2.getTrajectoryEnvelope().getSpatialEnvelope();
+		SpatialEnvelope se1 = v1.getSpatialEnvelope();
+		SpatialEnvelope se2 = v2.getSpatialEnvelope();
 
 		double smallestRobotDimension = Math.min(se1.getFootprint().getArea(), se2.getFootprint().getArea());
 		Geometry shape1 = se1.getPolygon();
