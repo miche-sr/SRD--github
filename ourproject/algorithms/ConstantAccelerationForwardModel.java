@@ -250,7 +250,7 @@ public class ConstantAccelerationForwardModel {
 			csEnd = v.getCs().last().getTe1End();
 		else csEnd = -1;
 			currentPathIndex += 1;
-		while (currentPathIndex <= csEnd+1){
+		while (currentPathIndex <= csEnd+1 && currentPathIndex != v.getWholePath().length){
 			times.put(currentPathIndex, -1.0);
 			currentPathIndex += 1;
 		}

@@ -13,7 +13,8 @@ public class VehicleThread implements Runnable {
 	private int sp = -1;
 	private TreeSet<CriticalSection> csT = new TreeSet<CriticalSection>(); 
 	private ArrayList<Vehicle> vehicleCs = new ArrayList<Vehicle>();
-
+	private Boolean prec = true;
+	
 
 	public VehicleThread(Vehicle v){
 		this.v = v;
@@ -37,10 +38,11 @@ public class VehicleThread implements Runnable {
 				csT.clear();
 				for (CriticalSection csN : this.v.getCs()){
 					if (v.getPathIndex() < csN.getTe1Start() && csN.getVehicle2().getPathIndex() < csN.getTe2Start() 
-						&& csN.getVehicle2().getTruncateTimes().containsKey(csN.getTe2End()+1) ){ //mantengo solo sezioni critiche definitive e non quelle troncate
+						&& !csN.isCsTruncated() ){ //mantengo solo sezioni critiche definitive e non quelle troncate
 						csT.add(csN);								//add the Cs to a temporaney cs's array
 						vehicleCs.add(csN.getVehicle2());			//add the vehicle to a temporaney vehicles's array
 					}
+				if (csN.isCsTruncated()) System.out.print("ESISTONO QUESI CASI BRUTTI !!!!! \n !!!!!!!!!!!!");
 				}
 				v.clearCs();
 				for (CriticalSection csTN : csT)					//add the Cs selected to the cs's array
@@ -49,38 +51,40 @@ public class VehicleThread implements Runnable {
 
 				//// CALCULATE THE NEW CRITICAL SECTIONS ////
 				List = "";
+				boolean newCs = false;
 				for (Vehicle vh : this.v.getNears()){
 					if (!vehicleCs.contains(vh)){					//skip the cs already found
 						v.appendCs(vh);
-						System.out.print(" \n NUOVA CS CALCOLATA \n");}
+						//System.out.print(" \n NUOVA CS CALCOLATA \n");
+						newCs = true;}
+					else System.out.print("FUNZIONA SKIP \n");
 					List = (List + vh.getID() + " " );
 				}
 
 				
 				//// CALCULATE THE PRECEDENCES ////
-				Boolean prec = true;
-				v.setCriticalPoint(-1);
-				for (CriticalSection cs : this.v.getCs()){
-					prec = cs.ComputePrecedences();
-					if (prec == false)								//calculate precedence as long as I have precedence
-						v.setCriticalPoint(cs);						//calcultate critical Point
-						
-						break;
+				if ((newCs == true && v.getCs().size() != 0)  
+					||(v.getCs().size() == 0 && v.getCriticalPoint() != -1) 
+						|| cp == -2){
+					prec = true;
+					v.setCriticalPoint(-1);
+					for (CriticalSection cs : this.v.getCs()){
+						prec = cs.ComputePrecedences();
+						if (prec == false)								//calculate precedence as long as I have precedence
+							v.setCriticalPoint(cs);						//calcultate critical Point
+							break;
+					}
+					v.setSlowingPoint(); // altrimenti non calcola ultimo punto critico
+					cp = v.getCriticalPoint();
+					if (cp == -1) cp = v.getWholePath().length;
+
+					sp = v.getSlowingPoint();
+					if (sp == 0) sp = 1;
 				}
-				v.setSlowingPoint();
-				cp = v.getCriticalPoint();
-				if (cp == -1) cp = v.getWholePath().length;
-				
-				//// CALCULATE THE SLOWING POINT AND THE TRAJECTORY'S TIMES ////
-				 // in teoria potremmo calcolarle solo una volta
-				
-				sp = v.getSlowingPoint();
-				if (sp == 0) sp = 1;
-				
+				else System.out.print("FUNZIONA");
 
 				v.setTimes();
-				
-					
+
 				//// CALCULATE NEW POSITION ////
 				
 

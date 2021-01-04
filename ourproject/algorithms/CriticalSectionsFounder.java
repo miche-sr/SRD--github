@@ -94,6 +94,7 @@ public class CriticalSectionsFounder {
 
 				Geometry g = allIntersections.get(i);
 				boolean started = false;
+				boolean csTruncated = false;
 				for (int j = 0; j < path1.length; j++) {
 					Geometry placement1 = TrajectoryEnvelope.getFootprint(se1.getFootprint(), path1[j].getPose().getX(), path1[j].getPose().getY(), path1[j].getPose().getTheta());
 					int jAbs = j+v1.getPathIndex();		// LO SI RIPORTA RISPETTO A INDICE ASSOLUTO
@@ -107,6 +108,7 @@ public class CriticalSectionsFounder {
 					}
 					if (started && j == path1.length-1) {
 						te1Ends.add(jAbs);
+						csTruncated = true;
 					}
 				}
 				started = false;
@@ -123,12 +125,13 @@ public class CriticalSectionsFounder {
 					}
 					if (started && j == path2.length-1) {
 						te2Ends.add(jAbs);
+						csTruncated=true;
 					}
 				}
 				for (int k1 = 0; k1 < te1Starts.size(); k1++) {
 					for (int k2 = 0; k2 < te2Starts.size(); k2++) {
 						//if (te1Ends.get(k1) >= Math.max(0, minStart1) && te2Ends.get(k2) >= Math.max(0, minStart2)) {
-							CriticalSection oneCS = new CriticalSection(v1, v2, te1Starts.get(k1), te2Starts.get(k2), te1Ends.get(k1), te2Ends.get(k2));
+							CriticalSection oneCS = new CriticalSection(v1, v2, te1Starts.get(k1), te2Starts.get(k2), te1Ends.get(k1), te2Ends.get(k2),csTruncated);
 							//css.add(oneCS);
 							cssOneIntersectionPiece.add(oneCS);
 						//}

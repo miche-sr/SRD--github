@@ -65,7 +65,7 @@ public class Vehicle {
 	private int criticalPoint = -1; // -1 if no critical point
 	// private boolean csTooClose = false;
 	private int stoppingPoint = -1; // punto di fermata, a ogni ciclo: al quale mi fermo da dove sono
-	private int slowingPoint = 1000; // punto di frenata, unico: per fermarsi prima del p. critico
+	private int slowingPoint = -1; // punto di frenata, unico: per fermarsi prima del p. critico
 	private TreeSet<CriticalSection> cs = new TreeSet<CriticalSection>();
 	private CriticalSectionsFounder intersect = new CriticalSectionsFounder();
 

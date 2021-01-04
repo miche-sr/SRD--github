@@ -18,12 +18,7 @@ public class PrecedencesFounder {
         
         double timeAtCsStart1 = v1.getTruncateTimes().get(cs.getTe1Start());
         double timeAtCsEnd1 = v1.getTruncateTimes().get(cs.getTe1End());
-        
-        System.out.print(v2.getTruncateTimes()+ "\n"+ cs.getTe2Start()+" - " + cs.getTe2End() + "\n");
-        
         double timeAtCsStart2 = v2.getTruncateTimes().get(cs.getTe2Start());
-        
-        //System.out.print(v2.getTruncateTimes()+ "\n" + cs.getTe2End());
         double timeAtCsEnd2 = v2.getTruncateTimes().get(cs.getTe2End());
         double braking1 = timeAtCsEnd2 - timeAtCsStart1;
         double braking2 = timeAtCsEnd1 - timeAtCsStart2;
@@ -36,13 +31,6 @@ public class PrecedencesFounder {
         /*SE UNO DEI DUE GIÀ NON PUÒ FERMARSI PRIMA DI SC*/
         if (v2.getStoppingPoint() > te2start) { prec = false; System.out.println("altro entrerebbe"); }
         else if (v1.getStoppingPoint() > te1start) { prec = true; System.out.println("io entrerei"); }
-        //else if (v2.getStoppingPoint() > te2start) { prec = false; System.out.println("altro entrerebbe"); }
-        
-    //        else if (pathIndx2 > cs.getTe2End()){
-    //            prec = true;		
-        // Possibile che esista? 
-        //Per caso scompare l'intersezione e non ha più valore?
-    //        }
 
         /**SE ENTRAMBI IN T_stop DOVRANNO ANCORA ACCEDERE,
          SI PUÒ PASSARE A ORDINAMENTI SECONDARI EURISTICI **/
