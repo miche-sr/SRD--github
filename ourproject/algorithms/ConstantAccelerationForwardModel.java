@@ -24,8 +24,6 @@ public class ConstantAccelerationForwardModel {
 	};
 	
 	private Behavior robotBehavior;
-	//private boolean atCP = false;
-
 
 	public ConstantAccelerationForwardModel(Vehicle v, double temporalResolution, int trackingPeriodInMillis) {
 		this.maxAccel = v.getAccMAx();
@@ -77,9 +75,7 @@ public class ConstantAccelerationForwardModel {
 		int cp = v.getCriticalPoint();
 		if (cp == -1) cp = v.getWholePath().length;
 		
-		
 		boolean skipIntegration = false;
-
 		
 		if (v.getPathIndex() == v.getCriticalPoint() && state.getVelocity() <= 0.0) {
 			skipIntegration = true;
@@ -108,12 +104,9 @@ public class ConstantAccelerationForwardModel {
 				state.setVelocity(0.0);
 				robotBehavior = Behavior.stop; // fermo
 			} 	
-				
 		} 
 		return state;
-
 	}
-
 		// fornisce il path index sul quale ci si fermerà date le condizioni attuali
 		public int getEarliestStoppingPathIndex(Vehicle v) {
 			State auxState = new State(v.getDistanceTraveled(), v.getVelocity());
@@ -140,12 +133,10 @@ public class ConstantAccelerationForwardModel {
 				}
 			}
 			
-			
 			//Frenata
 			while (auxState.getVelocity() > 0) {
 				integrateRK4(auxState, time, deltaTime, true, maxVel, 1.0, maxAccel*0.9);
 				time += deltaTime;
-				//System.out.println("<5>" + auxState.getVelocity() + " " + maxVel);
 			}
 			return getPathIndex(v.getWholePath(), auxState);
 		}
@@ -231,14 +222,13 @@ public class ConstantAccelerationForwardModel {
 				while (i > 0){
 					if (!times.containsKey(currentPathIndex-i) && (currentPathIndex-i)!=0) {
 						times.put(currentPathIndex-i, time-deltaTime/(2*i));
-						
 						i = i+1;
 					}
 					else  i = -1; //break
 				}
 			}
-			
 		}
+			
 		//inserisco anche il pathIndex relativo al CP
 		currentPathIndex  = getPathIndex(v.getWholePath(), state);
 		if (!times.containsKey(currentPathIndex)) {
@@ -257,9 +247,7 @@ public class ConstantAccelerationForwardModel {
 
 		return times;
 		
-
 	}
-
 	public Behavior getRobotBehavior(){
 		return robotBehavior;
 	}

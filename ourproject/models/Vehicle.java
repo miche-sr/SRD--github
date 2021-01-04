@@ -50,11 +50,7 @@ public class Vehicle {
 	private Pose[] goal;
 	private PoseSteering[] path;
 	private double distanceTraveled = 0.0;
-	private double[] myTimes;
 	private ArrayList<PoseSteering> truncatedPath = new ArrayList<PoseSteering>();
-	// from "AbstractTrajectoryEnvelopeCoordinator": line 1615
-	// private TrajectoryEnvelopeSolver solver = new TrajectoryEnvelopeSolver(0,
-	// 100000000);
 	private TrajectoryEnvelope te = null;
 	private SpatialEnvelope se = null;
 	private SpatialEnvelope wholeSe = null;
@@ -73,16 +69,11 @@ public class Vehicle {
 	private ArrayList<Vehicle> vehicleList = new ArrayList<Vehicle>();
 	private ArrayList<Vehicle> vehicleNear = new ArrayList<Vehicle>();
 
-	// from Trajectory EnvelopeCoordinatorSimulation
-	// TEMPORAL_RESOLUTION = 1000
-	// trackingPeriodInMillis = 30
 	private ConstantAccelerationForwardModel forward;
 
 	private BrowserVisualizationDist viz;
 
 	// COSTRUTTORE
-	// @param distanceTraveled The distance traveled so far along the current
-	// current path.
 	public Vehicle(int ID, Category category, Pose start, Pose[] goal) {
 		this.ID = ID;
 		this.pose = start;
@@ -282,18 +273,6 @@ public class Vehicle {
 		this.pathIndex = forward.getPathIndex(this.path, next_state);
 	}
 
-	// public double[] getMyTimes() {
-	// 	return myTimes;
-	// }
-
-	// public void setMyTimes() {
-	// 	Trajectory traj = new Trajectory(path);
-	// 	this.myTimes = traj.getDTs();
-	// 	for (int i = 1; i < path.length; i++) {
-	// 		this.myTimes[i] += this.myTimes[i - 1];
-	// 	}
-	// }
-
 	public HashMap<Integer, Double> getTimes() {
 		return times;
 	}
@@ -337,10 +316,6 @@ public class Vehicle {
 		this.criticalPoint = cs.getTe1Start()-1;
 	}
 
-	/*
-	 * public boolean getCsTooClose() { return csTooClose; } public void
-	 * setCsTooClose(boolean csTooClose) { this.csTooClose = csTooClose; }
-	 */
 	public int getSlowingPoint() {
 		return slowingPoint;
 	}
@@ -411,4 +386,3 @@ public class Vehicle {
 	}
 
 }
-

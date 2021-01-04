@@ -18,7 +18,6 @@ public class VehicleThread implements Runnable {
 
 	public VehicleThread(Vehicle v){
 		this.v = v;
-
 	}
 	
 	/************************** 
@@ -29,38 +28,34 @@ public class VehicleThread implements Runnable {
 		String List;
 
 		try{
-			while(v.getPathIndex() < v.getWholePath().length-1){
+			while(v.getPathIndex() < v.getWholePath().length){
 		
 				///// MEMORY OF CRITICAL SECTIONS ////
 				// if a cs has already been found and no one is inside the cs then I don't recalculate the cs //
-
-				vehicleCs.clear();									//clean old arrays
-				csT.clear();
-				for (CriticalSection csN : this.v.getCs()){
-					if (v.getPathIndex() < csN.getTe1Start() && csN.getVehicle2().getPathIndex() < csN.getTe2Start() 
-						&& !csN.isCsTruncated() ){ //mantengo solo sezioni critiche definitive e non quelle troncate
-						csT.add(csN);								//add the Cs to a temporaney cs's array
-						vehicleCs.add(csN.getVehicle2());			//add the vehicle to a temporaney vehicles's array
+				analisysedVehicles.clear();
+				this.analisysedCs.clear();
+				for (CriticalSection analisysedCs : v.getCs()){
+					if (v.getPathIndex() < analisysedCs.getTe1Start() 
+							&& analisysedCs.getVehicle2().getPathIndex() < analisysedCs.getTe2Start()) {
+						this.analisysedCs.add(analisysedCs);
+						analisysedVehicles.add(analisysedCs.getVehicle2());
 					}
 				if (csN.isCsTruncated()) System.out.print("ESISTONO QUESI CASI BRUTTI !!!!! \n !!!!!!!!!!!!");
 				}
+				
+				// re-add the cs already analysed and find the cs of other vehicles
 				v.clearCs();
-				for (CriticalSection csTN : csT)					//add the Cs selected to the cs's array
-					v.getCs().add(csTN);
-
-
-				//// CALCULATE THE NEW CRITICAL SECTIONS ////
+				for (CriticalSection analisysedCs : this.analisysedCs)
+					v.getCs().add(analisysedCs);
+				
 				List = "";
 				boolean newCs = false;
 				for (Vehicle vh : this.v.getNears()){
-					if (!vehicleCs.contains(vh)){					//skip the cs already found
-						v.appendCs(vh);
-						//System.out.print(" \n NUOVA CS CALCOLATA \n");
+					if (!analisysedVehicles.contains(vh)) v.appendCs(vh);
 						newCs = true;}
 					else System.out.print("FUNZIONA SKIP \n");
 					List = (List + vh.getID() + " " );
 				}
-
 				
 				//// CALCULATE THE PRECEDENCES ////
 				if ((newCs == true && v.getCs().size() != 0)  
@@ -123,7 +118,6 @@ public class VehicleThread implements Runnable {
 	}
 
 
-
 	/// FUNCTION FOR PRINTING INFORMATIONS ////	
 	public void printLog(String List, Boolean prec) {
 		String CsString = "";
@@ -156,25 +150,6 @@ public class VehicleThread implements Runnable {
 			);
 	}
 	
-	
-	//// FUNCTION FOR PRINTING CRITICAL SECTIONS'S INFORMATIONS ////
-	// public String infoCs() {
-		
-	// 	String infoCs;
-
-	// 	if (v.getPathIndex() > v.getSlowingPoint() && v.getVelocity()>=v.getAccMAx())
-	// 		infoCs = "Slowing";
-	// 	else if(v.getPathIndex() > v.getSlowingPoint() && v.getVelocity()<v.getAccMAx())
-	// 		infoCs = "Min Velocity";
-	// 	else 
-	// 		infoCs = "Moving on";
-		
-	// 	if (v.getPathIndex() == cp && v.getVelocity() == 0)
-	// 		infoCs = "Waiting";
-	// 	if (v.getPathIndex() > cp)
-	// 		infoCs = "ATTENTION ROBOT STOPPED AFTER CRITICAL POINT";
-	// 	return infoCs;
-	// }
 
 
 
