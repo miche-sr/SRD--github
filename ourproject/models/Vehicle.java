@@ -24,10 +24,10 @@ public class Vehicle {
 		CAR, AMBULANCE
 	};
 
-	private static final Coordinate[] fpCar = { new Coordinate(0, 0), new Coordinate(0, 1), new Coordinate(1, 1),
-			new Coordinate(1, 0) };
-	private static final Coordinate[] fpAmb = { new Coordinate(0, 0), new Coordinate(0, 3), new Coordinate(2, 3),
-			new Coordinate(2, 0) };
+	private static final Coordinate[] fpCar = { new Coordinate(0, 0), new Coordinate(2, 0), new Coordinate(2, 1),
+			new Coordinate(0, 1) };
+	private static final Coordinate[] fpAmb = { new Coordinate(0, 0), new Coordinate(0, 2), new Coordinate(3, 2),
+			new Coordinate(3, 0) };
 
 	// CONSTANT
 	public static double mill2sec = 0.001;
@@ -51,9 +51,7 @@ public class Vehicle {
 	private PoseSteering[] path;
 	private double distanceTraveled = 0.0;
 	private ArrayList<PoseSteering> truncatedPath = new ArrayList<PoseSteering>();
-	// from "AbstractTrajectoryEnvelopeCoordinator": line 1615
-	// private TrajectoryEnvelopeSolver solver = new TrajectoryEnvelopeSolver(0,
-	// 100000000);
+	private TrajectoryEnvelope te = null;
 	private SpatialEnvelope se = null;
 	private SpatialEnvelope wholeSe = null;
 	private HashMap<Integer, Double> times = new HashMap<Integer, Double>();
@@ -71,16 +69,11 @@ public class Vehicle {
 	private ArrayList<Vehicle> vehicleList = new ArrayList<Vehicle>();
 	private ArrayList<Vehicle> vehicleNear = new ArrayList<Vehicle>();
 
-	// from Trajectory EnvelopeCoordinatorSimulation
-	// TEMPORAL_RESOLUTION = 1000
-	// trackingPeriodInMillis = 30
 	private ConstantAccelerationForwardModel forward;
 
 	private BrowserVisualizationDist viz;
 
 	// COSTRUTTORE
-	// @param distanceTraveled The distance traveled so far along the current
-	// current path.
 	public Vehicle(int ID, Category category, Pose start, Pose[] goal) {
 		this.ID = ID;
 		this.pose = start;
@@ -92,7 +85,7 @@ public class Vehicle {
 				this.velMax = 2;
 				this.accMax = 1.0;
 				this.priority = 1;
-				this.Tc = 400;
+				this.Tc = 200;
 				this.footprint = fpCar;
 				break;
 
@@ -100,7 +93,7 @@ public class Vehicle {
 				this.velMax = 4.0;
 				this.accMax = 1.0;
 				this.priority = 2; 
-				this.Tc = 250;
+				this.Tc = 200;
 				this.footprint = fpAmb;
 				break;
 
@@ -172,6 +165,16 @@ public class Vehicle {
 	/*****************************************
 	 ** SET & GET PER PERCORSO E TRAIETTORIA **
 	 ******************************************/
+	public void PostInizialization(){
+		this.setTimes();
+		this.setSpatialEnvelope();
+		this.getNears();
+		// set RR
+		//for (Vehicle vh : this.vehicleNear){
+		// 	vh.setRR(this)
+		//}
+	}
+	
 	 public Pose getPose() {
 		return pose;
 	}
@@ -210,6 +213,10 @@ public class Vehicle {
 		this.distanceTraveled = distanceTraveled;
 	}
 
+	public TrajectoryEnvelope getTrajectoryEnvelope() {
+		return te;
+	}
+
 	public SpatialEnvelope getWholeSpatialEnvelope() {
 		return wholeSe;
 	}
@@ -233,7 +240,7 @@ public class Vehicle {
 		int i = 0;
 		// trasmetto solo traiettoria all'interno del raggio(in tempi) e comunque sempre fino alla fine della prima sezione critica //
 		//System.out.print(this.getRobotID() + "SPatial " + pathIndex+ "\n"+times );
-		while ( times.get(pathIndex + i) <= secForSafety || pathIndex + i <= csEnd) {
+		while ( times.get(pathIndex + i) <= secForSafety || pathIndex + i <= csEnd+1 ) {
 			this.TruncateTimes.put(pathIndex + i, times.get(pathIndex + i));
 			this.truncatedPath.add(path[pathIndex + i]);
 			i++;
@@ -244,6 +251,7 @@ public class Vehicle {
 		}
 		PoseSteering[] truncatedPathArray = truncatedPath.toArray(new PoseSteering[truncatedPath.size()]);
 		se = TrajectoryEnvelope.createSpatialEnvelope(truncatedPathArray, footprint);
+		
 	}
 
 	public int getPathIndex() {
@@ -271,6 +279,7 @@ public class Vehicle {
 
 	public void setTimes() {
 		times = forward.computeTs(this);
+
 	}
 
 	public HashMap<Integer, Double> getTruncateTimes() {
@@ -311,10 +320,15 @@ public class Vehicle {
 		return slowingPoint;
 	}
 
+	public void setSlowingPoint(int slowingPoint) {
+		this.slowingPoint = slowingPoint;
+	}
+
 	public void setSlowingPoint() {
 		boolean stop = false;
 		int i = this.criticalPoint;
 		int cp = this.criticalPoint;
+		
 		
 		if (this.criticalPoint == -1) {
 			i = this.path.length;
@@ -324,7 +338,7 @@ public class Vehicle {
 		// itero per tentativi partendo da cp-1 fino a che non trovo il punto dal quale frenando riesco a fermarmi
 		while (!stop && i > 0) {
 			i -= 1;
-			stop = forward.canStop(this, cp, i, false);
+			stop = forward.canStop(this.te, this, cp, i, false);
 		}
 
 		this.slowingPoint = i;
@@ -366,9 +380,9 @@ public class Vehicle {
 	public void setVisualization(BrowserVisualizationDist viz){
 		this.viz = viz;
 	}
+
 	public BrowserVisualizationDist getVisualization(){
 		return this.viz;
 	}
 
 }
-

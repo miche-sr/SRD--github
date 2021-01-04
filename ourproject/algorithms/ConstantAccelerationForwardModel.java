@@ -24,7 +24,7 @@ public class ConstantAccelerationForwardModel {
 	};
 	
 	private Behavior robotBehavior;
-	
+
 	public ConstantAccelerationForwardModel(Vehicle v, double temporalResolution, int trackingPeriodInMillis) {
 		this.maxAccel = v.getAccMAx();
 		this.maxVel = v.getVelMax();	
@@ -63,10 +63,8 @@ public class ConstantAccelerationForwardModel {
 			double dxdt = (1.0f / 6.0f) * ( a.getVelocity() + 2.0f*(b.getVelocity() + c.getVelocity()) + d.getVelocity() ); 
 		    double dvdt = (1.0f / 6.0f) * ( a.getAcceleration() + 2.0f*(b.getAcceleration() + c.getAcceleration()) + d.getAcceleration() );
 			
-//		    if(state.getVelocity() >= deltaTime*MAX_ACCELERATION) {
-			    state.setPosition(state.getPosition()+dxdt*deltaTime);
-			    state.setVelocity(state.getVelocity()+dvdt*deltaTime);
-//		    }
+		    state.setPosition(state.getPosition()+dxdt*deltaTime);
+		    state.setVelocity(state.getVelocity()+dvdt*deltaTime);
 	}
 	
 	//from run in TrajectoryEnvelopeTrackerRK4: line 548
@@ -75,7 +73,7 @@ public class ConstantAccelerationForwardModel {
 		State state = new State(v.getDistanceTraveled(), v.getVelocity());	// state attuale
 		double velMaxL = v.getVelMax();
 		int cp = v.getCriticalPoint();
-		if (cp == -1) cp = v.getWholePath().length-1;
+		if (cp == -1) cp = v.getWholePath().length;
 		
 		boolean skipIntegration = false;
 		
@@ -105,11 +103,10 @@ public class ConstantAccelerationForwardModel {
 			if (state.getVelocity() < 0.1) {
 				state.setVelocity(0.0);
 				robotBehavior = Behavior.stop; // fermo
-			} 				
+			} 	
 		} 
 		return state;
 	}
-
 		// fornisce il path index sul quale ci si fermerà date le condizioni attuali
 		public int getEarliestStoppingPathIndex(Vehicle v) {
 			State auxState = new State(v.getDistanceTraveled(), v.getVelocity());
@@ -136,7 +133,6 @@ public class ConstantAccelerationForwardModel {
 				}
 			}
 			
-			
 			//Frenata
 			while (auxState.getVelocity() > 0) {
 				integrateRK4(auxState, time, deltaTime, true, maxVel, 1.0, maxAccel*0.9);
@@ -145,7 +141,7 @@ public class ConstantAccelerationForwardModel {
 			return getPathIndex(v.getWholePath(), auxState);
 		}
 	
-	public boolean canStop(Vehicle v, int targetPathIndex,int StartPathIndex ,boolean useVelocity) {
+	public boolean canStop(TrajectoryEnvelope te, Vehicle v, int targetPathIndex,int StartPathIndex ,boolean useVelocity) {
 		// dati due pathIndex relativi ad un path, considerando un certo stato di partenza, 
 		//calcolo se partendo dal primo è possibile fermarsi prima del secondo
 		if (useVelocity && v.getVelocity() <= 0.0) return true;
@@ -190,7 +186,7 @@ public class ConstantAccelerationForwardModel {
 		int currentPathIndex =  v.getPathIndex();
 		
 		int cp = v.getCriticalPoint();
-		if (cp == -1) cp = v.getWholePath().length-1;
+		if (cp == -1) cp = v.getWholePath().length;
 		
 		double distanceToCp = computeDistance(v.getWholePath() ,0, cp);
 		double distanceToSlow = computeDistance(v.getWholePath() ,0, v.getSlowingPoint());
@@ -226,13 +222,13 @@ public class ConstantAccelerationForwardModel {
 				while (i > 0){
 					if (!times.containsKey(currentPathIndex-i) && (currentPathIndex-i)!=0) {
 						times.put(currentPathIndex-i, time-deltaTime/(2*i));
-						
 						i = i+1;
 					}
 					else  i = -1; //break
 				}
-			}	
+			}
 		}
+			
 		//inserisco anche il pathIndex relativo al CP
 		currentPathIndex  = getPathIndex(v.getWholePath(), state);
 		if (!times.containsKey(currentPathIndex)) {
@@ -244,13 +240,14 @@ public class ConstantAccelerationForwardModel {
 			csEnd = v.getCs().last().getTe1End();
 		else csEnd = -1;
 			currentPathIndex += 1;
-		while (currentPathIndex <= csEnd){
+		while (currentPathIndex <= csEnd+1){
 			times.put(currentPathIndex, -1.0);
 			currentPathIndex += 1;
 		}
-		return times;
-	}
 
+		return times;
+		
+	}
 	public Behavior getRobotBehavior(){
 		return robotBehavior;
 	}

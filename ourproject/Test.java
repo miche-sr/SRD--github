@@ -24,17 +24,17 @@ public class Test {
 		Vehicle.Category a = Vehicle.Category.AMBULANCE;
 		Vehicle.Category c = Vehicle.Category.CAR;
 
+		/* deadh  Lock*/
+		Pose start1 = new Pose(20, 1, 0); Pose[] goal1 = { new Pose(0, 1, 0) };
+		Pose start2 = new Pose(6, -6, -Math.PI / 1.5); Pose[] goal2 = { new Pose(15, 10, -Math.PI / 2) };
+		Pose start3 = new Pose(5, 7, Math.PI / 2); Pose[] goal3 = { new Pose(18, -8, Math.PI / 2) };
+
 		Pose start1 = new Pose(-1, 0, 0); Pose[] goal1 = { new Pose(15, 0, 0) };
 		Pose start2 = new Pose(3, 5, -Math.PI/2); Pose[] goal2 = {new Pose(3, -13, -Math.PI/2) };
 		Pose start3 = new Pose(10, -8, Math.PI/2); Pose[] goal3 = {new Pose(10, 8, Math.PI/2) };
 		Pose start4 = new Pose(1, -10, -Math.PI/2); Pose[] goal4 = {new Pose(20, 10,Math.PI/2)};
 		Pose start5 = new Pose(-2, 7, 0); Pose[] goal5 = {new Pose(10, -13,Math.PI)};
 		
-		/* deadh  Lock*/
-		// Pose start1 = new Pose(20, 1, 0); Pose[] goal1 = { new Pose(0, 1, 0) };
-		// Pose start2 = new Pose(7, -8, -Math.PI / 2); Pose[] goal2 = { new Pose(15, 10, -Math.PI / 2) };
-		// Pose start3 = new Pose(5, 8, Math.PI / 2); Pose[] goal3 = { new Pose(18, -8, Math.PI / 2) };
-
 		Thread thread1 = initThread(1, c, start1, goal1);
 		Thread thread2 = initThread(2, c, start2, goal2);
 		Thread thread3 = initThread(3, c, start3, goal3);
@@ -62,11 +62,8 @@ public class Test {
 		vh.setRadius(rMax);
 		vh.setSecForSafety(tMax);
 		vh.setVehicleList(vehicleList);
-		vh.setTimes();
-		vh.setSpatialEnvelope();
-		vh.getNears();		
+		vh.PostInizialization();
 		vh.setVisualization(viz);
-		System.out.println(vh.getTimes());
 	}
 	System.out.println("\n" + "Radius "  + rMax );
 	
