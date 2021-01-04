@@ -53,14 +53,15 @@ public class VehicleThread implements Runnable {
 				boolean newCs = false;
 				for (Vehicle vh : this.v.getNears()){
 					if (!analisysedVehicles.contains(vh)) {
-						v.appendCs(vh);
-						newCs = true;}
+						newCs  = v.appendCs(vh);// nuova
+						newCs = true; // vecchia
+					}
 					else System.out.print("\nFUNZIONA SKIP CS\n");
 					List = (List + vh.getID() + " " );
 				}
 				
 				//// CALCULATE THE PRECEDENCES ////
-				if ((newCs == true && v.getCs().size() != 0)  
+				if ((newCs == true && v.getCs().size() != 0)  //per nuova commenta qui e aggiung ")"
 					||(v.getCs().size() == 0 && v.getCriticalPoint() != -1) 
 						|| cp == -2){
 					prec = true;

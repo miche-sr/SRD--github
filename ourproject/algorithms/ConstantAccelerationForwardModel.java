@@ -3,6 +3,8 @@ package se.oru.coordination.coordination_oru.ourproject.algorithms;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import javax.lang.model.util.ElementScanner6;
+
 import org.metacsp.multi.spatioTemporal.paths.Pose;
 import org.metacsp.multi.spatioTemporal.paths.PoseSteering;
 import org.metacsp.multi.spatioTemporal.paths.Trajectory;
@@ -55,6 +57,7 @@ public class ConstantAccelerationForwardModel {
 	
 	// from integrateRK4 in TrajectoryEnvelopeTrackerRK4: line 337
 	public static void integrateRK4(State state, double time, double deltaTime, boolean slowDown, double MAX_VELOCITY, double MAX_VELOCITY_DAMPENING_FACTOR, double MAX_ACCELERATION) {
+		
 			Derivative a = Derivative.evaluate(state, time, 0.0, new Derivative(), slowDown, MAX_VELOCITY, MAX_VELOCITY_DAMPENING_FACTOR, MAX_ACCELERATION);
 			Derivative b = Derivative.evaluate(state, time, deltaTime/2.0, a, slowDown, MAX_VELOCITY, MAX_VELOCITY_DAMPENING_FACTOR, MAX_ACCELERATION);
 			Derivative c = Derivative.evaluate(state, time, deltaTime/2.0, b, slowDown, MAX_VELOCITY, MAX_VELOCITY_DAMPENING_FACTOR,MAX_ACCELERATION);
@@ -63,8 +66,10 @@ public class ConstantAccelerationForwardModel {
 			double dxdt = (1.0f / 6.0f) * ( a.getVelocity() + 2.0f*(b.getVelocity() + c.getVelocity()) + d.getVelocity() ); 
 		    double dvdt = (1.0f / 6.0f) * ( a.getAcceleration() + 2.0f*(b.getAcceleration() + c.getAcceleration()) + d.getAcceleration() );
 			
-		    state.setPosition(state.getPosition()+dxdt*deltaTime);
-		    state.setVelocity(state.getVelocity()+dvdt*deltaTime);
+
+			state.setPosition(state.getPosition()+dxdt*deltaTime);
+			state.setVelocity(state.getVelocity()+dvdt*deltaTime);
+
 	}
 	
 	//from run in TrajectoryEnvelopeTrackerRK4: line 548
@@ -100,8 +105,9 @@ public class ConstantAccelerationForwardModel {
 			integrateRK4(state, elapsedTrackingTime, v.getTc()*Vehicle.mill2sec, slowingDown, velMaxL, 1.0, v.getAccMAx());
 			
 			//saturazioni velocità
-			if (state.getVelocity() < 0.1) {
+			if (state.getVelocity() < v.getTc()*Vehicle.mill2sec*v.getAccMAx()){
 				state.setVelocity(0.0);
+				state.setPosition(v.getDistanceTraveled());
 				robotBehavior = Behavior.stop; // fermo
 			} 	
 		} 
@@ -198,11 +204,16 @@ public class ConstantAccelerationForwardModel {
 		times.put(currentPathIndex, time);
 		
 		while (true) {
+			//System.out.print("merda");
 			if (state.getPosition() >= distanceToCp ) break;  //calcolo fino al punto critico
 			if (state.getPosition() >= distanceToSlow) {
 				integrateRK4(state, time, deltaTime, true, maxVel, 1.0, maxAccel);
 				//saturazioni velocità
-				if (state.getVelocity() < 0.0) state.setVelocity(0.0);
+				
+				if (state.getVelocity() < v.getTc()*Vehicle.mill2sec*v.getAccMAx()){
+					state.setVelocity(0.0);
+					state.setPosition(v.getDistanceTraveled());
+				}
 				if (state.getPosition()<  distanceToCp && state.getVelocity()< 0.9*v.getAccMAx()){
 					state.setVelocity(0.9*v.getAccMAx());
 				}

@@ -294,10 +294,13 @@ public class Vehicle {
 	}
 
 	// CALCOLO NUOVE SEZIONI CRITICHE //
-	public void appendCs(Vehicle v2) {
+	public boolean appendCs(Vehicle v2) {
+		boolean newCs = false;
 		CriticalSection[] cs = intersect.findCriticalSections(this, v2);
 		for (CriticalSection c : cs)
 			this.cs.add(c);
+		if (cs.length != 0) newCs = true;
+		return newCs;
 	}
 
 	public void clearCs() {
