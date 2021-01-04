@@ -35,9 +35,9 @@ public class Test {
 		Pose start4 = new Pose(1, -10, -Math.PI/2); Pose[] goal4 = {new Pose(20, 10,Math.PI/2)};
 		Pose start5 = new Pose(-2, 7, 0); Pose[] goal5 = {new Pose(10, -13,Math.PI)};
 		
-		Thread thread1 = initThread(1, c, start1, goal1);
+		Thread thread1 = initThread(1, a, start1, goal1);
 		Thread thread2 = initThread(2, c, start2, goal2);
-		Thread thread3 = initThread(3, c, start3, goal3);
+		Thread thread3 = initThread(3, a, start3, goal3);
 		Thread thread4 = initThread(4, c, start4, goal4);
 		Thread thread5 = initThread(5, c, start5, goal5);
 

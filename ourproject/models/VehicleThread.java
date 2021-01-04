@@ -1,7 +1,7 @@
 package se.oru.coordination.coordination_oru.ourproject.models;
 
-import java.lang.reflect.Array;
-import java.sql.Time;
+//import java.lang.reflect.Array;
+//import java.sql.Time;
 import java.util.ArrayList;
 import java.util.TreeSet;
 
@@ -11,8 +11,8 @@ public class VehicleThread implements Runnable {
 	private double elapsedTrackingTime = 0.0;
 	private int cp = -2;
 	private int sp = -1;
-	private TreeSet<CriticalSection> csT = new TreeSet<CriticalSection>(); 
-	private ArrayList<Vehicle> vehicleCs = new ArrayList<Vehicle>();
+	private TreeSet<CriticalSection> analisysedCs = new TreeSet<CriticalSection>(); 
+	private ArrayList<Vehicle> analisysedVehicles = new ArrayList<Vehicle>();
 	private Boolean prec = true;
 	
 
@@ -28,7 +28,7 @@ public class VehicleThread implements Runnable {
 		String List;
 
 		try{
-			while(v.getPathIndex() < v.getWholePath().length){
+			while(v.getPathIndex() < v.getWholePath().length-1){ //-1 ?
 		
 				///// MEMORY OF CRITICAL SECTIONS ////
 				// if a cs has already been found and no one is inside the cs then I don't recalculate the cs //
@@ -36,11 +36,12 @@ public class VehicleThread implements Runnable {
 				this.analisysedCs.clear();
 				for (CriticalSection analisysedCs : v.getCs()){
 					if (v.getPathIndex() < analisysedCs.getTe1Start() 
-							&& analisysedCs.getVehicle2().getPathIndex() < analisysedCs.getTe2Start()) {
+							&& analisysedCs.getVehicle2().getPathIndex() < analisysedCs.getTe2Start()
+							&& !analisysedCs.isCsTruncated()) {
 						this.analisysedCs.add(analisysedCs);
 						analisysedVehicles.add(analisysedCs.getVehicle2());
 					}
-				if (csN.isCsTruncated()) System.out.print("ESISTONO QUESI CASI BRUTTI !!!!! \n !!!!!!!!!!!!");
+				if (analisysedCs.isCsTruncated()) System.out.print("\nESISTONO QUESI CASI BRUTTI !!!!! \n");
 				}
 				
 				// re-add the cs already analysed and find the cs of other vehicles
@@ -51,9 +52,10 @@ public class VehicleThread implements Runnable {
 				List = "";
 				boolean newCs = false;
 				for (Vehicle vh : this.v.getNears()){
-					if (!analisysedVehicles.contains(vh)) v.appendCs(vh);
+					if (!analisysedVehicles.contains(vh)) {
+						v.appendCs(vh);
 						newCs = true;}
-					else System.out.print("FUNZIONA SKIP \n");
+					else System.out.print("\nFUNZIONA SKIP CS\n");
 					List = (List + vh.getID() + " " );
 				}
 				
@@ -76,13 +78,12 @@ public class VehicleThread implements Runnable {
 					sp = v.getSlowingPoint();
 					if (sp == 0) sp = 1;
 				}
-				else System.out.print("FUNZIONA");
+				//else System.out.print("\nFUNZIONA skip calcolo prec \n");
 
+				//// CALCULATE NEW TIMES ////
 				v.setTimes();
 
 				//// CALCULATE NEW POSITION ////
-				
-
 				v.setPathIndex(elapsedTrackingTime);
 				v.setPose(v.getWholePath()[v.getPathIndex()].getPose());
 				v.setStoppingPoint();
@@ -95,8 +96,6 @@ public class VehicleThread implements Runnable {
 				
 				v.getVisualization().addEnvelope(v.getWholeSpatialEnvelope().getPolygon(),v,"#f600f6");
 				v.getVisualization().addEnvelope(v.getSpatialEnvelope().getPolygon(),v,"#efe007");
-				
-
 				v.getVisualization().displayPoint(v, cp-1, "#f60035"); //-1 perche array parte da zero
 				v.getVisualization().displayPoint(v, sp-1, "#0008f6");
 				v.getVisualization().displayPoint(v, v.getStoppingPoint(), "#f600b9");

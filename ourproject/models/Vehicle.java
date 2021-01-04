@@ -85,7 +85,7 @@ public class Vehicle {
 				this.velMax = 2;
 				this.accMax = 1.0;
 				this.priority = 1;
-				this.Tc = 200;
+				this.Tc = 250;
 				this.footprint = fpCar;
 				break;
 
@@ -101,10 +101,20 @@ public class Vehicle {
 				System.out.println("Unknown vehicle");
 		}
 		double stopTimeMax = this.velMax / this.accMax;
-		this.radius = 2*(2 * this.Tc * mill2sec + stopTimeMax) * this.velMax;
+		this.radius = (2 * this.Tc * mill2sec + stopTimeMax) * this.velMax;
 		this.path = createWholePath();
-		this.forward = new ConstantAccelerationForwardModel(this, 1000, 30);
+		this.forward = new ConstantAccelerationForwardModel(this, 1000, 30); // ???
 
+	}
+
+	public void PostInizialization(){
+		this.setTimes();
+		this.setSpatialEnvelope();
+		this.getNears();
+		// set RR
+		//for (Vehicle vh : this.vehicleNear){
+		// 	vh.setRR(this)
+		//}
 	}
 
 	/**********************************************
@@ -165,16 +175,6 @@ public class Vehicle {
 	/*****************************************
 	 ** SET & GET PER PERCORSO E TRAIETTORIA **
 	 ******************************************/
-	public void PostInizialization(){
-		this.setTimes();
-		this.setSpatialEnvelope();
-		this.getNears();
-		// set RR
-		//for (Vehicle vh : this.vehicleNear){
-		// 	vh.setRR(this)
-		//}
-	}
-	
 	 public Pose getPose() {
 		return pose;
 	}
@@ -369,13 +369,16 @@ public class Vehicle {
 			vhX = vh.getPose().getX();
 			vhY = vh.getPose().getY();
 			dist = Math.sqrt(Math.pow((x - vhX), 2.0) + Math.pow((y - vhY), 2.0));
-			if (dist <=this.radius && dist > 0) {
+			if (dist <=2*this.radius && dist > 0) {
 				this.vehicleNear.add(vh);
 			}
 		}
 		return vehicleNear;
 	}
 
+	/**************************************
+	 ** SET & GET PER LA VISUALIZZAZIONE **
+	 ***************************************/
 
 	public void setVisualization(BrowserVisualizationDist viz){
 		this.viz = viz;
