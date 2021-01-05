@@ -5,6 +5,8 @@ package se.oru.coordination.coordination_oru.ourproject.models;
 import java.util.ArrayList;
 import java.util.TreeSet;
 
+import se.oru.coordination.coordination_oru.ourproject.algorithms.ConstantAccelerationForwardModel.Behavior;
+
 public class VehicleThread implements Runnable {
 	
 	private Vehicle v;
@@ -28,7 +30,7 @@ public class VehicleThread implements Runnable {
 		String List;
 
 		try{
-			while(v.getPathIndex() < v.getWholePath().length-1){ //-1 ?
+			while(v.getForwardModel().getRobotBehavior() != Behavior.reached){//-1 ?
 		
 				///// MEMORY OF CRITICAL SECTIONS ////
 				// if a cs has already been found and no one is inside the cs then I don't recalculate the cs //
@@ -72,7 +74,10 @@ public class VehicleThread implements Runnable {
 							v.setCriticalPoint(cs);						//calcultate critical Point
 							break;
 					}
-					v.setSlowingPoint(); // altrimenti non calcola ultimo punto critico
+					//v.setSlowingPoint(); // altrimenti non calcola ultimo punto critico
+					System.out.print("\nsp old: " + v.getSlowingPoint());
+					v.setSlowingPointNew();
+					System.out.print("\nsp new: " + v.getSlowingPoint());					
 					cp = v.getCriticalPoint();
 					if (cp == -1) cp = v.getWholePath().length;
 
@@ -139,14 +144,15 @@ public class VehicleThread implements Runnable {
 				
 		System.out.println(
 			"\n============================================================\n"+
-			"\nInfo R" + this.v.getID() + " : \n" + 
-			"Last Index: "+ v.getWholePath().length + "\t \t " + infoCs + "\n" + 
+			"Info R" + this.v.getID() + " : \n" + 
+			"Last Index: "+ (v.getWholePath().length-1) + "\t \t " + infoCs + "\n" + 
 			"Vicini: "  + List + "\t \t Precedenza: " + prec +  "\n" + 
 			"Path Index: " 	+ v.getPathIndex() + "\t \t Stopping Point: " + v.getStoppingPoint() + "\n" +
 			"Distance: "+ Dist  + "\t \t Velocity: " + Vel + "\n" +
 			"SLowing Point: " + v.getSlowingPoint() +"\t Critical Point:" + v.getCriticalPoint()+ "\n" + 
 			CsString + "\n \n" +
-			"Percorso Trasmesso \n" +v.getTruncateTimes() +   "\n"
+			"Percorso Trasmesso \n" +v.getTruncateTimes() +   "\n" +
+			"============================================================"
 			);
 	}
 	

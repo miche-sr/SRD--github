@@ -108,6 +108,7 @@ public class Vehicle {
 	}
 
 	public void PostInizialization(){
+		this.setSlowingPointNew();
 		this.setTimes();
 		this.setSpatialEnvelope();
 		this.getNears();
@@ -343,8 +344,41 @@ public class Vehicle {
 			i -= 1;
 			stop = forward.canStop(this.te, this, cp, i, false);
 		}
-
 		this.slowingPoint = i;
+	}
+
+	public void setSlowingPointNew(){
+
+        int cp = this.criticalPoint;
+        if (cp == -1) cp = path.length;
+ 
+		double distanceToCpAbsolute = forward.computeDistance(path, 0, cp);
+		double distanceToCpRelative = forward.computeDistance(path, pathIndex,cp);
+        // We compute the distance traveled:
+        // - accelerating up to vel max from current vel (distToVelMax)
+        // - decelerating up to zero vel from vel max (brakingVelMax)
+        double timeToVelMax = (velMax - velocity)/accMax;
+        double distToVelMax = velocity*timeToVelMax + accMax*Math.pow(timeToVelMax,2.0)/2;
+        double brakingVelMax = Math.pow(velMax,2.0)/(accMax*2);
+
+        // If sum of the two is lower than distanceToCp, than the move profile is trapezoidal,
+        // (or at most triangular, reaching maxVel and immediately decelerating)
+        // If higher, than the profile is triangular, but not reaching maximum speed.
+        // For triangular: accelerating distance == decelerating distance
+        double braking;
+        if (distToVelMax + brakingVelMax > distanceToCpRelative){
+            // braking = brak1 (from NowVel to zero) + brak2 (from velReached to NowVel)
+            double brak1 = Math.pow(velocity,2.0)/(accMax*2);
+            double brak2 = (distanceToCpRelative - brak1)/2;
+            braking = brak1 + brak2;
+		}
+        else braking = brakingVelMax;
+		//System.out.println("SP NEW: "+(distanceToCp - braking));
+        State slowpoint = new State(distanceToCpAbsolute - braking, 0.0); //arbitrary vel, not used
+        //System.out.println("SP NEW: "+forward.getPathIndex(path, slowpoint));
+		this.slowingPoint = forward.getPathIndex(path, slowpoint);
+		double distanceToSlow = forward.computeDistance(path, 0, this.slowingPoint);
+		//System.out.println("distToSlowNew: "+distanceToSlow);
 	}
 
 	public int getStoppingPoint() {

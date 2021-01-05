@@ -22,7 +22,7 @@ public class ConstantAccelerationForwardModel {
 	private static int MAX_TX_DELAY = 0;
 	
 	public static enum Behavior {
-		stop,moving,slowing,minVelocity
+		stop,moving,slowing,minVelocity,reached,
 	};
 	
 	private Behavior robotBehavior;
@@ -91,14 +91,14 @@ public class ConstantAccelerationForwardModel {
 			boolean slowingDown = false;
 			robotBehavior = Behavior.moving; //accelero
 
-			// caso Vmin
-			if (v.getPathIndex() >= v.getSlowingPoint() && v.getPathIndex()< cp-1 && state.getVelocity()<= 0.9*v.getAccMAx()){
-				robotBehavior = Behavior.minVelocity; // vel minima
-				velMaxL = 0.8*v.getAccMAx();
-			}
+			// // caso Vmin
+			// if (v.getPathIndex() >= v.getSlowingPoint() && v.getPathIndex()< cp-1 && state.getVelocity()<= 0.9*v.getAccMAx()){
+			// 	robotBehavior = Behavior.minVelocity; // vel minima
+			// 	velMaxL = 0.8*v.getAccMAx();
+			// }
 			
 			// caso Frenata
-			else if (v.getPathIndex() >= v.getSlowingPoint()) {
+			if (v.getPathIndex() >= v.getSlowingPoint()) {
 				slowingDown = true; 
 				robotBehavior = Behavior.slowing; 
 			}
@@ -109,7 +109,12 @@ public class ConstantAccelerationForwardModel {
 				state.setVelocity(0.0);
 				state.setPosition(v.getDistanceTraveled());
 				robotBehavior = Behavior.stop; // fermo
-			} 	
+			} 
+			 if (state.getPosition()>=computeDistance(v.getWholePath() ,0, v.getWholePath().length)&& state.getVelocity()==0.0) {
+			 	double dist = computeDistance(v.getWholePath() ,0, v.getWholePath().length) ;
+				System.out.print(dist);
+				robotBehavior = Behavior.reached;
+			 }	
 		} 
 		return state;
 	}
@@ -131,7 +136,7 @@ public class ConstantAccelerationForwardModel {
 						case stop:	 		break; 
 						case moving: 		{slowingDown = false; velMaxL = maxVel;}
 						case slowing: 		break; //{slowingDown = true; velMaxL = maxVel;}
-						case minVelocity:  	{slowingDown = false; velMaxL = 0.9*maxAccel;}
+						//case minVelocity:  	{slowingDown = false; velMaxL = 0.9*maxAccel;}
 					}
 					
 					integrateRK4(auxState, time, deltaTime, slowingDown, velMaxL, 1.0, maxAccel*1.1);
@@ -174,7 +179,7 @@ public class ConstantAccelerationForwardModel {
 		return true;
 	}
 
-	public static double computeDistance(PoseSteering[] path, int startIndex, int endIndex) {
+	public double computeDistance(PoseSteering[] path, int startIndex, int endIndex) {
 		double ret = 0.0;
 		for (int i = startIndex; i < Math.min(endIndex,path.length-1); i++) {
 			ret += path[i].getPose().distanceTo(path[i+1].getPose());
@@ -204,8 +209,8 @@ public class ConstantAccelerationForwardModel {
 		times.put(currentPathIndex, time);
 		
 		while (true) {
-			//System.out.print("merda");
-			if (state.getPosition() >= distanceToCp ) break;  //calcolo fino al punto critico
+
+			if (state.getPosition() >= distanceToCp )break;  //calcolo fino al punto critico || state.getVelocity() == 0.0 ) 
 			if (state.getPosition() >= distanceToSlow) {
 				integrateRK4(state, time, deltaTime, true, maxVel, 1.0, maxAccel);
 				//saturazioni velocità
@@ -214,9 +219,9 @@ public class ConstantAccelerationForwardModel {
 					state.setVelocity(0.0);
 					state.setPosition(v.getDistanceTraveled());
 				}
-				if (state.getPosition()<  distanceToCp && state.getVelocity()< 0.9*v.getAccMAx()){
-					state.setVelocity(0.9*v.getAccMAx());
-				}
+				// if (state.getPosition()<  distanceToCp && state.getVelocity()< 0.9*v.getAccMAx()){
+				// 	state.setVelocity(0.9*v.getAccMAx());
+				// }
 			}
 			else {
 				integrateRK4(state, time, deltaTime, false, maxVel, 1.0, maxAccel);				
@@ -259,6 +264,7 @@ public class ConstantAccelerationForwardModel {
 		return times;
 		
 	}
+	
 	public Behavior getRobotBehavior(){
 		return robotBehavior;
 	}
