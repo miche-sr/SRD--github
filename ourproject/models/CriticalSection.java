@@ -2,7 +2,6 @@ package se.oru.coordination.coordination_oru.ourproject.models;
 
 import se.oru.coordination.coordination_oru.ourproject.algorithms.PrecedencesFounder;
 
-
 public class CriticalSection implements Comparable<CriticalSection> {
 	private int te1Start = -1;
 	private int te2Start = -1;
@@ -11,15 +10,23 @@ public class CriticalSection implements Comparable<CriticalSection> {
 	private Vehicle v1;
 	private Vehicle v2;
 	private PrecedencesFounder prec = new PrecedencesFounder();
+	private boolean csTruncated;
 
-	public CriticalSection(Vehicle v1, Vehicle v2, int te1Start, int te2Start, int te1End, int te2End) {
+	public CriticalSection(Vehicle v1, Vehicle v2, int te1Start, int te2Start, int te1End, int te2End,
+			boolean csTruncated) {
 		this.te1Start = te1Start;
 		this.te2Start = te2Start;
 		this.te1End = te1End;
 		this.te2End = te2End;
 		this.v1 = v1;
 		this.v2 = v2;
+		this.csTruncated = csTruncated;
 	}
+
+	public boolean isCsTruncated() {
+		return csTruncated;
+	}
+
 
 	public int getTe1Start() {
 		return te1Start;

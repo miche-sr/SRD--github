@@ -24,10 +24,10 @@ public class Vehicle {
 		CAR, AMBULANCE
 	};
 
-	private static final Coordinate[] fpCar = { new Coordinate(0, 0), new Coordinate(0, 1), new Coordinate(1, 1),
-			new Coordinate(1, 0) };
-	private static final Coordinate[] fpAmb = { new Coordinate(0, 0), new Coordinate(0, 3), new Coordinate(2, 3),
-			new Coordinate(2, 0) };
+	private static final Coordinate[] fpCar = { new Coordinate(0, 0), new Coordinate(2, 0), new Coordinate(2, 1),
+			new Coordinate(0, 1) };
+	private static final Coordinate[] fpAmb = { new Coordinate(0, 0), new Coordinate(0, 2), new Coordinate(3, 2),
+			new Coordinate(3, 0) };
 
 	// CONSTANT
 	public static double mill2sec = 0.001;
@@ -51,9 +51,6 @@ public class Vehicle {
 	private PoseSteering[] path;
 	private double distanceTraveled = 0.0;
 	private ArrayList<PoseSteering> truncatedPath = new ArrayList<PoseSteering>();
-	// from "AbstractTrajectoryEnvelopeCoordinator": line 1615
-	// private TrajectoryEnvelopeSolver solver = new TrajectoryEnvelopeSolver(0,
-	// 100000000);
 	private SpatialEnvelope se = null;
 	private SpatialEnvelope wholeSe = null;
 	private HashMap<Integer, Double> times = new HashMap<Integer, Double>();
@@ -63,7 +60,7 @@ public class Vehicle {
 	private int criticalPoint = -1; // -1 if no critical point
 	// private boolean csTooClose = false;
 	private int stoppingPoint = -1; // punto di fermata, a ogni ciclo: al quale mi fermo da dove sono
-	private int slowingPoint = 1000; // punto di frenata, unico: per fermarsi prima del p. critico
+	private double slowingPoint = -1; // punto di frenata, unico: per fermarsi prima del p. critico
 	private TreeSet<CriticalSection> cs = new TreeSet<CriticalSection>();
 	private CriticalSectionsFounder intersect = new CriticalSectionsFounder();
 
@@ -71,16 +68,11 @@ public class Vehicle {
 	private ArrayList<Vehicle> vehicleList = new ArrayList<Vehicle>();
 	private ArrayList<Vehicle> vehicleNear = new ArrayList<Vehicle>();
 
-	// from Trajectory EnvelopeCoordinatorSimulation
-	// TEMPORAL_RESOLUTION = 1000
-	// trackingPeriodInMillis = 30
 	private ConstantAccelerationForwardModel forward;
 
 	private BrowserVisualizationDist viz;
 
 	// COSTRUTTORE
-	// @param distanceTraveled The distance traveled so far along the current
-	// current path.
 	public Vehicle(int ID, Category category, Pose start, Pose[] goal) {
 		this.ID = ID;
 		this.pose = start;
@@ -92,7 +84,7 @@ public class Vehicle {
 				this.velMax = 2;
 				this.accMax = 1.0;
 				this.priority = 1;
-				this.Tc = 400;
+				this.Tc = 200;
 				this.footprint = fpCar;
 				break;
 
@@ -100,7 +92,7 @@ public class Vehicle {
 				this.velMax = 4.0;
 				this.accMax = 1.0;
 				this.priority = 2; 
-				this.Tc = 250;
+				this.Tc = 200;
 				this.footprint = fpAmb;
 				break;
 
@@ -108,11 +100,12 @@ public class Vehicle {
 				System.out.println("Unknown vehicle");
 		}
 		double stopTimeMax = this.velMax / this.accMax;
-		this.radius = 2*(2 * this.Tc * mill2sec + stopTimeMax) * this.velMax;
+		this.radius = (2 * this.Tc * mill2sec + stopTimeMax) * this.velMax;
 		this.path = createWholePath();
-		this.forward = new ConstantAccelerationForwardModel(this, 1000, 30);
+		this.forward = new ConstantAccelerationForwardModel(this, 1000, 30); // ???
 
 	}
+
 
 	/**********************************************
 	 ** SET & GET PER VARIABILI FISICHE E PROPRIE **
@@ -233,7 +226,7 @@ public class Vehicle {
 		int i = 0;
 		// trasmetto solo traiettoria all'interno del raggio(in tempi) e comunque sempre fino alla fine della prima sezione critica //
 		//System.out.print(this.getRobotID() + "SPatial " + pathIndex+ "\n"+times );
-		while ( times.get(pathIndex + i) <= secForSafety || pathIndex + i <= csEnd) {
+		while ( times.get(pathIndex + i) <= secForSafety || pathIndex + i <= csEnd+1 ) {
 			this.TruncateTimes.put(pathIndex + i, times.get(pathIndex + i));
 			this.truncatedPath.add(path[pathIndex + i]);
 			i++;
@@ -244,6 +237,7 @@ public class Vehicle {
 		}
 		PoseSteering[] truncatedPathArray = truncatedPath.toArray(new PoseSteering[truncatedPath.size()]);
 		se = TrajectoryEnvelope.createSpatialEnvelope(truncatedPathArray, footprint);
+		
 	}
 
 	public int getPathIndex() {
@@ -271,6 +265,7 @@ public class Vehicle {
 
 	public void setTimes() {
 		times = forward.computeTs(this);
+
 	}
 
 	public HashMap<Integer, Double> getTruncateTimes() {
@@ -307,14 +302,19 @@ public class Vehicle {
 		this.criticalPoint = cs.getTe1Start()-1;
 	}
 
-	public int getSlowingPoint() {
+	public double getSlowingPoint() {
 		return slowingPoint;
+	}
+
+	public void setSlowingPoint(double slowingPoint) {
+		this.slowingPoint = slowingPoint;
 	}
 
 	public void setSlowingPoint() {
 		boolean stop = false;
 		int i = this.criticalPoint;
 		int cp = this.criticalPoint;
+		
 		
 		if (this.criticalPoint == -1) {
 			i = this.path.length;
@@ -326,8 +326,50 @@ public class Vehicle {
 			i -= 1;
 			stop = forward.canStop(this, cp, i, false);
 		}
-
 		this.slowingPoint = i;
+	}
+
+	public void setSlowingPointNew(){
+
+        int cp = this.criticalPoint;
+        if (cp == -1) cp = path.length;
+ 
+		double distanceToCpAbsolute = forward.computeDistance(path, 0, cp);
+		double distanceToCpRelative = forward.computeDistance(path, pathIndex,cp);
+        // We compute the distance traveled:
+        // - accelerating up to vel max from current vel (distToVelMax)
+        // - decelerating up to zero vel from vel max (brakingVelMax)
+        double timeToVelMax = (velMax - velocity)/accMax;
+        double distToVelMax = velocity*timeToVelMax + accMax*Math.pow(timeToVelMax,2.0)/2;
+        double brakingVelMax = Math.pow(velMax,2.0)/(accMax*2);
+
+        // If sum of the two is lower than distanceToCp, than the move profile is trapezoidal,
+        // (or at most triangular, reaching maxVel and immediately decelerating)
+        // If higher, than the profile is triangular, but not reaching maximum speed.
+        // For triangular: accelerating distance == decelerating distance
+        double braking;
+        double traveledInTc = 0;
+        if (distToVelMax + brakingVelMax > distanceToCpRelative){
+            // braking = brak1 (from NowVel to zero) + brak2 (from velReached to NowVel)
+            double brak1 = Math.pow(velocity,2.0)/(accMax*2);
+            double brak2 = (distanceToCpRelative - brak1)/2;
+            braking = brak1 + brak2;
+//            traveledInTc = velocity*Tc*mill2sec + Math.pow(Tc*mill2sec,2.0)*accMax/2;
+		}
+        else {
+        	braking = brakingVelMax;
+//        	traveledInTc = velMax*Tc*mill2sec;
+        }
+        this.slowingPoint = distanceToCpAbsolute-(braking+traveledInTc);
+        /*
+		//System.out.println("SP NEW: "+(distanceToCp - braking));
+        State slowpoint = new State(distanceToCpAbsolute-(braking+traveledInTc), 0.0); //arbitrary vel, not used
+        //System.out.println("SP NEW: "+forward.getPathIndex(path, slowpoint));
+		this.slowingPoint = forward.getPathIndex(path, slowpoint);
+		double distanceToSlow = forward.computeDistance(path, 0, this.slowingPoint);
+		//System.out.println("distToSlowNew: "+distanceToSlow);
+		 * 
+		 */
 	}
 
 	public int getStoppingPoint() {
@@ -355,20 +397,23 @@ public class Vehicle {
 			vhX = vh.getPose().getX();
 			vhY = vh.getPose().getY();
 			dist = Math.sqrt(Math.pow((x - vhX), 2.0) + Math.pow((y - vhY), 2.0));
-			if (dist <=this.radius && dist > 0) {
+			if (dist <=2*this.radius && dist > 0) {
 				this.vehicleNear.add(vh);
 			}
 		}
 		return vehicleNear;
 	}
 
+	/**************************************
+	 ** SET & GET PER LA VISUALIZZAZIONE **
+	 ***************************************/
 
 	public void setVisualization(BrowserVisualizationDist viz){
 		this.viz = viz;
 	}
+
 	public BrowserVisualizationDist getVisualization(){
 		return this.viz;
 	}
 
 }
-

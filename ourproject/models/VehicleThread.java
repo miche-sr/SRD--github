@@ -1,20 +1,24 @@
 package se.oru.coordination.coordination_oru.ourproject.models;
 
-import java.lang.reflect.Array;
-import java.sql.Time;
+//import java.lang.reflect.Array;
+//import java.sql.Time;
 import java.util.ArrayList;
 import java.util.TreeSet;
+
+import org.metacsp.multi.spatioTemporal.paths.PoseSteering;
+
+import se.oru.coordination.coordination_oru.ourproject.algorithms.ConstantAccelerationForwardModel.Behavior;
 
 public class VehicleThread implements Runnable {
 	
 	private Vehicle v;
 	private double elapsedTrackingTime = 0.0;
-	private int oldCp = -1;
 	private int cp = -2;
 	private int sp = -1;
-	private TreeSet<CriticalSection> analisysedCs = new TreeSet<CriticalSection>(); 
-	private ArrayList<Vehicle> analisysedVehicles = new ArrayList<Vehicle>();
-	private Boolean prec;
+	private TreeSet<CriticalSection> analysedCs = new TreeSet<CriticalSection>(); 
+	private ArrayList<Vehicle> analysedVehicles = new ArrayList<Vehicle>();
+	private Boolean prec = true;
+	
 
 	public VehicleThread(Vehicle v){
 		this.v = v;
@@ -28,68 +32,81 @@ public class VehicleThread implements Runnable {
 		String List;
 
 		try{
-			while(v.getPathIndex() < v.getWholePath().length){
-				
+			while(v.getForwardModel().getRobotBehavior() != Behavior.reached){//-1 ?
+		
 				///// MEMORY OF CRITICAL SECTIONS ////
-				// If no vehicle is inside the cs already found, I don't recalculate the cs		
-				analisysedVehicles.clear();
-				this.analisysedCs.clear();
-				for (CriticalSection analisysedCs : v.getCs()){
-					if (v.getPathIndex() < analisysedCs.getTe1Start() 
-							&& analisysedCs.getVehicle2().getPathIndex() < analisysedCs.getTe2Start()) {
-						this.analisysedCs.add(analisysedCs);
-						analisysedVehicles.add(analisysedCs.getVehicle2());
+				// if a cs has already been found and no one is inside the cs then I don't recalculate the cs //
+				analysedVehicles.clear();
+				this.analysedCs.clear();
+				for (CriticalSection analysedCs : v.getCs()){
+					if (v.getPathIndex() < analysedCs.getTe1Start() 
+							&& analysedCs.getVehicle2().getPathIndex() < analysedCs.getTe2Start()
+							&& !analysedCs.isCsTruncated()) {
+						this.analysedCs.add(analysedCs);
+						analysedVehicles.add(analysedCs.getVehicle2());
 					}
+				if (analysedCs.isCsTruncated()) System.out.println("troncato");
 				}
 				
 				// re-add the cs already analysed and find the cs of other vehicles
 				v.clearCs();
-				for (CriticalSection analisysedCs : this.analisysedCs)
-					v.getCs().add(analisysedCs);
+				for (CriticalSection analysedCs : this.analysedCs)
+					v.getCs().add(analysedCs);
 				
 				List = "";
+				boolean newPossibleCs = false;
 				for (Vehicle vh : this.v.getNears()){
-					if (!analisysedVehicles.contains(vh)) v.appendCs(vh);
+					if (!analysedVehicles.contains(vh)) {
+						v.appendCs(vh);
+						newPossibleCs = true;
+					}
+					else System.out.println("skip");
 					List = (List + vh.getID() + " " );
 				}
 				
 				//// CALCULATE THE PRECEDENCES ////
-				prec = true; 
-				v.setCriticalPoint(-1); // that is: CP = -1
-				for (CriticalSection cs : this.v.getCs()){
-					prec = cs.ComputePrecedences();
-					if (prec == false) {
-						v.setCriticalPoint(cs);
-						break; //calculate precedence as long as I have precedence
+				if ((newPossibleCs == true && v.getCs().size() != 0)  //per nuova commenta qui e aggiung ")"
+						||(v.getCs().size() == 0 && v.getCriticalPoint() != -1) 
+							|| cp == -2){
+					System.out.println("ricalcolo");
+					prec = true;
+					v.setCriticalPoint(-1);
+					for (CriticalSection cs : this.v.getCs()){
+						prec = cs.ComputePrecedences();
+						if (prec == false)								//calculate precedence as long as I have precedence
+							v.setCriticalPoint(cs);						//calcultate critical Point
+							break;
 					}
-				}
+					//v.setSlowingPoint(); // altrimenti non calcola ultimo punto critico
+					v.setSlowingPointNew();
+					cp = v.getCriticalPoint();
+					if (cp == -1) cp = v.getWholePath().length;
 
-				//// SET THE SLOWING POINT - JUST ONE TIME, WHEN A NEW CP IS SET ////
-				if (v.getCriticalPoint() == -1) v.setCriticalPoint(v.getWholePath().length-1);
-
-				if(v.getCriticalPoint() != oldCp) {
-					v.setSlowingPoint();
-					oldCp = v.getCriticalPoint();
+					sp = v.getForwardModel().getPathIndex(v.getWholePath(), v.getSlowingPoint());
+					if (sp == 0) sp = 1;
 				}
-		
-				//// UPDATE INFO ////
+				//else System.out.print("\nFUNZIONA skip calcolo prec \n");
+
+				//// CALCULATE NEW TIMES ////
 				v.setTimes();
+
+				//// CALCULATE NEW POSITION ////
 				v.setPathIndex(elapsedTrackingTime);
 				v.setPose(v.getWholePath()[v.getPathIndex()].getPose());
 				v.setStoppingPoint();
+				
+				/// CALCULATE TRUNCATED TRAJECTORY ////
 				v.setSpatialEnvelope();
 
 				//// VISUALIZATION AND PRINT ////
 				printLog(List, prec);
-				cp = v.getCriticalPoint();
-				sp = v.getSlowingPoint();
-				if (sp == 0) sp = 1;
 				
 				v.getVisualization().addEnvelope(v.getWholeSpatialEnvelope().getPolygon(),v,"#f600f6");
 				v.getVisualization().addEnvelope(v.getSpatialEnvelope().getPolygon(),v,"#efe007");
-				v.getVisualization().displayPoint(v, cp-1, "#f60035"); //-1 perche array parte da zero
+				v.getVisualization().displayPoint(v, cp-1, "#29f600"); //-1 perche array parte da zero
 				v.getVisualization().displayPoint(v, sp-1, "#0008f6");
-				v.getVisualization().displayPoint(v, v.getStoppingPoint(), "#f600b9");
+				v.getVisualization().displayPoint(v, v.getStoppingPoint(), "#ffffff");
+
 				String infoCs = v.getForwardModel().getRobotBehavior().toString();
 				v.getVisualization().displayRobotState(v.getSpatialEnvelope().getFootprint(), v,infoCs);
 
@@ -102,6 +119,7 @@ public class VehicleThread implements Runnable {
 		
 		catch (InterruptedException e) {
 			System.out.println("Thread interrotto");
+
 		}	
 	}
 
@@ -123,40 +141,22 @@ public class VehicleThread implements Runnable {
 				i += 1;
 			}
 		}
-		else	CsString = ("0 Sezioni Critiche\n");
+		else	CsString = ("0 Sezioni Critiche");
 				
 		System.out.println(
-			"============================================================"+
-			"\nInfo R" + this.v.getID() + " : \n" + 
+			"============================================================\n"+
+			"Info R" + this.v.getID() + " : \n" + 
 			"Last Index: "+ (v.getWholePath().length-1) + "\t \t " + infoCs + "\n" + 
 			"Vicini: "  + List + "\t \t Precedenza: " + prec +  "\n" + 
 			"Path Index: " 	+ v.getPathIndex() + "\t \t Stopping Point: " + v.getStoppingPoint() + "\n" +
 			"Distance: "+ Dist  + "\t \t Velocity: " + Vel + "\n" +
 			"SLowing Point: " + v.getSlowingPoint() +"\t Critical Point:" + v.getCriticalPoint()+ "\n" + 
-			CsString + "\n" +
-			"Traiettoria Trasmessa \n" +v.getTruncateTimes()
+			CsString + "\n " +
+			"Traiettoria Trasmessa \n" +v.getTruncateTimes() +   "\n"
+//			"============================================================"
 			);
 	}
 	
-	
-	//// FUNCTION FOR PRINTING CRITICAL SECTIONS'S INFORMATIONS ////
-	// public String infoCs() {
-		
-	// 	String infoCs;
-
-	// 	if (v.getPathIndex() > v.getSlowingPoint() && v.getVelocity()>=v.getAccMAx())
-	// 		infoCs = "Slowing";
-	// 	else if(v.getPathIndex() > v.getSlowingPoint() && v.getVelocity()<v.getAccMAx())
-	// 		infoCs = "Min Velocity";
-	// 	else 
-	// 		infoCs = "Moving on";
-		
-	// 	if (v.getPathIndex() == cp && v.getVelocity() == 0)
-	// 		infoCs = "Waiting";
-	// 	if (v.getPathIndex() > cp)
-	// 		infoCs = "ATTENTION ROBOT STOPPED AFTER CRITICAL POINT";
-	// 	return infoCs;
-	// }
 
 
 
