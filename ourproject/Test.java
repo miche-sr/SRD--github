@@ -11,7 +11,8 @@ import org.metacsp.multi.spatioTemporal.paths.Pose;
 public class Test {
 
 	private static ArrayList<Vehicle> vehicleList = new ArrayList<Vehicle>();
-
+	private static HashMap<Integer,RobotReport> mainTable = new HashMap<Integer,RobotReport>();
+	
 	public static Thread initThread(int id, Vehicle.Category ctg, Pose start, Pose[] goal) {
 		Vehicle vehicle = new Vehicle(id, ctg, start, goal);
 		Thread thread = new Thread(new VehicleThread(vehicle));
@@ -40,10 +41,10 @@ public class Test {
 //		Pose start2 = new Pose(15, 0, 0); Pose[] goal2 = { new Pose(-1, 0, 0) };
 
 		Thread thread1 = initThread(1, c, start1, goal1);
-//		Thread thread2 = initThread(2, c, start2, goal2);
+		Thread thread2 = initThread(2, c, start2, goal2);
 		Thread thread3 = initThread(3, c, start3, goal3);
 //		Thread thread4 = initThread(4, c, start4, goal4);
-//		Thread thread5 = initThread(5, c, start5, goal5);
+		Thread thread5 = initThread(5, c, start5, goal5);
 
 		BrowserVisualizationDist viz = new BrowserVisualizationDist();
 		viz.setInitialTransform(25, 12, 15);
@@ -66,18 +67,20 @@ public class Test {
 		vh.setRadius(rMax);
 		vh.setSecForSafety(tMax);
 		vh.setVehicleList(vehicleList);
+		vh.setMainTable(mainTable);
 		vh.setSlowingPointNew();
 		vh.setTimes();
 		vh.setSpatialEnvelope();
 		vh.getNears();
+		vh.sendNewRr();
 		vh.setVisualization(viz);
 	}
 	System.out.println("\n" + "Radius "  + rMax );
 	
 	thread1.start();
-//	thread2.start();
+	thread2.start();
 	thread3.start();
 //	thread4.start();
-//	thread5.start();
+	thread5.start();
 	}
 }

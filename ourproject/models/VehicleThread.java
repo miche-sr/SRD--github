@@ -17,6 +17,7 @@ public class VehicleThread implements Runnable {
 	private int sp = -1;
 	private TreeSet<CriticalSection> analysedCs = new TreeSet<CriticalSection>(); 
 	private ArrayList<Vehicle> analysedVehicles = new ArrayList<Vehicle>();
+	private ArrayList<RobotReport> rrNears = new ArrayList<RobotReport>();
 	private Boolean prec = true;
 	
 
@@ -32,7 +33,15 @@ public class VehicleThread implements Runnable {
 		String List;
 
 		try{
-			while(v.getForwardModel().getRobotBehavior() != Behavior.reached){//-1 ?
+			while(v.getForwardModel().getRobotBehavior() != Behavior.reached){
+				
+				//// UNPACK MESSAGES ////
+				rrNears.clear();
+				for (Vehicle vh : v.getNears()){
+					rrNears.add(v.getMainTable().get(vh.getID()));
+				}
+				for (RobotReport rr : rrNears)
+					System.out.println(rr.getID()+" ");
 		
 				///// MEMORY OF CRITICAL SECTIONS ////
 				// if a cs has already been found and no one is inside the cs then I don't recalculate the cs //
@@ -41,7 +50,7 @@ public class VehicleThread implements Runnable {
 				for (CriticalSection analysedCs : v.getCs()){
 					if (v.getPathIndex() < analysedCs.getTe1Start() 
 							&& analysedCs.getVehicle2().getPathIndex() < analysedCs.getTe2Start()
-							&& !analysedCs.isCsTruncated()) {
+								&& !analysedCs.isCsTruncated()) {
 						this.analysedCs.add(analysedCs);
 						analysedVehicles.add(analysedCs.getVehicle2());
 					}
@@ -87,18 +96,19 @@ public class VehicleThread implements Runnable {
 				}
 				//else System.out.print("\nFUNZIONA skip calcolo prec \n");
 
-				//// CALCULATE NEW TIMES ////
+				//// UPDATE VALUES ////
 				v.setTimes();
-
-				//// CALCULATE NEW POSITION ////
 				v.setPathIndex(elapsedTrackingTime);
 				v.setPose(v.getWholePath()[v.getPathIndex()].getPose());
 				v.setStoppingPoint();
-				
-				/// CALCULATE TRUNCATED TRAJECTORY ////
 				v.setSpatialEnvelope();
 
-				//// VISUALIZATION AND PRINT ////
+				//// SEND NEW ROBOT REPORT ////
+				v.sendNewRr();
+				
+				/***********************************
+				 ****** VISUALIZATION AND PRINT ****
+				 ***********************************/
 				printLog(List, prec);
 				
 				v.getVisualization().addEnvelope(v.getWholeSpatialEnvelope().getPolygon(),v,"#f600f6");
@@ -152,8 +162,8 @@ public class VehicleThread implements Runnable {
 			"Distance: "+ Dist  + "\t \t Velocity: " + Vel + "\n" +
 			"SLowing Point: " + v.getSlowingPoint() +"\t Critical Point:" + v.getCriticalPoint()+ "\n" + 
 			CsString + "\n " +
-			"Traiettoria Trasmessa \n" +v.getTruncateTimes() +   "\n"
-//			"============================================================"
+			"Traiettoria Trasmessa \n" +v.getTruncateTimes() +   "\n"+
+			"============================================================"
 			);
 	}
 	

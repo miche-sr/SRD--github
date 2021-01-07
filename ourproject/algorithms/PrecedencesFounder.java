@@ -37,7 +37,7 @@ public class PrecedencesFounder {
          SI PUÒ PASSARE A ORDINAMENTI SECONDARI EURISTICI **/
         else{
         	System.out.println("sono nell'else");
-//        	if (timeAtCsStart2 == -1) prec = true;
+        	if (timeAtCsStart2 == -1) prec = true;
         	if (braking1 < 0 || braking2 < 0) prec = true;
         	else if (v1.getPriority() > v2.getPriority()) prec = true;
             else if (v1.getPriority() < v2.getPriority()) prec = false;

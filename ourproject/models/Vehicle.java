@@ -54,7 +54,7 @@ public class Vehicle {
 	private SpatialEnvelope se = null;
 	private SpatialEnvelope wholeSe = null;
 	private HashMap<Integer, Double> times = new HashMap<Integer, Double>();
-	private HashMap<Integer, Double> TruncateTimes = new HashMap<Integer, Double>();
+	private HashMap<Integer, Double> truncateTimes = new HashMap<Integer, Double>();
 
 	// VARIABILI PER LE SEZIONI CRITICHE
 	private int criticalPoint = -1; // -1 if no critical point
@@ -67,9 +67,9 @@ public class Vehicle {
 	// DA USARE PER I VICINI
 	private ArrayList<Vehicle> vehicleList = new ArrayList<Vehicle>();
 	private ArrayList<Vehicle> vehicleNear = new ArrayList<Vehicle>();
+	private HashMap<Integer, RobotReport> mainTable;
 
 	private ConstantAccelerationForwardModel forward;
-
 	private BrowserVisualizationDist viz;
 
 	// COSTRUTTORE
@@ -214,7 +214,7 @@ public class Vehicle {
 	// CALCOLO PATH TRAIETTORIA TRONCATA //
 	public void setSpatialEnvelope() {
 		this.truncatedPath.clear();
-		this.TruncateTimes.clear();
+		this.truncateTimes.clear();
 		int csEnd;
 
 		// from cp to Pathndex //
@@ -227,7 +227,7 @@ public class Vehicle {
 		// trasmetto solo traiettoria all'interno del raggio(in tempi) e comunque sempre fino alla fine della prima sezione critica //
 		//System.out.print(this.getRobotID() + "SPatial " + pathIndex+ "\n"+times );
 		while ( times.get(pathIndex + i) <= secForSafety || pathIndex + i <= csEnd+1 ) {
-			this.TruncateTimes.put(pathIndex + i, times.get(pathIndex + i));
+			this.truncateTimes.put(pathIndex + i, times.get(pathIndex + i));
 			this.truncatedPath.add(path[pathIndex + i]);
 			i++;
 			//System.out.print("\n "+this.getRobotID()+" path+i  " + (pathIndex+i) + "\n" + times);
@@ -269,7 +269,7 @@ public class Vehicle {
 	}
 
 	public HashMap<Integer, Double> getTruncateTimes() {
-		return TruncateTimes;
+		return truncateTimes;
 	}
 
 	/**************************************
@@ -386,6 +386,14 @@ public class Vehicle {
 	public void setVehicleList(ArrayList<Vehicle> vehicleList) {
 		this.vehicleList = vehicleList;
 	}
+	
+	public void setMainTable(HashMap<Integer, RobotReport> mainTable) {
+		this.mainTable = mainTable;
+	}
+	public HashMap<Integer, RobotReport> getMainTable() {
+		return mainTable;
+	}
+
 
 	// CALCOLO QUALI SONO I ROBOT VICINI //
 	public ArrayList<Vehicle> getNears() {
@@ -402,6 +410,11 @@ public class Vehicle {
 			}
 		}
 		return vehicleNear;
+	}
+	
+	public void sendNewRr() {
+		RobotReport rr = new RobotReport(ID, priority, pathIndex, se, truncateTimes, stoppingPoint);
+		mainTable.put(ID, rr);
 	}
 
 	/**************************************
