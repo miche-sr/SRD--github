@@ -280,7 +280,7 @@ public class Vehicle {
 	}
 
 	// CALCOLO NUOVE SEZIONI CRITICHE //
-	public void appendCs(Vehicle v2) {
+	public void appendCs(RobotReport v2) {
 		CriticalSection[] cs = intersect.findCriticalSections(this, v2);
 		for (CriticalSection c : cs)
 			this.cs.add(c);

@@ -2,6 +2,7 @@
 package se.oru.coordination.coordination_oru.ourproject.algorithms;
 
 import se.oru.coordination.coordination_oru.ourproject.models.CriticalSection;
+import se.oru.coordination.coordination_oru.ourproject.models.RobotReport;
 import se.oru.coordination.coordination_oru.ourproject.models.Vehicle;
 
 import java.util.ArrayList;
@@ -15,7 +16,7 @@ import com.vividsolutions.jts.geom.Geometry;
 
 public class CriticalSectionsFounder {
 	
-	public CriticalSection[] findCriticalSections(Vehicle v1, Vehicle v2) {
+	public CriticalSection[] findCriticalSections(Vehicle v1, RobotReport v2) {
 
 		ArrayList<CriticalSection> css = new ArrayList<CriticalSection>();
 		

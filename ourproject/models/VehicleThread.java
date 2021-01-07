@@ -16,10 +16,9 @@ public class VehicleThread implements Runnable {
 	private int cp = -2;
 	private int sp = -1;
 	private TreeSet<CriticalSection> analysedCs = new TreeSet<CriticalSection>(); 
-	private ArrayList<Vehicle> analysedVehicles = new ArrayList<Vehicle>();
+	private ArrayList<RobotReport> analysedVehicles = new ArrayList<RobotReport>();
 	private ArrayList<RobotReport> rrNears = new ArrayList<RobotReport>();
 	private Boolean prec = true;
-	
 
 	public VehicleThread(Vehicle v){
 		this.v = v;
@@ -40,8 +39,8 @@ public class VehicleThread implements Runnable {
 				for (Vehicle vh : v.getNears()){
 					rrNears.add(v.getMainTable().get(vh.getID()));
 				}
-				for (RobotReport rr : rrNears)
-					System.out.println(rr.getID()+" ");
+//				for (RobotReport rr : rrNears)
+//					System.out.println(rr.getID()+" ");
 		
 				///// MEMORY OF CRITICAL SECTIONS ////
 				// if a cs has already been found and no one is inside the cs then I don't recalculate the cs //
@@ -54,7 +53,7 @@ public class VehicleThread implements Runnable {
 						this.analysedCs.add(analysedCs);
 						analysedVehicles.add(analysedCs.getVehicle2());
 					}
-				if (analysedCs.isCsTruncated()) System.out.println("troncato");
+//				if (analysedCs.isCsTruncated()) System.out.println("troncato");
 				}
 				
 				// re-add the cs already analysed and find the cs of other vehicles
@@ -64,12 +63,12 @@ public class VehicleThread implements Runnable {
 				
 				List = "";
 				boolean newPossibleCs = false;
-				for (Vehicle vh : this.v.getNears()){
+				for (RobotReport vh : rrNears){
 					if (!analysedVehicles.contains(vh)) {
 						v.appendCs(vh);
 						newPossibleCs = true;
 					}
-					else System.out.println("skip");
+//					else System.out.println("skip");
 					List = (List + vh.getID() + " " );
 				}
 				
@@ -77,7 +76,7 @@ public class VehicleThread implements Runnable {
 				if ((newPossibleCs == true && v.getCs().size() != 0)  //per nuova commenta qui e aggiung ")"
 						||(v.getCs().size() == 0 && v.getCriticalPoint() != -1) 
 							|| cp == -2){
-					System.out.println("ricalcolo");
+//					System.out.println("ricalcolo");
 					prec = true;
 					v.setCriticalPoint(-1);
 					for (CriticalSection cs : this.v.getCs()){
@@ -125,11 +124,9 @@ public class VehicleThread implements Runnable {
 				this.elapsedTrackingTime += v.getTc()*Vehicle.mill2sec;
 			}
 			System.out.println("\n R" + this.v.getID() + " : GOAL RAGGIUNTO" );
-		}
-		
+		}	
 		catch (InterruptedException e) {
 			System.out.println("Thread interrotto");
-
 		}	
 	}
 

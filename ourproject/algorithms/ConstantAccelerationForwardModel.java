@@ -128,7 +128,7 @@ public class ConstantAccelerationForwardModel {
 			} 
 			if (state.getPosition() >= computeDistance(v.getWholePath() ,0, v.getWholePath().length)&& state.getVelocity()==0.0) {
 				double dist = computeDistance(v.getWholePath() ,0, v.getWholePath().length) ;
-				System.out.print(dist);
+//				System.out.print(dist);
 				robotBehavior = Behavior.reached;
 			}	
 		} 

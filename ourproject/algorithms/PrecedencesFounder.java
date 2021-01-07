@@ -1,6 +1,7 @@
 package se.oru.coordination.coordination_oru.ourproject.algorithms;
 
 import se.oru.coordination.coordination_oru.ourproject.models.CriticalSection;
+import se.oru.coordination.coordination_oru.ourproject.models.RobotReport;
 import se.oru.coordination.coordination_oru.ourproject.models.Vehicle;
 
 public class PrecedencesFounder {
@@ -8,14 +9,14 @@ public class PrecedencesFounder {
 	public Boolean ComputePrecedences(CriticalSection cs) {
         Boolean prec;
         Vehicle v1 = cs.getVehicle1();
-        Vehicle v2 = cs.getVehicle2();
-        int pathIndx1 = v1.getPathIndex();
-        int pathIndx2 = v2.getPathIndex();
+        RobotReport v2 = cs.getVehicle2();
         
         int te1start = cs.getTe1Start();
         int te1end = cs.getTe1End();
         int te2start = cs.getTe2Start();
         int te2end = cs.getTe2End();
+        
+        System.out.println(v2.getTruncateTimes()+"\n"+te2start+"\n"+te2end);
         
         double timeAtCsStart1 = v1.getTruncateTimes().get(cs.getTe1Start());
         double timeAtCsEnd1 = v1.getTruncateTimes().get(cs.getTe1End());
