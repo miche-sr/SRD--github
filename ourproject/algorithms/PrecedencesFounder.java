@@ -39,7 +39,8 @@ public class PrecedencesFounder {
         else{
         	System.out.println("sono nell'else");
         	if (timeAtCsStart2 == -1) prec = true;
-        	if (braking1 < 0 || braking2 < 0) prec = true;
+        	else if (timeAtCsStart1 == -1) prec = false;
+        	else if (braking1 < 0 || braking2 < 0) prec = true;
         	else if (v1.getPriority() > v2.getPriority()) prec = true;
             else if (v1.getPriority() < v2.getPriority()) prec = false;
             else{	// A PARITÀ DI PRIORITÀ, SI PROCEDE PER DISTANZA TEMPORALE

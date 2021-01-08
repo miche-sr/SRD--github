@@ -102,7 +102,7 @@ public class Vehicle {
 		double stopTimeMax = this.velMax / this.accMax;
 		this.radius = (2 * this.Tc * mill2sec + stopTimeMax) * this.velMax;
 		this.path = createWholePath();
-		this.forward = new ConstantAccelerationForwardModel(this, 1000, 30); // ???
+		this.forward = new ConstantAccelerationForwardModel(this, 1000); // ???
 
 	}
 
@@ -309,7 +309,7 @@ public class Vehicle {
 	public void setSlowingPoint(double slowingPoint) {
 		this.slowingPoint = slowingPoint;
 	}
-
+/*
 	public void setSlowingPoint() {
 		boolean stop = false;
 		int i = this.criticalPoint;
@@ -328,19 +328,22 @@ public class Vehicle {
 		}
 		this.slowingPoint = i;
 	}
-
+*/
 	public void setSlowingPointNew(){
 
         int cp = this.criticalPoint;
-        if (cp == -1) cp = path.length;
- 
+        if (cp == -1) cp = path.length-1;
+        
 		double distanceToCpAbsolute = forward.computeDistance(path, 0, cp);
 		double distanceToCpRelative = forward.computeDistance(path, pathIndex,cp);
         // We compute the distance traveled:
         // - accelerating up to vel max from current vel (distToVelMax)
         // - decelerating up to zero vel from vel max (brakingVelMax)
+        double accMax = this.accMax*1.1;
         double timeToVelMax = (velMax - velocity)/accMax;
         double distToVelMax = velocity*timeToVelMax + accMax*Math.pow(timeToVelMax,2.0)/2;
+        
+        accMax = this.accMax*0.9;
         double brakingVelMax = Math.pow(velMax,2.0)/(accMax*2);
 
         // If sum of the two is lower than distanceToCp, than the move profile is trapezoidal,
@@ -354,11 +357,13 @@ public class Vehicle {
             double brak1 = Math.pow(velocity,2.0)/(accMax*2);
             double brak2 = (distanceToCpRelative - brak1)/2;
             braking = brak1 + brak2;
-//            traveledInTc = velocity*Tc*mill2sec + Math.pow(Tc*mill2sec,2.0)*accMax/2;
+            
+            accMax = this.accMax*1.1;
+            traveledInTc = velocity*Tc*mill2sec + Math.pow(Tc*mill2sec,2.0)*accMax/2;
 		}
         else {
         	braking = brakingVelMax;
-//        	traveledInTc = velMax*Tc*mill2sec;
+        	traveledInTc = velMax*Tc*mill2sec;
         }
         this.slowingPoint = distanceToCpAbsolute-(braking+traveledInTc);
         /*
