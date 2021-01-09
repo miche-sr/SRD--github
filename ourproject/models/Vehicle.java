@@ -419,10 +419,12 @@ public class Vehicle {
 	}
 	
 	public void sendNewRr() {
-		System.out.println("pathIndexbfsd"+ID+" "+this.se);
+		HashMap<Integer,Double> TruTim;
+		int Pindex;
 
+		TruTim = (HashMap<Integer,Double>) truncateTimes.clone();
 		RobotReport rr = RobotReport.deepcopy(this.ID, this.priority, this.pathIndex, this.se, 
-				this.truncateTimes, this.stoppingPoint);
+		TruTim, this.stoppingPoint);
 		
 		mainTable.put(ID, rr);
 		System.out.println("pathIndexafsd"+ID+" "+rr.getSe());

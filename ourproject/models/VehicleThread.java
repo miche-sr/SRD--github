@@ -40,9 +40,9 @@ public class VehicleThread implements Runnable {
 				rrNears.clear();
 				for (Vehicle vh : v.getNears()){
 					rrNears.put(vh.getID(),v.getMainTable().get(vh.getID()));
-					if(v.getID()==1) System.out.println("pathIndex3rr "+rrNears.get(3).getPathIndex());
+					//if(v.getID()==1) System.out.println("pathIndex3rr "+rrNears.get(3).getPathIndex());
 				}
-				if(v.getID()==1) System.out.println("pathIndex3tb "+v.getMainTable().get(3).getPathIndex());
+				//if(v.getID()==1) System.out.println("pathIndex3tb "+v.getMainTable().get(3).getPathIndex());
 
 			/****************************
 			 * FILTER CRITICAL SECTIONS *
