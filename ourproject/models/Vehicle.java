@@ -339,33 +339,33 @@ public class Vehicle {
         // We compute the distance traveled:
         // - accelerating up to vel max from current vel (distToVelMax)
         // - decelerating up to zero vel from vel max (brakingVelMax)
-        double accMax = this.accMax*1.1;
-        double timeToVelMax = (velMax - velocity)/accMax;
-        double distToVelMax = velocity*timeToVelMax + accMax*Math.pow(timeToVelMax,2.0)/2;
-        
-        accMax = this.accMax*0.9;
-        double brakingVelMax = Math.pow(velMax,2.0)/(accMax*2);
 
-        // If sum of the two is lower than distanceToCp, than the move profile is trapezoidal,
-        // (or at most triangular, reaching maxVel and immediately decelerating)
+        double v0 = velocity;
+        double timeToVelMax = (velMax - v0)/accMax;
+        double distToVelMax = v0*timeToVelMax + accMax*Math.pow(timeToVelMax,2.0)/2;
+        double brakingFromVelMax = Math.pow(velMax,2.0)/(accMax*2);
+
+        // If sum of the two is lower than distanceToCp, than the move profile is trapezoidal.
         // If higher, than the profile is triangular, but not reaching maximum speed.
         // For triangular: accelerating distance == decelerating distance
         double braking;
         double traveledInTc = 0;
-        if (distToVelMax + brakingVelMax > distanceToCpRelative){
+        if (distToVelMax + brakingFromVelMax > distanceToCpRelative){	// triangular profile
             // braking = brak1 (from NowVel to zero) + brak2 (from velReached to NowVel)
-            double brak1 = Math.pow(velocity,2.0)/(accMax*2);
+            double brak1 = Math.pow(v0,2.0)/(accMax*2);
             double brak2 = (distanceToCpRelative - brak1)/2;
             braking = brak1 + brak2;
             
-            accMax = this.accMax*1.1;
-            traveledInTc = velocity*Tc*mill2sec + Math.pow(Tc*mill2sec,2.0)*accMax/2;
+            double timeToTopVel = -v0/accMax + Math.sqrt(Math.pow(v0/accMax, 2)+2*brak2/accMax);
+            double topVel = v0 + accMax*timeToTopVel;
+            traveledInTc = topVel*Tc*mill2sec - Math.pow(Tc*mill2sec,2.0)*accMax/2;
 		}
         else {
-        	braking = brakingVelMax;
+        	braking = brakingFromVelMax;
         	traveledInTc = velMax*Tc*mill2sec;
         }
         this.slowingPoint = distanceToCpAbsolute-(braking+traveledInTc);
+        System.out.println("braking"+braking);
         /*
 		//System.out.println("SP NEW: "+(distanceToCp - braking));
         State slowpoint = new State(distanceToCpAbsolute-(braking+traveledInTc), 0.0); //arbitrary vel, not used

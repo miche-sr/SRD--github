@@ -78,7 +78,7 @@ public class ConstantAccelerationForwardModel {
 		double deltaTime = v.getTc()*Vehicle.mill2sec;
 
 		// considero ritardi dovuti a periodo di controllo e tempo di aggiornamento del ciclo //
-		long lookaheadInMillis = 1*(this.controlPeriodInMillis);// + MAX_TX_DELAY + trackingPeriodInMillis);
+		long lookaheadInMillis = 0*(this.controlPeriodInMillis);// + MAX_TX_DELAY + trackingPeriodInMillis);
 		//avanzamento nel periodo di ritardo
 		if (lookaheadInMillis > 0 && robotBehavior == Behavior.moving) {
 			while (time*temporalResolution < lookaheadInMillis) {	
@@ -89,7 +89,7 @@ public class ConstantAccelerationForwardModel {
 		
 		//Frenata
 		while (auxState.getVelocity() > v.getTc()*Vehicle.mill2sec*v.getAccMAx()) {
-			integrateRK4(auxState, time, deltaTime, true, maxVel, 1.0, maxAccel*0.9);
+			integrateRK4(auxState, time, deltaTime, true, maxVel, 1.0, maxAccel);
 			time += deltaTime;
 		}
 		return getPathIndex(v.getWholePath(), auxState);

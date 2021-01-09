@@ -16,7 +16,7 @@ public class PrecedencesFounder {
         int te2start = cs.getTe2Start();
         int te2end = cs.getTe2End();
         
-        System.out.println(v2.getTruncateTimes()+"\n"+te2start+"\n"+te2end);
+//        System.out.println(v2.getTruncateTimes()+"\n"+te2start+"\n"+te2end);
         
         double timeAtCsStart1 = v1.getTruncateTimes().get(cs.getTe1Start());
         double timeAtCsEnd1 = v1.getTruncateTimes().get(cs.getTe1End());
@@ -37,7 +37,6 @@ public class PrecedencesFounder {
         /**SE ENTRAMBI IN T_stop DOVRANNO ANCORA ACCEDERE,
          SI PUÒ PASSARE A ORDINAMENTI SECONDARI EURISTICI **/
         else{
-        	System.out.println("sono nell'else");
         	if (timeAtCsStart2 == -1) prec = true;
         	else if (timeAtCsStart1 == -1) prec = false;
         	else if (braking1 < 0 || braking2 < 0) prec = true;

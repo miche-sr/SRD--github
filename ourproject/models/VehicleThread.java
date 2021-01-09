@@ -97,6 +97,8 @@ public class VehicleThread implements Runnable {
 				v.setPathIndex(elapsedTrackingTime);
 				v.setPose(v.getWholePath()[v.getPathIndex()].getPose());
 				v.setStoppingPoint();
+				System.out.println(v.getForwardModel().computeDistance(
+						v.getWholePath(), v.getPathIndex(), v.getStoppingPoint()));
 				v.setSpatialEnvelope();
 
 				//// SEND NEW ROBOT REPORT ////
