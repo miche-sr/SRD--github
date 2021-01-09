@@ -257,6 +257,7 @@ public class Vehicle {
 		setDistanceTraveled(next_state.getPosition());
 		setVelocity(next_state.getVelocity());
 		this.pathIndex = forward.getPathIndex(this.path, next_state);
+//		System.out.println("pathIndex"+ID+" "+this.pathIndex);
 	}
 
 	public HashMap<Integer, Double> getTimes() {
@@ -365,7 +366,7 @@ public class Vehicle {
         	traveledInTc = velMax*Tc*mill2sec;
         }
         this.slowingPoint = distanceToCpAbsolute-(braking+traveledInTc);
-        System.out.println("braking"+braking);
+//        System.out.println("braking"+braking);
         /*
 		//System.out.println("SP NEW: "+(distanceToCp - braking));
         State slowpoint = new State(distanceToCpAbsolute-(braking+traveledInTc), 0.0); //arbitrary vel, not used
@@ -418,9 +419,15 @@ public class Vehicle {
 	}
 	
 	public void sendNewRr() {
-		RobotReport rr = new RobotReport(ID, priority, pathIndex, se, truncateTimes, stoppingPoint);
+		System.out.println("pathIndexbfsd"+ID+" "+this.se);
+
+		RobotReport rr = RobotReport.deepcopy(this.ID, this.priority, this.pathIndex, this.se, 
+				this.truncateTimes, this.stoppingPoint);
+		
 		mainTable.put(ID, rr);
+		System.out.println("pathIndexafsd"+ID+" "+rr.getSe());
 	}
+	
 
 	/**************************************
 	 ** SET & GET PER LA VISUALIZZAZIONE **

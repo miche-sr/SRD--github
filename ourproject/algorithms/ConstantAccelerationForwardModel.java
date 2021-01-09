@@ -25,7 +25,7 @@ public class ConstantAccelerationForwardModel {
 		stop,moving,slowing,minVelocity,reached,
 	};
 	
-	private Behavior robotBehavior;
+	private Behavior robotBehavior = Behavior.stop;
 
 	public ConstantAccelerationForwardModel(Vehicle v, double temporalResolution) {
 		this.maxAccel = v.getAccMAx();

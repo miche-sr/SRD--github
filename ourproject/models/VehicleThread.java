@@ -3,6 +3,7 @@ package se.oru.coordination.coordination_oru.ourproject.models;
 //import java.lang.reflect.Array;
 //import java.sql.Time;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.TreeSet;
 
 import org.metacsp.multi.spatioTemporal.paths.PoseSteering;
@@ -17,7 +18,8 @@ public class VehicleThread implements Runnable {
 	private int oldCp = -1;
 	private TreeSet<CriticalSection> analysedCs = new TreeSet<CriticalSection>(); 
 	private ArrayList<RobotReport> analysedVehicles = new ArrayList<RobotReport>();
-	private ArrayList<RobotReport> rrNears = new ArrayList<RobotReport>();
+	private HashMap<Integer, RobotReport> rrNears = new HashMap<Integer, RobotReport>();
+//	private ArrayList<RobotReport> rrNears = new ArrayList<RobotReport>();
 	private Boolean prec = true;
 
 	public VehicleThread(Vehicle v){
@@ -37,11 +39,11 @@ public class VehicleThread implements Runnable {
 				//// UNPACK MESSAGES ////
 				rrNears.clear();
 				for (Vehicle vh : v.getNears()){
-					rrNears.add(v.getMainTable().get(vh.getID()));
+					rrNears.put(vh.getID(),v.getMainTable().get(vh.getID()));
+					if(v.getID()==1) System.out.println("pathIndex3rr "+rrNears.get(3).getPathIndex());
 				}
-//				for (RobotReport rr : rrNears)
-//					System.out.println(rr.getID()+" ");
-		
+				if(v.getID()==1) System.out.println("pathIndex3tb "+v.getMainTable().get(3).getPathIndex());
+
 			/****************************
 			 * FILTER CRITICAL SECTIONS *
 			 ****************************/
@@ -50,8 +52,9 @@ public class VehicleThread implements Runnable {
 				this.analysedCs.clear();
 				for (CriticalSection analysedCs : v.getCs()){
 					int v2Id = analysedCs.getVehicle2().getID();
+					System.out.println(v.getID()+": Index altrui: "+rrNears.get(v2Id).getPathIndex());
 					if (v.getPathIndex() < analysedCs.getTe1Start() 
-							&& v.getMainTable().get(v2Id).getPathIndex() < analysedCs.getTe2Start()
+							&& rrNears.get(v2Id).getPathIndex() < analysedCs.getTe2Start()
 								&& !analysedCs.isCsTruncated()) {
 						this.analysedCs.add(analysedCs);
 						analysedVehicles.add(analysedCs.getVehicle2());
@@ -66,12 +69,12 @@ public class VehicleThread implements Runnable {
 				
 				List = "";
 				boolean newPossibleCs = false;
-				for (RobotReport vh : rrNears){
+				for (RobotReport vh : rrNears.values()){
 					if (!analysedVehicles.contains(vh)) {
 						v.appendCs(vh);
 						newPossibleCs = true;
 					}
-//					else System.out.println("skip");
+					else System.out.println(v.getID()+": skip");
 					List = (List + vh.getID() + " " );
 				}
 				
@@ -93,21 +96,25 @@ public class VehicleThread implements Runnable {
 				}
 
 				//// UPDATE VALUES ////
-				v.setTimes();
+				printLog(List, prec);
+				
 				v.setPathIndex(elapsedTrackingTime);
 				v.setPose(v.getWholePath()[v.getPathIndex()].getPose());
 				v.setStoppingPoint();
-				System.out.println(v.getForwardModel().computeDistance(
-						v.getWholePath(), v.getPathIndex(), v.getStoppingPoint()));
+
+				v.setTimes();
 				v.setSpatialEnvelope();
 
 				//// SEND NEW ROBOT REPORT ////
 				v.sendNewRr();
+//				if(v.getID()==1) System.out.println(v.getMainTable().get(3).getPathIndex());
+//				if(v.getID()==1 && rrNears.containsKey(3)) System.out.println(rrNears.get(3));
+
 				
 				/***********************************
 				 ****** VISUALIZATION AND PRINT ****
 				 ***********************************/
-				printLog(List, prec);
+//				/*if(v.getID()==1)*/ printLog(List, prec);
 				
 				v.getVisualization().addEnvelope(v.getWholeSpatialEnvelope().getPolygon(),v,"#f600f6");
 				v.getVisualization().addEnvelope(v.getSpatialEnvelope().getPolygon(),v,"#efe007");
