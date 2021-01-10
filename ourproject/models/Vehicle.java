@@ -73,7 +73,7 @@ public class Vehicle {
 	private BrowserVisualizationDist viz;
 
 	// COSTRUTTORE
-	public Vehicle(int ID, Category category, Pose start, Pose[] goal) {
+	public Vehicle(int ID, Category category, Pose start, Pose[] goal,String yamlFile) {
 		this.ID = ID;
 		this.pose = start;
 		this.start = start;
@@ -101,7 +101,7 @@ public class Vehicle {
 		}
 		double stopTimeMax = this.velMax / this.accMax;
 		this.radius = (2 * this.Tc * mill2sec + stopTimeMax) * this.velMax;
-		this.path = createWholePath();
+		this.path = createWholePath(yamlFile);
 		this.forward = new ConstantAccelerationForwardModel(this, 1000); // ???
 
 	}
@@ -177,8 +177,9 @@ public class Vehicle {
 		this.pose = pose;
 	}
 
-	public PoseSteering[] createWholePath() {
+	public PoseSteering[] createWholePath(String yamlFile ) {
 		ReedsSheppCarPlanner rsp = new ReedsSheppCarPlanner();
+		if (yamlFile != null) rsp.setMap(yamlFile);
 		rsp.setRadius(0.2);
 		rsp.setTurningRadius(4.0);
 		rsp.setDistanceBetweenPathPoints(0.5);
@@ -359,7 +360,7 @@ public class Vehicle {
             
             double timeToTopVel = -v0/accMax + Math.sqrt(Math.pow(v0/accMax, 2)+2*brak2/accMax);
             double topVel = v0 + accMax*timeToTopVel;
-            traveledInTc = topVel*Tc*mill2sec - Math.pow(Tc*mill2sec,2.0)*accMax/2;
+            traveledInTc = topVel*Tc*mill2sec;// - Math.pow(Tc*mill2sec,2.0)*accMax/2;
 		}
         else {
         	braking = brakingFromVelMax;
@@ -420,7 +421,7 @@ public class Vehicle {
 	
 	public void sendNewRr() {
 		HashMap<Integer,Double> TruTim;
-		int Pindex;
+		
 
 		TruTim = (HashMap<Integer,Double>) truncateTimes.clone();
 		RobotReport rr = RobotReport.deepcopy(this.ID, this.priority, this.pathIndex, this.se, 

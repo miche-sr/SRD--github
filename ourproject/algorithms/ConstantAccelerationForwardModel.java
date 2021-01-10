@@ -124,34 +124,47 @@ public class ConstantAccelerationForwardModel {
 			robotBehavior = Behavior.stop; // sono fermo
 		}	
 		if (!skipIntegration) {
-			// caso accelerazione - vMax
-			boolean slowingDown = false;
-			robotBehavior = Behavior.moving; //accelero
-
-			// // caso Vmin
-			// if (v.getPathIndex() >= v.getSlowingPoint() && v.getPathIndex()< cp-1 && state.getVelocity()<= 0.9*v.getAccMAx()){
+ 
+			// // // caso Vmin solo goal
+			// if ( v.getDistanceTraveled() >= v.getSlowingPoint()
+			// 	&& state.getVelocity()< v.getTc()*Vehicle.mill2sec*v.getAccMAx()){
 			// 	robotBehavior = Behavior.minVelocity; // vel minima
-			// 	velMaxL = 0.8*v.getAccMAx();
+			// 	velMaxL = v.getTc()*Vehicle.mill2sec*v.getAccMAx();
+			// 	slowingDown = false; 
+			// 	if (v.getPathIndex()>= v.getWholePath().length-1 ){
+			// 	slowingDown = true; 
+			// 	}
 			// }
 			
-			// caso Frenata
-			if (v.getDistanceTraveled() >= v.getSlowingPoint()) {
-				slowingDown = true; 
-				robotBehavior = Behavior.slowing; 
-			}
-			integrateRK4(state, elapsedTrackingTime, v.getTc()*Vehicle.mill2sec, slowingDown, velMaxL, 1.0, v.getAccMAx());
-			
+
 			//saturazioni velocità
-			if (state.getVelocity() < v.getTc()*Vehicle.mill2sec*v.getAccMAx()){
+			if (state.getVelocity() < v.getTc()*Vehicle.mill2sec*v.getAccMAx() && state.getVelocity()!=0){
 				state.setVelocity(0.0);
-				state.setPosition(v.getDistanceTraveled());
-				robotBehavior = Behavior.stop; // fermo
+				if (v.getPathIndex()>= v.getWholePath().length-2 ){
+					robotBehavior = Behavior.reached;
+					state.setPosition(computeDistance(v.getWholePath(), 0, v.getWholePath().length-1));
+				}
+				else{
+					robotBehavior = Behavior.stop; // fermo
+					state.setPosition(v.getDistanceTraveled());
+				}
 			} 
-			if (state.getPosition() >= computeDistance(v.getWholePath(), 0, v.getWholePath().length-1) && state.getVelocity() == 0.0) {
-				double dist = computeDistance(v.getWholePath(), 0, v.getWholePath().length-1) ;
-//				System.out.print(dist);
-				robotBehavior = Behavior.reached;
+
+			// caso Frenata
+			else{
+				// caso accelerazione - vMax
+				boolean slowingDown = false;
+				robotBehavior = Behavior.moving;
+			
+			
+				if(v.getDistanceTraveled() >= v.getSlowingPoint()) {
+					slowingDown = true; 
+					robotBehavior = Behavior.slowing; 
+					
+				}
+				integrateRK4(state, elapsedTrackingTime, v.getTc()*Vehicle.mill2sec, slowingDown, velMaxL, 1.0, v.getAccMAx());
 			}	
+
 		} 
 		return state;
 	}
