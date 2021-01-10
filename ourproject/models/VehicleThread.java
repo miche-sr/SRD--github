@@ -85,9 +85,10 @@ public class VehicleThread implements Runnable {
 				v.setCriticalPoint(v.getWholePath().length-1); // ex -1
 				for (CriticalSection cs : this.v.getCs()){
 					prec = cs.ComputePrecedences();
-					if (prec == false)		//calculate precedence as long as I have precedence
+					if (prec == false){		//calculate precedence as long as I have precedence
 						v.setCriticalPoint(cs);
 						break;
+					}
 				}
 				if (oldCp != v.getCriticalPoint()) {
 					v.setSlowingPointNew();
@@ -151,7 +152,8 @@ public class VehicleThread implements Runnable {
 				CsString = CsString + (i+1 +"° Sezione Critica" +
 				"\t Mia: " + cs.getTe1Start()+"-"+cs.getTe1End() +
 				"\t R" + cs.getVehicle2().getID() + ":" +
-				"\t" + cs.getTe2Start()+"-"+cs.getTe2End()) + "\n";
+				"\t" + cs.getTe2Start()+"-"+cs.getTe2End()) + 
+				"\t precedenza:" + cs.isPrecedenza() + "\n";
 				i += 1;
 			}
 		}

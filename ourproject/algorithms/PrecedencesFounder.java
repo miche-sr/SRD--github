@@ -52,7 +52,7 @@ public class PrecedencesFounder {
 
             }
         }
-        
+        cs.setPrecedenza(prec);
         return prec;
     }
 	
