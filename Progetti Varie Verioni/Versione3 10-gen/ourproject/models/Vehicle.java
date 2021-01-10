@@ -360,7 +360,7 @@ public class Vehicle {
             
             double timeToTopVel = -v0/accMax + Math.sqrt(Math.pow(v0/accMax, 2)+2*brak2/accMax);
             double topVel = v0 + accMax*timeToTopVel;
-            traveledInTc = topVel*Tc*mill2sec;// - Math.pow(Tc*mill2sec,2.0)*accMax/2;
+            traveledInTc = topVel*Tc*mill2sec - Math.pow(Tc*mill2sec,2.0)*accMax/2;
 		}
         else {
         	braking = brakingFromVelMax;
@@ -428,7 +428,7 @@ public class Vehicle {
 		TruTim, this.stoppingPoint);
 		
 		mainTable.put(ID, rr);
-		System.out.println("pathIndexafsd"+ID+" "+rr.getSe());
+		//System.out.println("pathIndexafsd"+ID+" "+rr.getSe());
 	}
 	
 

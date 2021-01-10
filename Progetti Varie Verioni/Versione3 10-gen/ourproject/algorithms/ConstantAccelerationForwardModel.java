@@ -119,7 +119,7 @@ public class ConstantAccelerationForwardModel {
 		
 		boolean skipIntegration = false;
 		
-		if (v.getPathIndex() == v.getCriticalPoint() && state.getVelocity() <= 0.0) {
+		if (v.getPathIndex() >= v.getCriticalPoint() && state.getVelocity() <= 0.0) {
 			skipIntegration = true;
 			robotBehavior = Behavior.stop; // sono fermo
 		}	
@@ -150,13 +150,13 @@ public class ConstantAccelerationForwardModel {
 				}
 			} 
 
-			// caso Frenata
+			
 			else{
 				// caso accelerazione - vMax
 				boolean slowingDown = false;
 				robotBehavior = Behavior.moving;
 			
-			
+				// caso Frenata
 				if(v.getDistanceTraveled() >= v.getSlowingPoint()) {
 					slowingDown = true; 
 					robotBehavior = Behavior.slowing; 
