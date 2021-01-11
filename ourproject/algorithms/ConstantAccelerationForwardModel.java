@@ -22,10 +22,10 @@ public class ConstantAccelerationForwardModel {
 	private static int MAX_TX_DELAY = 0;
 	
 	public static enum Behavior {
-		stop,moving,slowing,minVelocity,reached,
+		stop,moving,slowing,minVelocity,reached,start
 	};
 	
-	private Behavior robotBehavior = Behavior.stop;
+	private Behavior robotBehavior = Behavior.start;
 
 	public ConstantAccelerationForwardModel(Vehicle v, double temporalResolution) {
 		this.maxAccel = v.getAccMAx();
@@ -119,7 +119,7 @@ public class ConstantAccelerationForwardModel {
 		
 		boolean skipIntegration = false;
 		
-		if (v.getPathIndex() >= v.getCriticalPoint() && state.getVelocity() <= 0.0) {
+		if (v.getPathIndex() >= v.getCriticalPoint() && state.getVelocity() <= 0.0 ) {
 			skipIntegration = true;
 			robotBehavior = Behavior.stop; // sono fermo
 		}	
@@ -138,7 +138,7 @@ public class ConstantAccelerationForwardModel {
 			
 
 			//saturazioni velocità
-			if (state.getVelocity() < v.getTc()*Vehicle.mill2sec*v.getAccMAx() && state.getVelocity()!=0){
+			if (state.getVelocity() < v.getTc()*Vehicle.mill2sec*v.getAccMAx()&& robotBehavior==Behavior.slowing){
 				state.setVelocity(0.0);
 				if (v.getPathIndex()>= v.getWholePath().length-2 ){
 					robotBehavior = Behavior.reached;

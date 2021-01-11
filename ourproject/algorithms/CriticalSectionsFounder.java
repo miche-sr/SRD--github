@@ -12,6 +12,7 @@ import org.metacsp.multi.spatioTemporal.paths.TrajectoryEnvelope;
 import org.metacsp.multi.spatioTemporal.paths.TrajectoryEnvelope.SpatialEnvelope;
 
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.Polygon;
 
 
 public class CriticalSectionsFounder {
@@ -187,4 +188,67 @@ public class CriticalSectionsFounder {
 		return css.toArray(new CriticalSection[css.size()]);
 	}
 
+	public boolean csTooClose(Vehicle v, CriticalSection csOld, CriticalSection csNew){
+		int start1 = csOld.getTe1Start();
+		int end1 = csOld.getTe1End();
+		int start2 = csNew.getTe2Start();
+		int end2 = csNew.getTe2End();
+		double RobotDimesion = v.getWholeSpatialEnvelope().getFootprint().getArea();
+		SpatialEnvelope csPrev;
+		SpatialEnvelope csNext;
+		Geometry prev;
+		Geometry next;
+		
+		ArrayList<PoseSteering> path1 = new ArrayList<PoseSteering>();
+		ArrayList<PoseSteering>  path2 = new ArrayList<PoseSteering>();
+
+
+		for (int i=start1; i < end1; i++){
+			path1.add(v.getWholePath()[i]);
+		}
+		PoseSteering[] path1Array = path1.toArray(new PoseSteering[path1.size()]);
+		csPrev = TrajectoryEnvelope.createSpatialEnvelope(path1Array, v.getFootprint());
+		prev = csPrev.getPolygon();
+
+		for (int i=start2; i < end2; i++){
+			path1.add(v.getWholePath()[i]);
+		}
+		PoseSteering[] path2Array = path2.toArray(new PoseSteering[path2.size()]);
+		csNext = TrajectoryEnvelope.createSpatialEnvelope(path2Array, v.getFootprint());
+		next = csNext.getPolygon();
+		
+		if(prev.distance(next) < RobotDimesion) 
+			return true;
+		else 
+			return false;
+	
+	
+	}
+
+
+	public boolean csTooClose2(Vehicle v, CriticalSection csOld, CriticalSection csNew){
+		int end1 = csOld.getTe1End();
+		int start2 = csNew.getTe2Start();
+		double RobotDimesion = v.getWholeSpatialEnvelope().getFootprint().getArea();
+		SpatialEnvelope SpaceBetweenCs;
+		double SpaceBetweenCsDimesion;
+		ArrayList<PoseSteering> path = new ArrayList<PoseSteering>();
+		if (end1 < start2){
+			for (int i=end1; i < start2; i++){
+				path.add(v.getWholePath()[i]);
+			}
+			PoseSteering[] pathArray = path.toArray(new PoseSteering[path.size()]);
+			SpaceBetweenCs = TrajectoryEnvelope.createSpatialEnvelope(pathArray, v.getFootprint());
+			SpaceBetweenCsDimesion = SpaceBetweenCs.getPolygon().getArea();
+
+			if(SpaceBetweenCsDimesion < RobotDimesion) 
+				return true;
+			else 
+				return false;
+		}
+		else
+			return true;
+	
+	
+	}
 }

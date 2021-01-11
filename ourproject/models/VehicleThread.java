@@ -8,10 +8,13 @@ import java.util.TreeSet;
 
 import org.metacsp.multi.spatioTemporal.paths.PoseSteering;
 
+import se.oru.coordination.coordination_oru.ourproject.algorithms.CriticalSectionsFounder;
 import se.oru.coordination.coordination_oru.ourproject.algorithms.ConstantAccelerationForwardModel.Behavior;
 
 public class VehicleThread implements Runnable {
 	
+	private CriticalSectionsFounder intersect = new CriticalSectionsFounder();
+
 	private Vehicle v;
 	private double elapsedTrackingTime = 0.0;
 	private int sp = -1;
@@ -21,6 +24,7 @@ public class VehicleThread implements Runnable {
 	private HashMap<Integer, RobotReport> rrNears = new HashMap<Integer, RobotReport>();
 //	private ArrayList<RobotReport> rrNears = new ArrayList<RobotReport>();
 	private Boolean prec = true;
+	private CriticalSection csOld;
 
 	public VehicleThread(Vehicle v){
 		this.v = v;
@@ -52,7 +56,7 @@ public class VehicleThread implements Runnable {
 				this.analysedCs.clear();
 				for (CriticalSection analysedCs : v.getCs()){
 					int v2Id = analysedCs.getVehicle2().getID();
-					System.out.println(v.getID()+": Index altrui: "+rrNears.get(v2Id).getPathIndex());
+					//System.out.println(v.getID()+": Index altrui: "+rrNears.get(v2Id).getPathIndex());
 					if (v.getPathIndex() < analysedCs.getTe1Start() 
 							&& rrNears.get(v2Id).getPathIndex() < analysedCs.getTe2Start()
 								&& !analysedCs.isCsTruncated()) {
@@ -68,13 +72,13 @@ public class VehicleThread implements Runnable {
 					v.getCs().add(analysedCs);
 				
 				List = "";
-				boolean newPossibleCs = false;
+				//boolean newPossibleCs = false;
 				for (RobotReport vh : rrNears.values()){
 					if (!analysedVehicles.contains(vh)) {
 						v.appendCs(vh);
-						newPossibleCs = true;
+						//newPossibleCs = true;
 					}
-					else System.out.println(v.getID()+": skip");
+					//else System.out.println(v.getID()+": skip");
 					List = (List + vh.getID() + " " );
 				}
 				
@@ -82,13 +86,23 @@ public class VehicleThread implements Runnable {
 				 ** CALCULATE THE PRECEDENCES ** 
 				 *******************************/
 				prec = true;
+				
 				v.setCriticalPoint(v.getWholePath().length-1); // ex -1
+				csOld = null;
 				for (CriticalSection cs : this.v.getCs()){
-					prec = cs.ComputePrecedences();
-					if (prec == false){		//calculate precedence as long as I have precedence
+					prec =cs.ComputePrecedences();
+					if (csOld != null)
+						v.setCsTooClose(intersect.csTooClose2(v, csOld, cs));
+						System.out.println("R"+v.getID()+"flag: "+v.isCsTooClose());
+					if (prec == false && v.isCsTooClose() && csOld != null){		//calculate precedence as long as I have precedence
+						v.setCriticalPoint(csOld);
+						break;
+					}
+					else if (prec == false){
 						v.setCriticalPoint(cs);
 						break;
 					}
+					csOld = cs;
 				}
 				if (oldCp != v.getCriticalPoint()) {
 					v.setSlowingPointNew();

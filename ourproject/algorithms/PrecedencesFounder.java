@@ -16,7 +16,7 @@ public class PrecedencesFounder {
         int te2start = cs.getTe2Start();
         int te2end = cs.getTe2End();
         
-        System.out.println("my ID: "+v1.getID()+"\t PathInd2: " +v2.getPathIndex()+"\n"+v2.getTruncateTimes()+"\n"+te2start+"\n"+te2end);
+        //System.out.println("my ID: "+v1.getID()+"\t PathInd2: " +v2.getPathIndex()+"\n"+v2.getTruncateTimes()+"\n"+te2start+"\n"+te2end);
         
         double timeAtCsStart1 = v1.getTruncateTimes().get(cs.getTe1Start());
         double timeAtCsEnd1 = v1.getTruncateTimes().get(cs.getTe1End());
@@ -37,7 +37,12 @@ public class PrecedencesFounder {
         /**SE ENTRAMBI IN T_stop DOVRANNO ANCORA ACCEDERE,
          SI PUÒ PASSARE A ORDINAMENTI SECONDARI EURISTICI **/
         else{
-        	if (timeAtCsStart2 == -1) prec = true;
+            if (timeAtCsStart2 == -1 && timeAtCsStart1 == -1 && v1.isCsTooClose()){
+                System.out.println("DEADLOCK RESOLVED!!!!!!!!!");
+                if(v1.getID() > v2.getID()) prec = true;
+                else prec = false;
+            }
+            else if (timeAtCsStart2 == -1) prec = true;
         	else if (timeAtCsStart1 == -1) prec = false;
         	else if (braking1 < 0 || braking2 < 0) prec = true;
         	else if (v1.getPriority() > v2.getPriority()) prec = true;

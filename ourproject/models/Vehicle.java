@@ -58,7 +58,7 @@ public class Vehicle {
 
 	// VARIABILI PER LE SEZIONI CRITICHE
 	private int criticalPoint = -1; // -1 if no critical point
-	// private boolean csTooClose = false;
+	private boolean csTooClose = false;
 	private int stoppingPoint = -1; // punto di fermata, a ogni ciclo: al quale mi fermo da dove sono
 	private double slowingPoint = -1; // punto di frenata, unico: per fermarsi prima del p. critico
 	private TreeSet<CriticalSection> cs = new TreeSet<CriticalSection>();
@@ -73,7 +73,7 @@ public class Vehicle {
 	private BrowserVisualizationDist viz;
 
 	// COSTRUTTORE
-	public Vehicle(int ID, Category category, Pose start, Pose[] goal,String yamlFile) {
+	public Vehicle(int ID, Category category, Pose start, Pose[] goal, String yamlFile) {
 		this.ID = ID;
 		this.pose = start;
 		this.start = start;
@@ -89,10 +89,10 @@ public class Vehicle {
 				break;
 
 			case AMBULANCE:
-				this.velMax = 4.0;
-				this.accMax = 1.0;
-				this.priority = 2; 
-				this.Tc = 200;
+				this.velMax = 3.0;
+				this.accMax = 2.0;
+				this.priority = 2;
+				this.Tc = 150;
 				this.footprint = fpAmb;
 				break;
 
@@ -100,7 +100,7 @@ public class Vehicle {
 				System.out.println("Unknown vehicle");
 		}
 		double stopTimeMax = this.velMax / this.accMax;
-		this.radius = (2 * this.Tc * mill2sec + stopTimeMax) * this.velMax;
+		this.radius = (5 * this.Tc * mill2sec + stopTimeMax) * this.velMax;
 		this.path = createWholePath(yamlFile);
 		this.forward = new ConstantAccelerationForwardModel(this, 1000); // ???
 
@@ -161,6 +161,8 @@ public class Vehicle {
 	public Coordinate[] getFootprint() {
 		return footprint;
 	}
+
+
 
 	/*****************************************
 	 ** SET & GET PER PERCORSO E TRAIETTORIA **
@@ -311,6 +313,17 @@ public class Vehicle {
 	public void setSlowingPoint(double slowingPoint) {
 		this.slowingPoint = slowingPoint;
 	}
+
+	public boolean isCsTooClose() {
+		return csTooClose;
+	}
+
+	public void setCsTooClose(boolean csTooClose) {
+		this.csTooClose = csTooClose;
+	}
+
+
+
 /*
 	public void setSlowingPoint() {
 		boolean stop = false;
@@ -399,7 +412,7 @@ public class Vehicle {
 	}
 	public HashMap<Integer, RobotReport> getMainTable() {
 		return mainTable;
-	}
+	}Pose start3 = new Pose(75, 35, Math.PI); Pose[] goal3 = { new Pose(5, 8, Math.PI) };
 
 
 	// CALCOLO QUALI SONO I ROBOT VICINI //
