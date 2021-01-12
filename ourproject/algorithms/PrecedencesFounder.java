@@ -26,6 +26,10 @@ public class PrecedencesFounder {
         if (v1.getStoppingPoint() >= te1start && v2.getStoppingPoint() >= te2start){
             System.out.println("\u001B[31m" + "ATTENZIONE, SBATTONO " + v1.getID() + " E "+ v2.getID() + "\n" + "\u001B[0m");
             prec = false;
+            if(v1.getForwardModel().getRobotBehavior()==ConstantAccelerationForwardModel.Behavior.stop
+            		&& v1.getID() > v2.getID()) {
+            	v1.setNewWholePath(v2);
+            }
         }
         
         /**SE UNO DEI DUE GIÀ NON PUÒ FERMARSI PRIMA DI SC**/

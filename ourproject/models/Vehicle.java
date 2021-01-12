@@ -7,11 +7,6 @@ import se.oru.coordination.coordination_oru.motionplanning.ompl.ReedsSheppCarPla
 import org.metacsp.multi.spatioTemporal.paths.Pose;
 import org.metacsp.multi.spatioTemporal.paths.PoseSteering;
 import org.metacsp.multi.spatioTemporal.paths.TrajectoryEnvelope.SpatialEnvelope;
-import org.metacsp.multi.spatioTemporal.paths.TrajectoryEnvelopeSolver;
-
-import EDU.oswego.cs.dl.util.concurrent.Sync;
-
-import org.metacsp.multi.spatioTemporal.paths.Trajectory;
 import org.metacsp.multi.spatioTemporal.paths.TrajectoryEnvelope;
 
 import com.vividsolutions.jts.geom.Coordinate;
@@ -44,6 +39,7 @@ public class Vehicle {
 	private Coordinate[] footprint;
 
 	// VARIABILI DI PERCORSO E TRAIETTORIA
+	ReedsSheppCarPlanner rsp = new ReedsSheppCarPlanner();
 	private int pathIndex = 0; // index of the last pose passed
 	private Pose pose;
 	private Pose start;
@@ -84,7 +80,7 @@ public class Vehicle {
 				this.velMax = 2;
 				this.accMax = 1.0;
 				this.priority = 1;
-				this.Tc = 200;
+				this.Tc = 350;
 				this.footprint = fpCar;
 				break;
 
@@ -179,8 +175,15 @@ public class Vehicle {
 		this.pose = pose;
 	}
 
-	public PoseSteering[] createWholePath(String yamlFile ) {
-		ReedsSheppCarPlanner rsp = new ReedsSheppCarPlanner();
+	public Pose[] getGoal() {
+		return goal;
+	}
+
+	public ReedsSheppCarPlanner getMotionPlanner() {
+		return rsp;
+	}
+	
+	public PoseSteering[] createWholePath(String yamlFile) {
 		if (yamlFile != null) rsp.setMap(yamlFile);
 		rsp.setRadius(0.2);
 		rsp.setTurningRadius(4.0);
@@ -192,6 +195,10 @@ public class Vehicle {
 			throw new Error("No path between " + this.start + " and " + this.goal);
 		wholeSe = TrajectoryEnvelope.createSpatialEnvelope(rsp.getPath(), this.footprint);
 		return rsp.getPath();
+	}
+	
+	public void setNewWholePath(RobotReport r) {
+		this.path = intersect.rePlanPath(this, r);
 	}
 
 	public PoseSteering[] getWholePath() {
@@ -373,7 +380,7 @@ public class Vehicle {
             
             double timeToTopVel = -v0/accMax + Math.sqrt(Math.pow(v0/accMax, 2)+2*brak2/accMax);
             double topVel = v0 + accMax*timeToTopVel;
-            traveledInTc = topVel*Tc*mill2sec - Math.pow(Tc*mill2sec,2.0)*accMax/2;
+            traveledInTc = topVel*Tc*mill2sec;// - Math.pow(Tc*mill2sec,2.0)*accMax/2;
 		}
         else {
         	braking = brakingFromVelMax;
@@ -433,15 +440,11 @@ public class Vehicle {
 	}
 	
 	public void sendNewRr() {
-		HashMap<Integer,Double> TruTim;
-		
-
-		TruTim = (HashMap<Integer,Double>) truncateTimes.clone();
-		RobotReport rr = RobotReport.deepcopy(this.ID, this.priority, this.pathIndex, this.se, 
-		TruTim, this.stoppingPoint);
+		HashMap<Integer,Double> TruTim = (HashMap<Integer,Double>) truncateTimes.clone();
+		RobotReport rr = new RobotReport(this.ID, this.priority, this.pathIndex, 
+				this.se, TruTim, this.stoppingPoint);
 		
 		mainTable.put(ID, rr);
-		//System.out.println("pathIndexafsd"+ID+" "+rr.getSe());
 	}
 	
 

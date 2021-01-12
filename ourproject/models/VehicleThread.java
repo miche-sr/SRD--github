@@ -6,9 +6,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.TreeSet;
 
-import org.metacsp.multi.spatioTemporal.paths.PoseSteering;
-
-import se.oru.coordination.coordination_oru.ourproject.algorithms.CriticalSectionsFounder;
 import se.oru.coordination.coordination_oru.ourproject.algorithms.ConstantAccelerationForwardModel.Behavior;
 
 public class VehicleThread implements Runnable {
@@ -122,7 +119,7 @@ public class VehicleThread implements Runnable {
 				v.setPathIndex(elapsedTrackingTime);
 				v.setPose(v.getWholePath()[v.getPathIndex()].getPose());
 				v.setStoppingPoint();
-
+				
 				v.setTimes();
 				v.setSpatialEnvelope();
 
@@ -140,9 +137,9 @@ public class VehicleThread implements Runnable {
 				
 				v.getVisualization().addEnvelope(v.getWholeSpatialEnvelope().getPolygon(),v,"#f600f6");
 				v.getVisualization().addEnvelope(v.getSpatialEnvelope().getPolygon(),v,"#efe007");
-				v.getVisualization().displayPoint(v, v.getCriticalPoint(), "#29f600"); //-1 perche array parte da zero
-				v.getVisualization().displayPoint(v, sp, "#0008f6");
-				v.getVisualization().displayPoint(v, v.getStoppingPoint(), "#ffffff");
+//				v.getVisualization().displayPoint(v, v.getCriticalPoint(), "#29f600"); //-1 perche array parte da zero
+//				v.getVisualization().displayPoint(v, sp, "#0008f6");
+//				v.getVisualization().displayPoint(v, v.getStoppingPoint(), "#ffffff");
 
 				String infoCs = v.getForwardModel().getRobotBehavior().toString();
 				v.getVisualization().displayRobotState(v.getSpatialEnvelope().getFootprint(), v,infoCs);
@@ -189,7 +186,7 @@ public class VehicleThread implements Runnable {
 			"Distance: "+ Dist  + "\t \t Velocity: " + Vel + "\n" +
 			"Slowing Point: " + Slow +"\t Critical Point: " + v.getCriticalPoint()+ "\n" + 
 			CsString + "\n" +
-			"Traiettoria Trasmessa \n" +v.getTruncateTimes() + "\n"+
+			"Traiettoria Attuale \n" +v.getTruncateTimes() + "\n"+
 			"============================================================"
 			);
 	}
