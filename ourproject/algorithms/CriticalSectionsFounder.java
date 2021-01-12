@@ -1,21 +1,83 @@
 // from "getCriticalSections" in "AbstractTrajectoryEnvelopeCoordinator": line 1169
 package se.oru.coordination.coordination_oru.ourproject.algorithms;
 
+import se.oru.coordination.coordination_oru.motionplanning.AbstractMotionPlanner;
+import se.oru.coordination.coordination_oru.motionplanning.ompl.ReedsSheppCarPlanner;
 import se.oru.coordination.coordination_oru.ourproject.models.CriticalSection;
 import se.oru.coordination.coordination_oru.ourproject.models.RobotReport;
 import se.oru.coordination.coordination_oru.ourproject.models.Vehicle;
 
 import java.util.ArrayList;
-
+import org.metacsp.multi.spatioTemporal.paths.Pose;
 import org.metacsp.multi.spatioTemporal.paths.PoseSteering;
 import org.metacsp.multi.spatioTemporal.paths.TrajectoryEnvelope;
 import org.metacsp.multi.spatioTemporal.paths.TrajectoryEnvelope.SpatialEnvelope;
-
+import com.vividsolutions.jts.geom.Polygon;
 import com.vividsolutions.jts.geom.Geometry;
+
 
 
 public class CriticalSectionsFounder {
 	
+	/**************
+	 * REPLANNING *
+	 **************/
+	public Geometry makeObstacle(RobotReport r) {
+		Polygon fp = r.getSpatialEnvelope().getFootprint();
+		Pose p = r.getSpatialEnvelope().getPath()[0].getPose();
+		Geometry obstacle = TrajectoryEnvelope.getFootprint(fp, p.getX(), p.getY(), p.getTheta());
+		System.out.println("Made obstacle of Robot" + r.getID() + " in pose " + p);
+		return obstacle;
+	}
+	
+	public PoseSteering[] doReplanning(AbstractMotionPlanner mp, Pose fromPose, Pose[] toPose, Geometry... obstaclesToConsider) {
+		if (mp == null) return null;
+		mp.setStart(fromPose);
+		mp.setGoals(toPose);
+		if (obstaclesToConsider != null && obstaclesToConsider.length > 0) mp.addObstacles(obstaclesToConsider);
+		boolean replanningSuccessful = mp.plan();
+		if (!replanningSuccessful) mp.writeDebugImage();
+		if (obstaclesToConsider != null && obstaclesToConsider.length > 0) mp.clearObstacles();
+		if (replanningSuccessful) return mp.getPath();
+		return null;
+	}
+	
+	public PoseSteering[] rePlanPath(Vehicle v, RobotReport robotToAvoid) {
+		int currentWaitingIndex = v.getPathIndex();
+		Pose currentWaitingPose = v.getPose();
+		Pose[] currentWaitingGoal = v.getGoal();
+		Geometry obstacles = makeObstacle(robotToAvoid);
+		PoseSteering[] oldPath = v.getWholePath();
+
+		System.out.println("Attempting to re-plan path of Robot" + v.getID() + " (with robot" + robotToAvoid.getID() + " as obstacle), "
+				+ "with starting point in "+currentWaitingPose+"...");
+		ReedsSheppCarPlanner mp = new ReedsSheppCarPlanner();
+		mp.setRadius(0.2);
+		mp.setTurningRadius(4.0);
+		mp.setDistanceBetweenPathPoints(0.5);
+		mp.setFootprint(v.getFootprint());
+		System.out.println(v.getWholePath());
+		System.out.println(mp.getPath());
+		PoseSteering[] newPath = doReplanning(mp, currentWaitingPose, currentWaitingGoal, obstacles);
+		System.out.println(newPath.length);
+		PoseSteering[] newCompletePath = new PoseSteering[newPath.length+currentWaitingIndex];
+		if (newPath != null && newPath.length > 0) {
+			for (int i = 0; i < newCompletePath.length; i++) {
+				if (i < currentWaitingIndex) newCompletePath[i] = oldPath[i];
+				else newCompletePath[i] = newPath[i-currentWaitingIndex];
+			}
+//				v.setNewWholePath(newCompletePath);
+			System.out.println("Successfully re-planned path of Robot" + v.getID());
+		}
+		else {
+			System.out.println("Failed to re-plan path of Robot" + v.getID());
+		}
+		return newCompletePath;
+	}
+	
+	/************************
+	 * FIND CRITCAL SECTION *
+	 ************************/
 	public CriticalSection[] findCriticalSections(Vehicle v1, RobotReport v2) {
 
 		ArrayList<CriticalSection> css = new ArrayList<CriticalSection>();
@@ -30,41 +92,6 @@ public class CriticalSectionsFounder {
 		if (shape1.intersects(shape2)) {
 			PoseSteering[] path1 = se1.getPath();
 			PoseSteering[] path2 = se2.getPath();
-
-			/*if (checkEscapePoses) {		// noi non passiamo l'intero percorso, non dovrebbe servire
-				//Check that there is an "escape pose" along the paths 
-				boolean safe = false;
-				for (int j = 0; j < path1.length; j++) {
-					//Geometry placement1 = te1.makeFootprint(path1[j]);
-					Geometry placement1 = TrajectoryEnvelope.getFootprint(se1.getFootprint(), path1[j].getPose().getX(), path1[j].getPose().getY(), path1[j].getPose().getTheta());
-					if (!placement1.intersects(shape2)) {
-						safe = true;
-						break;
-					}
-				}
-				if (path1.length == 1 || path2.length == 1) safe = true;
-				if (!safe) {
-					metaCSPLogger.severe("** WARNING ** Cannot coordinate as one envelope is completely overlapped by the other!");
-					metaCSPLogger.severe("** " + te1 + " <--> " + te2);
-					//throw new Error("Cannot coordinate as one envelope is completely overlapped by the other!");
-				}
-
-				safe = false;
-				for (int j = 0; j < path2.length; j++) {
-					//Geometry placement2 = te2.makeFootprint(path2[j]);
-					Geometry placement2 = TrajectoryEnvelope.getFootprint(se2.getFootprint(), path2[j].getPose().getX(), path2[j].getPose().getY(), path2[j].getPose().getTheta());
-					if (!placement2.intersects(shape1)) {
-						safe = true;
-						break;
-					}
-				}
-				if (path1.length == 1 || path2.length == 1) safe = true;
-				if (!safe) {
-					metaCSPLogger.severe("** WARNING ** Cannot coordinate as one envelope is completely overlapped by the other!");
-					metaCSPLogger.severe("** " + te1 + " <--> " + te2);
-					//throw new Error("Cannot coordinate as one envelope is completely overlapped by the other!");
-				}
-			}*/
 
 			Geometry gc = shape1.intersection(shape2);
 			ArrayList<Geometry> allIntersections = new ArrayList<Geometry>();
@@ -131,59 +158,13 @@ public class CriticalSectionsFounder {
 				}
 				for (int k1 = 0; k1 < te1Starts.size(); k1++) {
 					for (int k2 = 0; k2 < te2Starts.size(); k2++) {
-						//if (te1Ends.get(k1) >= Math.max(0, minStart1) && te2Ends.get(k2) >= Math.max(0, minStart2)) {
 							CriticalSection oneCS = new CriticalSection(v1, v2, te1Starts.get(k1), te2Starts.get(k2), te1Ends.get(k1), te2Ends.get(k2),csTruncated);
-							//css.add(oneCS);
-							cssOneIntersectionPiece.add(oneCS);
-						//}
-							
+							cssOneIntersectionPiece.add(oneCS);							
 					}					
 				}
-				/*
-				//pre-filter obsolete critical sections to avoid merging them with the new computed.
-				te1Starts.clear();
-				te2Starts.clear();
-				te1Ends.clear();
-				te2Ends.clear();
-				for (CriticalSection cs : cssOneIntersectionPiece) {
-					te1Starts.add(cs.getTe1Start());
-					te2Starts.add(cs.getTe2Start());
-					te1Ends.add(cs.getTe1End());
-					te2Ends.add(cs.getTe2End());
-				}
-								
-				// SPURIOUS INTERSECTIONS (can ignore)
-				if (te1Starts.size() == 0 || te2Starts.size() == 0) {
-					cssOneIntersectionPiece.clear();
-				}
-
-				// ASYMMETRIC INTERSECTIONS OF ENVELOPES
-				// There are cases in which there are more starts along one envelope than along the other
-				// (see the Epiroc underground mining example).
-				// These "holes" may or may not be big enough to accommodate a robot. Those that are not
-				// should be filtered, as they falsely indicate that the critical section ends for a little bit
-				// before restarting. Because of this, such situations may lead to collision.
-				// Here, we take a conservative approach: instead of verifying whether
-				// the "hole" is big enough to really accommodate a robot so that it does not collide with
-				// the other envelope, we simply filter out all of these cases. We do this by joining the
-				// critical sections around holes.
-				else if (te1Starts.size() != te2Starts.size()) {
-					if (te1Starts.size() == 0 || te2Starts.size() == 0) System.out.println("CRAP: te1Starts is " + te1Starts + " and te2Starts is " + te2Starts);
-					metaCSPLogger.info("Asymmetric intersections of envelopes for Robot" + te1.getRobotID() + ", Robot" + te2.getRobotID() + ":");
-					metaCSPLogger.info("   Original : " + cssOneIntersectionPiece);
-					CriticalSection oldCSFirst = cssOneIntersectionPiece.get(0);
-					CriticalSection oldCSLast = cssOneIntersectionPiece.get(cssOneIntersectionPiece.size()-1);
-					CriticalSection newCS = new CriticalSection(te1, te2, oldCSFirst.getTe1Start(), oldCSFirst.getTe2Start(), oldCSLast.getTe1End(), oldCSLast.getTe2End());				
-					cssOneIntersectionPiece.clear();
-					cssOneIntersectionPiece.add(newCS);
-					metaCSPLogger.info("   Refined  : " + cssOneIntersectionPiece);
-				}
-				*/
 				css.addAll(cssOneIntersectionPiece);
-				
 			}
 		}
-		
 		return css.toArray(new CriticalSection[css.size()]);
 	}
 

@@ -6,8 +6,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.TreeSet;
 
-import org.metacsp.multi.spatioTemporal.paths.PoseSteering;
-
 import se.oru.coordination.coordination_oru.ourproject.algorithms.ConstantAccelerationForwardModel.Behavior;
 
 public class VehicleThread implements Runnable {
@@ -40,9 +38,9 @@ public class VehicleThread implements Runnable {
 				rrNears.clear();
 				for (Vehicle vh : v.getNears()){
 					rrNears.put(vh.getID(),v.getMainTable().get(vh.getID()));
-					if(v.getID()==1) System.out.println("pathIndex3rr "+rrNears.get(3).getPathIndex());
+					//if(v.getID()==1) System.out.println("pathIndex3rr "+rrNears.get(3).getPathIndex());
 				}
-				if(v.getID()==1) System.out.println("pathIndex3tb "+v.getMainTable().get(3).getPathIndex());
+				//if(v.getID()==1) System.out.println("pathIndex3tb "+v.getMainTable().get(3).getPathIndex());
 
 			/****************************
 			 * FILTER CRITICAL SECTIONS *
@@ -52,7 +50,7 @@ public class VehicleThread implements Runnable {
 				this.analysedCs.clear();
 				for (CriticalSection analysedCs : v.getCs()){
 					int v2Id = analysedCs.getVehicle2().getID();
-					System.out.println(v.getID()+": Index altrui: "+rrNears.get(v2Id).getPathIndex());
+//					System.out.println(v.getID()+": Index altrui: "+rrNears.get(v2Id).getPathIndex());
 					if (v.getPathIndex() < analysedCs.getTe1Start() 
 							&& rrNears.get(v2Id).getPathIndex() < analysedCs.getTe2Start()
 								&& !analysedCs.isCsTruncated()) {
@@ -74,7 +72,7 @@ public class VehicleThread implements Runnable {
 						v.appendCs(vh);
 						newPossibleCs = true;
 					}
-					else System.out.println(v.getID()+": skip");
+//					else System.out.println(v.getID()+": skip");
 					List = (List + vh.getID() + " " );
 				}
 				
@@ -85,9 +83,10 @@ public class VehicleThread implements Runnable {
 				v.setCriticalPoint(v.getWholePath().length-1); // ex -1
 				for (CriticalSection cs : this.v.getCs()){
 					prec = cs.ComputePrecedences();
-					if (prec == false)		//calculate precedence as long as I have precedence
+					if (prec == false) {		//calculate precedence as long as I have precedence
 						v.setCriticalPoint(cs);
 						break;
+					}
 				}
 				if (oldCp != v.getCriticalPoint()) {
 					v.setSlowingPointNew();
@@ -95,13 +94,13 @@ public class VehicleThread implements Runnable {
 					oldCp = v.getCriticalPoint();
 				}
 
-				//// UPDATE VALUES ////
+				//// UPDATE VALUES ////	
 				printLog(List, prec);
 				
 				v.setPathIndex(elapsedTrackingTime);
 				v.setPose(v.getWholePath()[v.getPathIndex()].getPose());
 				v.setStoppingPoint();
-
+				
 				v.setTimes();
 				v.setSpatialEnvelope();
 
@@ -118,9 +117,9 @@ public class VehicleThread implements Runnable {
 				
 				v.getVisualization().addEnvelope(v.getWholeSpatialEnvelope().getPolygon(),v,"#f600f6");
 				v.getVisualization().addEnvelope(v.getSpatialEnvelope().getPolygon(),v,"#efe007");
-				v.getVisualization().displayPoint(v, v.getCriticalPoint(), "#29f600"); //-1 perche array parte da zero
-				v.getVisualization().displayPoint(v, sp, "#0008f6");
-				v.getVisualization().displayPoint(v, v.getStoppingPoint(), "#ffffff");
+//				v.getVisualization().displayPoint(v, v.getCriticalPoint(), "#29f600"); //-1 perche array parte da zero
+//				v.getVisualization().displayPoint(v, sp, "#0008f6");
+//				v.getVisualization().displayPoint(v, v.getStoppingPoint(), "#ffffff");
 
 				String infoCs = v.getForwardModel().getRobotBehavior().toString();
 				v.getVisualization().displayRobotState(v.getSpatialEnvelope().getFootprint(), v,infoCs);
@@ -130,6 +129,7 @@ public class VehicleThread implements Runnable {
 				this.elapsedTrackingTime += v.getTc()*Vehicle.mill2sec;
 			}
 			System.out.println("\n R" + this.v.getID() + " : GOAL RAGGIUNTO" );
+			System.out.println("\u001B[35m" + "R"+v.getID()+" DEADLOCK RESOLVED!!!!!!!!!" + "\u001B[0m");
 		}	
 		catch (InterruptedException e) {
 			System.out.println("Thread interrotto");
@@ -166,7 +166,7 @@ public class VehicleThread implements Runnable {
 			"Distance: "+ Dist  + "\t \t Velocity: " + Vel + "\n" +
 			"Slowing Point: " + Slow +"\t Critical Point: " + v.getCriticalPoint()+ "\n" + 
 			CsString + "\n" +
-			"Traiettoria Trasmessa \n" +v.getTruncateTimes() + "\n"+
+			"Traiettoria Attuale \n" +v.getTruncateTimes() + "\n"+
 			"============================================================"
 			);
 	}

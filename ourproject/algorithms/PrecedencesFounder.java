@@ -16,7 +16,7 @@ public class PrecedencesFounder {
         int te2start = cs.getTe2Start();
         int te2end = cs.getTe2End();
         
-        System.out.println("my ID: "+v1.getID()+"\t PathInd2: " +v2.getPathIndex()+"\n"+v2.getTruncateTimes()+"\n"+te2start+"\n"+te2end);
+//        System.out.println("my ID: "+v1.getID()+"\t PathInd2: " +v2.getPathIndex()+"\n"+v2.getTruncateTimes()+"\n"+te2start+"\n"+te2end);
         
         double timeAtCsStart1 = v1.getTruncateTimes().get(cs.getTe1Start());
         double timeAtCsEnd1 = v1.getTruncateTimes().get(cs.getTe1End());
@@ -28,6 +28,10 @@ public class PrecedencesFounder {
         if (v1.getStoppingPoint() >= te1start && v2.getStoppingPoint() >= te2start){
             System.out.println("ATTENZIONE, SBATTONO " + v1.getID() + " E "+ v2.getID() + "\n");
             prec = false;
+            if(v1.getForwardModel().getRobotBehavior()==ConstantAccelerationForwardModel.Behavior.stop
+            		&& v1.getID() > v2.getID()) {
+            	v1.setNewWholePath(v2);
+            }
         }
         
         /**SE UNO DEI DUE GIÀ NON PUÒ FERMARSI PRIMA DI SC**/
