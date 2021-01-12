@@ -199,6 +199,7 @@ public class Vehicle {
 	
 	public void setNewWholePath(RobotReport r) {
 		this.path = intersect.rePlanPath(this, r);
+		wholeSe = TrajectoryEnvelope.createSpatialEnvelope(this.path, this.footprint);
 	}
 
 	public PoseSteering[] getWholePath() {
