@@ -35,16 +35,14 @@ public class PrecedencesFounder {
         /**SE ENTRAMBI IN T_stop DOVRANNO ANCORA ACCEDERE,
          SI PUÒ PASSARE A ORDINAMENTI SECONDARI EURISTICI **/
         else{
-            if (timeAtCsStart2 == -1 && timeAtCsStart1 == -1 && v1.isCsTooClose()){
-                System.out.println("\u001B[35m" + "R"+v1.getID()+"-R"+v2.getID()+"  DEADLOCK RESOLVED!!!!!!!!!" + "\u001B[0m");
-                if (v1.getPriority() == v2.getPriority()){
+            if (v1.isCsTooClose()   // caso deadlock
+                && timeAtCsStart2 == -1 && timeAtCsStart1 == -1 ){
+                    System.out.println("\u001B[35m" + "R"+v1.getID()+"-R"+v2.getID()+"  DEADLOCK RESOLVED!!!!!!!!!" + "\u001B[0m");
                     if(v1.getID() > v2.getID()) prec = true;
                     else prec = false;
-                }
-                else if (v1.getPriority() > v2.getPriority()) prec = true;
-                else prec = false;
-                
             }
+            
+            //caso standard
             else if (timeAtCsStart2 == -1) prec = true;
         	else if (timeAtCsStart1 == -1) prec = false;
         	else if (braking1 < 0 || braking2 < 0) prec = true;

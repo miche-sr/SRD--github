@@ -32,40 +32,7 @@ public class CriticalSectionsFounder {
 			PoseSteering[] path1 = se1.getPath();
 			PoseSteering[] path2 = se2.getPath();
 
-			/*if (checkEscapePoses) {		// noi non passiamo l'intero percorso, non dovrebbe servire
-				//Check that there is an "escape pose" along the paths 
-				boolean safe = false;
-				for (int j = 0; j < path1.length; j++) {
-					//Geometry placement1 = te1.makeFootprint(path1[j]);
-					Geometry placement1 = TrajectoryEnvelope.getFootprint(se1.getFootprint(), path1[j].getPose().getX(), path1[j].getPose().getY(), path1[j].getPose().getTheta());
-					if (!placement1.intersects(shape2)) {
-						safe = true;
-						break;
-					}
-				}
-				if (path1.length == 1 || path2.length == 1) safe = true;
-				if (!safe) {
-					metaCSPLogger.severe("** WARNING ** Cannot coordinate as one envelope is completely overlapped by the other!");
-					metaCSPLogger.severe("** " + te1 + " <--> " + te2);
-					//throw new Error("Cannot coordinate as one envelope is completely overlapped by the other!");
-				}
 
-				safe = false;
-				for (int j = 0; j < path2.length; j++) {
-					//Geometry placement2 = te2.makeFootprint(path2[j]);
-					Geometry placement2 = TrajectoryEnvelope.getFootprint(se2.getFootprint(), path2[j].getPose().getX(), path2[j].getPose().getY(), path2[j].getPose().getTheta());
-					if (!placement2.intersects(shape1)) {
-						safe = true;
-						break;
-					}
-				}
-				if (path1.length == 1 || path2.length == 1) safe = true;
-				if (!safe) {
-					metaCSPLogger.severe("** WARNING ** Cannot coordinate as one envelope is completely overlapped by the other!");
-					metaCSPLogger.severe("** " + te1 + " <--> " + te2);
-					//throw new Error("Cannot coordinate as one envelope is completely overlapped by the other!");
-				}
-			}*/
 
 			Geometry gc = shape1.intersection(shape2);
 			ArrayList<Geometry> allIntersections = new ArrayList<Geometry>();
@@ -140,46 +107,7 @@ public class CriticalSectionsFounder {
 							
 					}					
 				}
-				/*
-				//pre-filter obsolete critical sections to avoid merging them with the new computed.
-				te1Starts.clear();
-				te2Starts.clear();
-				te1Ends.clear();
-				te2Ends.clear();
-				for (CriticalSection cs : cssOneIntersectionPiece) {
-					te1Starts.add(cs.getTe1Start());
-					te2Starts.add(cs.getTe2Start());
-					te1Ends.add(cs.getTe1End());
-					te2Ends.add(cs.getTe2End());
-				}
-								
-				// SPURIOUS INTERSECTIONS (can ignore)
-				if (te1Starts.size() == 0 || te2Starts.size() == 0) {
-					cssOneIntersectionPiece.clear();
-				}
 
-				// ASYMMETRIC INTERSECTIONS OF ENVELOPES
-				// There are cases in which there are more starts along one envelope than along the other
-				// (see the Epiroc underground mining example).
-				// These "holes" may or may not be big enough to accommodate a robot. Those that are not
-				// should be filtered, as they falsely indicate that the critical section ends for a little bit
-				// before restarting. Because of this, such situations may lead to collision.
-				// Here, we take a conservative approach: instead of verifying whether
-				// the "hole" is big enough to really accommodate a robot so that it does not collide with
-				// the other envelope, we simply filter out all of these cases. We do this by joining the
-				// critical sections around holes.
-				else if (te1Starts.size() != te2Starts.size()) {
-					if (te1Starts.size() == 0 || te2Starts.size() == 0) System.out.println("CRAP: te1Starts is " + te1Starts + " and te2Starts is " + te2Starts);
-					metaCSPLogger.info("Asymmetric intersections of envelopes for Robot" + te1.getRobotID() + ", Robot" + te2.getRobotID() + ":");
-					metaCSPLogger.info("   Original : " + cssOneIntersectionPiece);
-					CriticalSection oldCSFirst = cssOneIntersectionPiece.get(0);
-					CriticalSection oldCSLast = cssOneIntersectionPiece.get(cssOneIntersectionPiece.size()-1);
-					CriticalSection newCS = new CriticalSection(te1, te2, oldCSFirst.getTe1Start(), oldCSFirst.getTe2Start(), oldCSLast.getTe1End(), oldCSLast.getTe2End());				
-					cssOneIntersectionPiece.clear();
-					cssOneIntersectionPiece.add(newCS);
-					metaCSPLogger.info("   Refined  : " + cssOneIntersectionPiece);
-				}
-				*/
 				css.addAll(cssOneIntersectionPiece);
 				
 			}
@@ -189,44 +117,6 @@ public class CriticalSectionsFounder {
 	}
 
 	public boolean csTooClose(Vehicle v, CriticalSection csOld, CriticalSection csNew){
-		int start1 = csOld.getTe1Start();
-		int end1 = csOld.getTe1End();
-		int start2 = csNew.getTe2Start();
-		int end2 = csNew.getTe2End();
-		double RobotDimesion = v.getWholeSpatialEnvelope().getFootprint().getArea();
-		SpatialEnvelope csPrev;
-		SpatialEnvelope csNext;
-		Geometry prev;
-		Geometry next;
-		
-		ArrayList<PoseSteering> path1 = new ArrayList<PoseSteering>();
-		ArrayList<PoseSteering>  path2 = new ArrayList<PoseSteering>();
-
-
-		for (int i=start1; i < end1; i++){
-			path1.add(v.getWholePath()[i]);
-		}
-		PoseSteering[] path1Array = path1.toArray(new PoseSteering[path1.size()]);
-		csPrev = TrajectoryEnvelope.createSpatialEnvelope(path1Array, v.getFootprint());
-		prev = csPrev.getPolygon();
-
-		for (int i=start2; i < end2; i++){
-			path1.add(v.getWholePath()[i]);
-		}
-		PoseSteering[] path2Array = path2.toArray(new PoseSteering[path2.size()]);
-		csNext = TrajectoryEnvelope.createSpatialEnvelope(path2Array, v.getFootprint());
-		next = csNext.getPolygon();
-		
-		if(prev.distance(next) < RobotDimesion) 
-			return true;
-		else 
-			return false;
-	
-	
-	}
-
-
-	public boolean csTooClose2(Vehicle v, CriticalSection csOld, CriticalSection csNew){
 		int end1 = csOld.getTe1End();
 		int start2 = csNew.getTe2Start();
 		double RobotDimesion = v.getWholeSpatialEnvelope().getFootprint().getArea();

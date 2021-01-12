@@ -90,11 +90,12 @@ public class VehicleThread implements Runnable {
 				
 				v.setCriticalPoint(v.getWholePath().length-1); // ex -1
 				csOld = null;
+				if (v.getCs().size() <= 1)  v.setCsTooClose(false);
 				for (CriticalSection cs : this.v.getCs()){
+					
 					prec =cs.ComputePrecedences();
 					
-					if (csOld != null) v.setCsTooClose(intersect.csTooClose2(v, csOld, cs));
-					else v.setCsTooClose(false);
+					if (csOld != null) v.setCsTooClose(intersect.csTooClose(v, csOld, cs));
 		
 					if (prec == false && v.isCsTooClose() && csOld != null){		//calculate precedence as long as I have precedence
 						v.setCriticalPoint(csOld);
@@ -106,12 +107,15 @@ public class VehicleThread implements Runnable {
 					}
 					csOld = cs;
 				}
+
+
+
 				if (oldCp != v.getCriticalPoint()) {
 					v.setSlowingPointNew();
 					sp = v.getForwardModel().getPathIndex(v.getWholePath(), v.getSlowingPoint());
 					oldCp = v.getCriticalPoint();
 				}
-
+				
 				//// UPDATE VALUES ////
 				
 				

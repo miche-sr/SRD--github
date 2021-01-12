@@ -158,34 +158,7 @@ public class ConstantAccelerationForwardModel {
 		return state;
 	}
 		
-	/*
-	public boolean canStop(Vehicle v, int targetPathIndex,int StartPathIndex ,boolean useVelocity) {
-		// dati due pathIndex relativi ad un path, considerando un certo stato di partenza, 
-		//calcolo se partendo dal primo è possibile fermarsi prima del secondo
-		if (useVelocity && v.getVelocity() <= 0.0) return true;
-		double distance = computeDistance(v.getWholePath(),StartPathIndex , targetPathIndex);
-		State state = new State(0.0, v.getVelMax());
-		double time = 0.0;
-		double deltaTime = v.getTc()*Vehicle.mill2sec;
-		
-		// considero ritardi dovuti a periodo di controllo e tempo di aggiornamento del ciclo //
-		long lookaheadInMillis = (this.controlPeriodInMillis + MAX_TX_DELAY + trackingPeriodInMillis);
-		if (lookaheadInMillis > 0) {
-			while (time*this.temporalResolution < lookaheadInMillis) {
-				integrateRK4(state, time, deltaTime, false, maxVel, 1.0, maxAccel);
-				time += deltaTime;
-			}
-		}
-		//decelerate from maximum to stop
 
-		while (state.getVelocity() > 0) {
-			if (state.getPosition() > distance) return false;
-			integrateRK4(state, time, deltaTime, true, maxVel, 1.0, maxAccel);
-			time += deltaTime;
-		}
-		return true;
-	}
-*/
 	public double computeDistance(PoseSteering[] path, int startIndex, int endIndex) {
 		double ret = 0.0;
 		for (int i = startIndex; i < Math.min(endIndex,path.length-1); i++)
@@ -197,8 +170,6 @@ public class ConstantAccelerationForwardModel {
 	public  HashMap<Integer,Double> computeTs(Vehicle v) {
 
 		HashMap<Integer,Double> times = new HashMap<Integer, Double>();
-//		HashMap<Integer,Double> times = v.getTimes();
-//		times.clear();
 		int csEnd;
 		int currentPathIndex =  v.getPathIndex();
 		
@@ -215,14 +186,6 @@ public class ConstantAccelerationForwardModel {
 			if (state.getPosition() >= distanceToCp || state.getVelocity() <= 0) break;
 			if (state.getPosition() >= v.getSlowingPoint()) {
 				integrateRK4(state, time, deltaTime, true, maxVel, 1.0, maxAccel);
-				//saturazioni velocità
-//				if (state.getVelocity() < v.getTc()*Vehicle.mill2sec*v.getAccMAx()){
-//					state.setVelocity(0.0);
-//					state.setPosition(v.getDistanceTraveled());
-//				}
-				// if (state.getPosition()<  distanceToCp && state.getVelocity()< 0.9*v.getAccMAx()){
-				// 	state.setVelocity(0.9*v.getAccMAx());
-				// }
 			}
 			else {
 				integrateRK4(state, time, deltaTime, false, maxVel, 1.0, maxAccel);				
