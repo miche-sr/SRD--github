@@ -1,0 +1,2 @@
+aggiunta soluzione deadlock
+aggiunta ripianificazione headtohead
