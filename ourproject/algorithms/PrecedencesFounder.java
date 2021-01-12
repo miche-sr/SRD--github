@@ -26,7 +26,7 @@ public class PrecedencesFounder {
     	double braking2 = timeAtCsEnd1 - timeAtCsStart2;
 
         if (v1.getStoppingPoint() >= te1start && v2.getStoppingPoint() >= te2start){
-            System.out.println("ATTENZIONE, SBATTONO " + v1.getID() + " E "+ v2.getID() + "\n");
+            System.out.println("\u001B[31m" + "ATTENZIONE, SBATTONO " + v1.getID() + " E "+ v2.getID() + "\n" + "\u001B[0m");
             prec = false;
         }
         
@@ -38,9 +38,14 @@ public class PrecedencesFounder {
          SI PUÒ PASSARE A ORDINAMENTI SECONDARI EURISTICI **/
         else{
             if (timeAtCsStart2 == -1 && timeAtCsStart1 == -1 && v1.isCsTooClose()){
-                System.out.println("DEADLOCK RESOLVED!!!!!!!!!");
-                if(v1.getID() > v2.getID()) prec = true;
+                System.out.println("\u001B[35m" + "R"+v1.getID()+"-R"+v2.getID()+"  DEADLOCK RESOLVED!!!!!!!!!" + "\u001B[0m");
+                if (v1.getPriority() == v2.getPriority()){
+                    if(v1.getID() > v2.getID()) prec = true;
+                    else prec = false;
+                }
+                else if (v1.getPriority() > v2.getPriority()) prec = true;
                 else prec = false;
+                
             }
             else if (timeAtCsStart2 == -1) prec = true;
         	else if (timeAtCsStart1 == -1) prec = false;

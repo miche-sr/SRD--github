@@ -57,13 +57,14 @@ public class VehicleThread implements Runnable {
 				for (CriticalSection analysedCs : v.getCs()){
 					int v2Id = analysedCs.getVehicle2().getID();
 					//System.out.println(v.getID()+": Index altrui: "+rrNears.get(v2Id).getPathIndex());
-					if (v.getPathIndex() < analysedCs.getTe1Start() 
-							&& rrNears.get(v2Id).getPathIndex() < analysedCs.getTe2Start()
-								&& !analysedCs.isCsTruncated()) {
-						this.analysedCs.add(analysedCs);
-						analysedVehicles.add(analysedCs.getVehicle2());
+					if (rrNears.containsKey(v2Id)){
+						if (v.getPathIndex() < analysedCs.getTe1Start() 
+								&& rrNears.get(v2Id).getPathIndex() < analysedCs.getTe2Start()
+									&& !analysedCs.isCsTruncated()) {
+							this.analysedCs.add(analysedCs);
+							analysedVehicles.add(analysedCs.getVehicle2());
+						}
 					}
-//					if (analysedCs.isCsTruncated()) System.out.println("troncato");
 				}
 				
 				// re-add the cs already analysed and find the cs of other vehicles
@@ -91,9 +92,10 @@ public class VehicleThread implements Runnable {
 				csOld = null;
 				for (CriticalSection cs : this.v.getCs()){
 					prec =cs.ComputePrecedences();
-					if (csOld != null)
-						v.setCsTooClose(intersect.csTooClose2(v, csOld, cs));
-						System.out.println("R"+v.getID()+"flag: "+v.isCsTooClose());
+					
+					if (csOld != null) v.setCsTooClose(intersect.csTooClose2(v, csOld, cs));
+					else v.setCsTooClose(false);
+		
 					if (prec == false && v.isCsTooClose() && csOld != null){		//calculate precedence as long as I have precedence
 						v.setCriticalPoint(csOld);
 						break;
@@ -111,7 +113,7 @@ public class VehicleThread implements Runnable {
 				}
 
 				//// UPDATE VALUES ////
-				printLog(List, prec);
+				
 				
 				v.setPathIndex(elapsedTrackingTime);
 				v.setPose(v.getWholePath()[v.getPathIndex()].getPose());
@@ -121,6 +123,7 @@ public class VehicleThread implements Runnable {
 				v.setSpatialEnvelope();
 
 				//// SEND NEW ROBOT REPORT ////
+				printLog(List, prec);
 				v.sendNewRr();
 //				if(v.getID()==1) System.out.println(v.getMainTable().get(3).getPathIndex());
 //				if(v.getID()==1 && rrNears.containsKey(3)) System.out.println(rrNears.get(3));
@@ -144,7 +147,7 @@ public class VehicleThread implements Runnable {
 				Thread.sleep(v.getTc());
 				this.elapsedTrackingTime += v.getTc()*Vehicle.mill2sec;
 			}
-			System.out.println("\n R" + this.v.getID() + " : GOAL RAGGIUNTO" );
+			System.out.println("\u001B[34m"+"\n R" + this.v.getID() + " : GOAL RAGGIUNTO" +"\u001B[0m");
 		}	
 		catch (InterruptedException e) {
 			System.out.println("Thread interrotto");

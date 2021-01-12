@@ -100,7 +100,7 @@ public class Vehicle {
 				System.out.println("Unknown vehicle");
 		}
 		double stopTimeMax = this.velMax / this.accMax;
-		this.radius = (5 * this.Tc * mill2sec + stopTimeMax) * this.velMax;
+		this.radius = (2 * this.Tc * mill2sec + stopTimeMax) * this.velMax;
 		this.path = createWholePath(yamlFile);
 		this.forward = new ConstantAccelerationForwardModel(this, 1000); // ???
 
