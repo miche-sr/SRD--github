@@ -119,23 +119,12 @@ public class ConstantAccelerationForwardModel {
 		
 		boolean skipIntegration = false;
 		
-		if (v.getPathIndex() >= v.getCriticalPoint() && state.getVelocity() <= 0.0 ) {
+		if (v.getPathIndex() >= v.getCriticalPoint()-2 && state.getVelocity() <= 0.0 ) {
 			skipIntegration = true;
 			robotBehavior = Behavior.stop; // sono fermo
 		}	
 		if (!skipIntegration) {
  
-			// // // caso Vmin solo goal
-			// if ( v.getDistanceTraveled() >= v.getSlowingPoint()
-			// 	&& state.getVelocity()< v.getTc()*Vehicle.mill2sec*v.getAccMAx()){
-			// 	robotBehavior = Behavior.minVelocity; // vel minima
-			// 	velMaxL = v.getTc()*Vehicle.mill2sec*v.getAccMAx();
-			// 	slowingDown = false; 
-			// 	if (v.getPathIndex()>= v.getWholePath().length-1 ){
-			// 	slowingDown = true; 
-			// 	}
-			// }
-			
 
 			//saturazioni velocità
 			if (state.getVelocity() < v.getTc()*Vehicle.mill2sec*v.getAccMAx()&& robotBehavior==Behavior.slowing){

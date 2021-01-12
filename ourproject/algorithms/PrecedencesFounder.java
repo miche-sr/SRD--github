@@ -12,9 +12,7 @@ public class PrecedencesFounder {
         RobotReport v2 = cs.getVehicle2();
         
         int te1start = cs.getTe1Start();
-        int te1end = cs.getTe1End();
         int te2start = cs.getTe2Start();
-        int te2end = cs.getTe2End();
         
         //System.out.println("my ID: "+v1.getID()+"\t PathInd2: " +v2.getPathIndex()+"\n"+v2.getTruncateTimes()+"\n"+te2start+"\n"+te2end);
         
