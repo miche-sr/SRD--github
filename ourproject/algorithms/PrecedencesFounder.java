@@ -14,7 +14,9 @@ public class PrecedencesFounder {
         int te1start = cs.getTe1Start();
         int te2start = cs.getTe2Start();
         
-        //System.out.println("my ID: "+v1.getID()+"\t PathInd2: " +v2.getPathIndex()+"\n"+v2.getTruncateTimes()+"\n"+te2start+"\n"+te2end);
+        System.out.println("\u001B[35m" + "my ID: "+v1.getID()+"\t other Id: " +v2.getID()+"\n"+
+        cs.getTe1Start()+ ": "+ v1.getTruncateTimes().get(cs.getTe1Start()) + "  -  "+cs.getTe2Start()+": "+v2.getTruncateTimes().get(cs.getTe2Start()) +
+         " flag:" + v1.isCsTooClose() + "\u001B[0m");
         
         double timeAtCsStart1 = v1.getTruncateTimes().get(cs.getTe1Start());
         double timeAtCsEnd1 = v1.getTruncateTimes().get(cs.getTe1End());
@@ -47,10 +49,14 @@ public class PrecedencesFounder {
             }
             
             //caso standard
-            else if (timeAtCsStart2 == -1) prec = true;
-        	else if (timeAtCsStart1 == -1) prec = false;
-        	else if (braking1 < 0 || braking2 < 0) prec = true;
-        	else if (v1.getPriority() > v2.getPriority()) prec = true;
+            else if (timeAtCsStart2 == -1 && timeAtCsStart1 == -1 ){
+                    if(v1.getID() > v2.getID()) prec = true;
+                    else prec = false;
+                    System.out.println("\u001B[35m" + "prec 1" + "\u001B[0m");}
+            else if (timeAtCsStart2 == -1 || timeAtCsEnd2 == -1) {prec = true; System.out.println("\u001B[35m" + "prec 2" + "\u001B[0m");}
+        	else if (timeAtCsStart1 == -1 || timeAtCsEnd1 == -1){ prec = false;System.out.println("\u001B[35m" + "prec 3" + "\u001B[0m");}
+        	else if (braking1 < 0 || braking2 < 0) {prec = true;System.out.println("\u001B[35m" + "prec 4" + "\u001B[0m");}
+        	else if (v1.getPriority() > v2.getPriority()){ prec = true;System.out.println("\u001B[35m" + "prec 5" + "\u001B[0m");}
             else if (v1.getPriority() < v2.getPriority()) prec = false;
             else{	// A PARITÀ DI PRIORITÀ, SI PROCEDE PER DISTANZA TEMPORALE
             	if (braking1 > braking2) prec = true;

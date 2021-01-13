@@ -39,7 +39,9 @@ public class VehicleThread implements Runnable {
 			while(v.getForwardModel().getRobotBehavior() != Behavior.reached){
 				
 				//// UNPACK MESSAGES ////
+				if(v.getID()==1) System.out.println("before: "+v.getMainTable().containsKey(3));
 				rrNears.clear();
+				if(v.getID()==1) System.out.println("after: "+v.getMainTable().containsKey(3));
 				for (Vehicle vh : v.getNears()){
 					rrNears.put(vh.getID(),v.getMainTable().get(vh.getID()));
 					//if(v.getID()==1) System.out.println("pathIndex3rr "+rrNears.get(3).getPathIndex());

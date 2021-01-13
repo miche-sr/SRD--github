@@ -458,5 +458,43 @@ public void displayPoint(Vehicle v, int pathIndex, String color) {
 	enqueueMessage(jsonString);
 }
 
+public void addCorridor(Geometry geom, int ID) {
+	String color = "#03409c";
+	String jsonString = "{ \"operation\" : \"addGeometry\", \"data\" : " + this.geometryToJSONString("_S"+ID, geom, color, -1, false, null) + "}";
+	enqueueMessage(jsonString);
+}
+
+private Geometry createLight(Pose semaphore,int ID, int semaphoreNumber) {		
+	GeometryFactory gf = new GeometryFactory();
+	double theta = semaphore.getTheta();
+	double x =  semaphore.getX();
+	double y =  semaphore.getY();
+	
+	Coordinate[] coords = new Coordinate[5];
+	coords[0] = new Coordinate(0.0,0.0);
+	coords[1] = new Coordinate(0.4,0.0);
+	coords[2] = new Coordinate(0.4,0.4);
+	coords[3] = new Coordinate(0.0,0.4);
+	coords[4] = new Coordinate(0.0,0.0);
+
+	Polygon point = gf.createPolygon(coords);
+	AffineTransformation at = new AffineTransformation();
+	if (semaphoreNumber == 1) x=x-0.5;
+	else if (semaphoreNumber == 2) x=x+2;
+
+	at.translate(x, y-0.6);
+	at.rotate(theta);
+	Geometry ret = at.transform(point);
+	return ret;
+}
+
+public void displayLight(Pose semaphore,int ID, int semaphoreNumber,Boolean sAccess) {
+	String color;
+	if(sAccess) color = "#66ff00";
+	else color = "#ff0000";
+	Geometry point = createLight(semaphore,ID,semaphoreNumber);
+	String jsonString = "{ \"operation\" : \"addGeometry\", \"data\" : " + this.geometryToJSONString("_Sl"+ID+semaphoreNumber, point,color , -1, true, null) + "}";
+	enqueueMessage(jsonString);
+}
 
 }

@@ -3,6 +3,7 @@ package se.oru.coordination.coordination_oru.ourproject;
 import se.oru.coordination.coordination_oru.ourproject.models.*;
 import se.oru.coordination.coordination_oru.util.BrowserVisualizationDist;
 
+
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -26,6 +27,20 @@ public class TestCorridoio {
 		Vehicle.Category a = Vehicle.Category.AMBULANCE;
 		Vehicle.Category c = Vehicle.Category.CAR;
 
+		BrowserVisualizationDist viz = new BrowserVisualizationDist();
+		viz.setInitialTransform(25, 5, 5);
+		try {
+			TimeUnit.SECONDS.sleep(5);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+		
+		
+
+		Pose CorrStart = new Pose(11.0,5.5,0);
+		Pose CorrEnd  = new Pose(24.0,5.5,0);
+		trafficLights corridoio = new trafficLights(1, CorrStart, CorrEnd, 2, viz);
+
 		/* corridioio */
 		Pose start1 = new Pose(5.0,5.0,Math.PI);
 		Pose goal11 = new Pose(10.0,7.0,Math.PI);
@@ -45,14 +60,7 @@ public class TestCorridoio {
 		Thread thread2 = initThread(2, c, start2, goal2);
 
 
-		BrowserVisualizationDist viz = new BrowserVisualizationDist();
-		if (yamlFile != null) viz.setMap(yamlFile);
-		viz.setInitialTransform(25, 12, 15);
-		try {
-			TimeUnit.SECONDS.sleep(5);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
+	
 	
 	double rMax = -1; double tMax = -1;
 	for (Vehicle vh : vehicleList){
@@ -76,6 +84,9 @@ public class TestCorridoio {
 	}
 	System.out.println("\n" + "Radius "  + rMax );
 	
+	
+
+
 	thread1.start();
 	thread2.start();
 

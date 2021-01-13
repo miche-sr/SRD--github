@@ -52,11 +52,12 @@ public class CriticalSectionsFounder {
 
 		System.out.println("Attempting to re-plan path of Robot" + v.getID() + " (with robot" + robotToAvoid.getID() + " as obstacle), "
 				+ "with starting point in "+currentWaitingPose+"...");
-		ReedsSheppCarPlanner mp = new ReedsSheppCarPlanner();
-		mp.setRadius(0.2);
-		mp.setTurningRadius(4.0);
-		mp.setDistanceBetweenPathPoints(0.5);
-		mp.setFootprint(v.getFootprint());
+		//ReedsSheppCarPlanner mp = new ReedsSheppCarPlanner();
+		AbstractMotionPlanner mp = v.getMotionPlanner();
+		// mp.setRadius(0.2);
+		// mp.setTurningRadius(4.0);
+		// mp.setDistanceBetweenPathPoints(0.5);
+		// mp.setFootprint(v.getFootprint());
 		System.out.println(v.getWholePath());
 		System.out.println(mp.getPath());
 		PoseSteering[] newPath = doReplanning(mp, currentWaitingPose, currentWaitingGoal, obstacles);
