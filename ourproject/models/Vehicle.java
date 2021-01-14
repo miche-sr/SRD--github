@@ -7,14 +7,10 @@ import se.oru.coordination.coordination_oru.motionplanning.ompl.ReedsSheppCarPla
 import org.metacsp.multi.spatioTemporal.paths.Pose;
 import org.metacsp.multi.spatioTemporal.paths.PoseSteering;
 import org.metacsp.multi.spatioTemporal.paths.TrajectoryEnvelope.SpatialEnvelope;
-import org.metacsp.multi.spatioTemporal.paths.TrajectoryEnvelopeSolver;
-
-import EDU.oswego.cs.dl.util.concurrent.Sync;
-
-import org.metacsp.multi.spatioTemporal.paths.Trajectory;
 import org.metacsp.multi.spatioTemporal.paths.TrajectoryEnvelope;
 
 import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.Geometry;
 
 import java.util.*;
 
@@ -44,6 +40,7 @@ public class Vehicle {
 	private Coordinate[] footprint;
 
 	// VARIABILI DI PERCORSO E TRAIETTORIA
+	ReedsSheppCarPlanner rsp = new ReedsSheppCarPlanner();
 	private int pathIndex = 0; // index of the last pose passed
 	private Pose pose;
 	private Pose start;
@@ -51,30 +48,31 @@ public class Vehicle {
 	private PoseSteering[] path;
 	private double distanceTraveled = 0.0;
 	private ArrayList<PoseSteering> truncatedPath = new ArrayList<PoseSteering>();
-	private TrajectoryEnvelope te = null;
 	private SpatialEnvelope se = null;
 	private SpatialEnvelope wholeSe = null;
 	private HashMap<Integer, Double> times = new HashMap<Integer, Double>();
-	private HashMap<Integer, Double> TruncateTimes = new HashMap<Integer, Double>();
+	private HashMap<Integer, Double> truncateTimes = new HashMap<Integer, Double>();
 
 	// VARIABILI PER LE SEZIONI CRITICHE
 	private int criticalPoint = -1; // -1 if no critical point
-	// private boolean csTooClose = false;
+	private boolean csTooClose = false;
 	private int stoppingPoint = -1; // punto di fermata, a ogni ciclo: al quale mi fermo da dove sono
-	private int slowingPoint = -1; // punto di frenata, unico: per fermarsi prima del p. critico
+	private double slowingPoint = -1; // punto di frenata, unico: per fermarsi prima del p. critico
 	private TreeSet<CriticalSection> cs = new TreeSet<CriticalSection>();
 	private CriticalSectionsFounder intersect = new CriticalSectionsFounder();
 
 	// DA USARE PER I VICINI
 	private ArrayList<Vehicle> vehicleList = new ArrayList<Vehicle>();
 	private ArrayList<Vehicle> vehicleNear = new ArrayList<Vehicle>();
+	private ArrayList<TrafficLights> trafficLightsList = new ArrayList<TrafficLights>();
+	private ArrayList<TrafficLights> trafficLightsNear = new ArrayList<TrafficLights>();
+	private HashMap<Integer, RobotReport> mainTable;
 
 	private ConstantAccelerationForwardModel forward;
-
 	private BrowserVisualizationDist viz;
 
 	// COSTRUTTORE
-	public Vehicle(int ID, Category category, Pose start, Pose[] goal) {
+	public Vehicle(int ID, Category category, Pose start, Pose[] goal, String yamlFile) {
 		this.ID = ID;
 		this.pose = start;
 		this.start = start;
@@ -85,15 +83,15 @@ public class Vehicle {
 				this.velMax = 2;
 				this.accMax = 1.0;
 				this.priority = 1;
-				this.Tc = 250;
+				this.Tc = 350;
 				this.footprint = fpCar;
 				break;
 
 			case AMBULANCE:
-				this.velMax = 4.0;
-				this.accMax = 1.0;
-				this.priority = 2; 
-				this.Tc = 200;
+				this.velMax = 3.0;
+				this.accMax = 2.0;
+				this.priority = 2;
+				this.Tc = 150;
 				this.footprint = fpAmb;
 				break;
 
@@ -101,22 +99,12 @@ public class Vehicle {
 				System.out.println("Unknown vehicle");
 		}
 		double stopTimeMax = this.velMax / this.accMax;
-		this.radius = (2 * this.Tc * mill2sec + stopTimeMax) * this.velMax;
-		this.path = createWholePath();
-		this.forward = new ConstantAccelerationForwardModel(this, 1000, 30); // ???
+		this.radius = (2 * this.Tc * mill2sec + stopTimeMax) * this.velMax + 2;
+		this.path = createWholePath(yamlFile);
+		this.forward = new ConstantAccelerationForwardModel(this, 1000); // ???
 
 	}
 
-	public void PostInizialization(){
-		this.setSlowingPointNew();
-		this.setTimes();
-		this.setSpatialEnvelope();
-		this.getNears();
-		// set RR
-		//for (Vehicle vh : this.vehicleNear){
-		// 	vh.setRR(this)
-		//}
-	}
 
 	/**********************************************
 	 ** SET & GET PER VARIABILI FISICHE E PROPRIE **
@@ -173,6 +161,8 @@ public class Vehicle {
 		return footprint;
 	}
 
+
+
 	/*****************************************
 	 ** SET & GET PER PERCORSO E TRAIETTORIA **
 	 ******************************************/
@@ -188,8 +178,16 @@ public class Vehicle {
 		this.pose = pose;
 	}
 
-	public PoseSteering[] createWholePath() {
-		ReedsSheppCarPlanner rsp = new ReedsSheppCarPlanner();
+	public Pose[] getGoal() {
+		return goal;
+	}
+
+	public ReedsSheppCarPlanner getMotionPlanner() {
+		return rsp;
+	}
+	
+	public PoseSteering[] createWholePath(String yamlFile) {
+		if (yamlFile != null) rsp.setMap(yamlFile);
 		rsp.setRadius(0.2);
 		rsp.setTurningRadius(4.0);
 		rsp.setDistanceBetweenPathPoints(0.5);
@@ -200,6 +198,11 @@ public class Vehicle {
 			throw new Error("No path between " + this.start + " and " + this.goal);
 		wholeSe = TrajectoryEnvelope.createSpatialEnvelope(rsp.getPath(), this.footprint);
 		return rsp.getPath();
+	}
+	
+	public void setNewWholePath(RobotReport r) {
+		this.path = intersect.rePlanPath(this, r);
+		wholeSe = TrajectoryEnvelope.createSpatialEnvelope(this.path, this.footprint);
 	}
 
 	public PoseSteering[] getWholePath() {
@@ -214,10 +217,6 @@ public class Vehicle {
 		this.distanceTraveled = distanceTraveled;
 	}
 
-	public TrajectoryEnvelope getTrajectoryEnvelope() {
-		return te;
-	}
-
 	public SpatialEnvelope getWholeSpatialEnvelope() {
 		return wholeSe;
 	}
@@ -229,7 +228,7 @@ public class Vehicle {
 	// CALCOLO PATH TRAIETTORIA TRONCATA //
 	public void setSpatialEnvelope() {
 		this.truncatedPath.clear();
-		this.TruncateTimes.clear();
+		this.truncateTimes.clear();
 		int csEnd;
 
 		// from cp to Pathndex //
@@ -242,7 +241,7 @@ public class Vehicle {
 		// trasmetto solo traiettoria all'interno del raggio(in tempi) e comunque sempre fino alla fine della prima sezione critica //
 		//System.out.print(this.getRobotID() + "SPatial " + pathIndex+ "\n"+times );
 		while ( times.get(pathIndex + i) <= secForSafety || pathIndex + i <= csEnd+1 ) {
-			this.TruncateTimes.put(pathIndex + i, times.get(pathIndex + i));
+			this.truncateTimes.put(pathIndex + i, times.get(pathIndex + i));
 			this.truncatedPath.add(path[pathIndex + i]);
 			i++;
 			//System.out.print("\n "+this.getRobotID()+" path+i  " + (pathIndex+i) + "\n" + times);
@@ -272,6 +271,7 @@ public class Vehicle {
 		setDistanceTraveled(next_state.getPosition());
 		setVelocity(next_state.getVelocity());
 		this.pathIndex = forward.getPathIndex(this.path, next_state);
+//		System.out.println("pathIndex"+ID+" "+this.pathIndex);
 	}
 
 	public HashMap<Integer, Double> getTimes() {
@@ -284,7 +284,7 @@ public class Vehicle {
 	}
 
 	public HashMap<Integer, Double> getTruncateTimes() {
-		return TruncateTimes;
+		return truncateTimes;
 	}
 
 	/**************************************
@@ -295,13 +295,10 @@ public class Vehicle {
 	}
 
 	// CALCOLO NUOVE SEZIONI CRITICHE //
-	public boolean appendCs(Vehicle v2) {
-		boolean newCs = false;
+	public void appendCs(RobotReport v2) {
 		CriticalSection[] cs = intersect.findCriticalSections(this, v2);
 		for (CriticalSection c : cs)
 			this.cs.add(c);
-		if (cs.length != 0) newCs = true;
-		return newCs;
 	}
 
 	public void clearCs() {
@@ -320,14 +317,25 @@ public class Vehicle {
 		this.criticalPoint = cs.getTe1Start()-1;
 	}
 
-	public int getSlowingPoint() {
+	public double getSlowingPoint() {
 		return slowingPoint;
 	}
 
-	public void setSlowingPoint(int slowingPoint) {
+	public void setSlowingPoint(double slowingPoint) {
 		this.slowingPoint = slowingPoint;
 	}
 
+	public boolean isCsTooClose() {
+		return csTooClose;
+	}
+
+	public void setCsTooClose(boolean csTooClose) {
+		this.csTooClose = csTooClose;
+	}
+
+
+
+/*
 	public void setSlowingPoint() {
 		boolean stop = false;
 		int i = this.criticalPoint;
@@ -342,43 +350,57 @@ public class Vehicle {
 		// itero per tentativi partendo da cp-1 fino a che non trovo il punto dal quale frenando riesco a fermarmi
 		while (!stop && i > 0) {
 			i -= 1;
-			stop = forward.canStop(this.te, this, cp, i, false);
+			stop = forward.canStop(this, cp, i, false);
 		}
 		this.slowingPoint = i;
 	}
-
+*/
 	public void setSlowingPointNew(){
 
         int cp = this.criticalPoint;
-        if (cp == -1) cp = path.length;
- 
+        if (cp == -1) cp = path.length-1;
+        
 		double distanceToCpAbsolute = forward.computeDistance(path, 0, cp);
 		double distanceToCpRelative = forward.computeDistance(path, pathIndex,cp);
         // We compute the distance traveled:
         // - accelerating up to vel max from current vel (distToVelMax)
         // - decelerating up to zero vel from vel max (brakingVelMax)
-        double timeToVelMax = (velMax - velocity)/accMax;
-        double distToVelMax = velocity*timeToVelMax + accMax*Math.pow(timeToVelMax,2.0)/2;
-        double brakingVelMax = Math.pow(velMax,2.0)/(accMax*2);
 
-        // If sum of the two is lower than distanceToCp, than the move profile is trapezoidal,
-        // (or at most triangular, reaching maxVel and immediately decelerating)
+        double v0 = velocity;
+        double timeToVelMax = (velMax - v0)/accMax;
+        double distToVelMax = v0*timeToVelMax + accMax*Math.pow(timeToVelMax,2.0)/2;
+        double brakingFromVelMax = Math.pow(velMax,2.0)/(accMax*2);
+
+        // If sum of the two is lower than distanceToCp, than the move profile is trapezoidal.
         // If higher, than the profile is triangular, but not reaching maximum speed.
         // For triangular: accelerating distance == decelerating distance
         double braking;
-        if (distToVelMax + brakingVelMax > distanceToCpRelative){
+        double traveledInTc = 0;
+        if (distToVelMax + brakingFromVelMax > distanceToCpRelative){	// triangular profile
             // braking = brak1 (from NowVel to zero) + brak2 (from velReached to NowVel)
-            double brak1 = Math.pow(velocity,2.0)/(accMax*2);
+            double brak1 = Math.pow(v0,2.0)/(accMax*2);
             double brak2 = (distanceToCpRelative - brak1)/2;
             braking = brak1 + brak2;
+            
+            double timeToTopVel = -v0/accMax + Math.sqrt(Math.pow(v0/accMax, 2)+2*brak2/accMax);
+            double topVel = v0 + accMax*timeToTopVel;
+            traveledInTc = topVel*Tc*mill2sec;// - Math.pow(Tc*mill2sec,2.0)*accMax/2;
 		}
-        else braking = brakingVelMax;
+        else {
+        	braking = brakingFromVelMax;
+        	traveledInTc = velMax*Tc*mill2sec;
+        }
+        this.slowingPoint = distanceToCpAbsolute-(braking+traveledInTc);
+//        System.out.println("braking"+braking);
+        /*
 		//System.out.println("SP NEW: "+(distanceToCp - braking));
-        State slowpoint = new State(distanceToCpAbsolute - braking, 0.0); //arbitrary vel, not used
+        State slowpoint = new State(distanceToCpAbsolute-(braking+traveledInTc), 0.0); //arbitrary vel, not used
         //System.out.println("SP NEW: "+forward.getPathIndex(path, slowpoint));
 		this.slowingPoint = forward.getPathIndex(path, slowpoint);
 		double distanceToSlow = forward.computeDistance(path, 0, this.slowingPoint);
 		//System.out.println("distToSlowNew: "+distanceToSlow);
+		 * 
+		 */
 	}
 
 	public int getStoppingPoint() {
@@ -396,6 +418,24 @@ public class Vehicle {
 		this.vehicleList = vehicleList;
 	}
 
+	public void setTrafficLightsList( ArrayList<TrafficLights>  trafficLightsList) {
+		this.trafficLightsList = trafficLightsList;
+	}
+	public ArrayList<TrafficLights> getTrafficLightsList() {
+		return trafficLightsList;
+	}
+
+
+
+	
+	public void setMainTable(HashMap<Integer, RobotReport> mainTable) {
+		this.mainTable = mainTable;
+	}
+	public HashMap<Integer, RobotReport> getMainTable() {
+		return mainTable;
+	}Pose start3 = new Pose(75, 35, Math.PI); Pose[] goal3 = { new Pose(5, 8, Math.PI) };
+
+
 	// CALCOLO QUALI SONO I ROBOT VICINI //
 	public ArrayList<Vehicle> getNears() {
 		this.vehicleNear.clear();
@@ -412,6 +452,58 @@ public class Vehicle {
 		}
 		return vehicleNear;
 	}
+	public Boolean checkCollision(Vehicle vh) {
+		
+		SpatialEnvelope pose1 = TrajectoryEnvelope.createSpatialEnvelope(new PoseSteering[] { path[pathIndex] }, footprint);
+		Geometry shape1 = pose1.getPolygon();
+
+		SpatialEnvelope pose2 = TrajectoryEnvelope.createSpatialEnvelope(new PoseSteering[] { vh.getSpatialEnvelope().getPath()[0] }, vh.getFootprint());
+		Geometry shape2 = pose2.getPolygon();
+
+		if (shape1.intersects(shape2)) 
+			return true;
+		else
+			return false;
+	}
+
+	public ArrayList<TrafficLights> getTrafficLightsNears() {
+		//this.trafficLightsNear.clear();
+		double sm1X, sm1Y, dist1;
+		double sm2X, sm2Y, dist2;
+		double x = this.getPose().getX();
+		double y = this.getPose().getY();
+		for (TrafficLights TL : this.trafficLightsList) {
+			sm1X = TL.getSemaphore1().getX();
+			sm1Y = TL.getSemaphore1().getY();
+			dist1 = Math.sqrt(Math.pow((x - sm1X), 2.0) + Math.pow((y - sm1Y), 2.0));
+			if (dist1 <=1.5*this.radius && dist1 > 0) {
+				if (!this.trafficLightsNear.contains(TL)) 
+					this.trafficLightsNear.add(TL);
+			}
+			sm2X = TL.getSemaphore2().getX();
+			sm2Y = TL.getSemaphore2().getY();
+			dist2 = Math.sqrt(Math.pow((x - sm2X), 2.0) + Math.pow((y - sm2Y), 2.0));
+			if (dist2 <=1.5*this.radius && dist2 > 0) {
+				if (!this.trafficLightsNear.contains(TL)) 
+					this.trafficLightsNear.add(TL);	
+			}
+
+
+		}
+		return trafficLightsNear;
+	}
+
+
+
+	public void sendNewRr() {
+		HashMap<Integer,Double> TruTim = (HashMap<Integer,Double>) truncateTimes.clone();
+		RobotReport rr = new RobotReport(this.ID, this.priority, this.pathIndex, 
+				this.se, TruTim, this.stoppingPoint,this.isCsTooClose());
+		
+		mainTable.put(ID, rr);
+		
+	}
+	
 
 	/**************************************
 	 ** SET & GET PER LA VISUALIZZAZIONE **

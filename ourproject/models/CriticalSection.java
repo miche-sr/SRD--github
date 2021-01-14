@@ -8,11 +8,12 @@ public class CriticalSection implements Comparable<CriticalSection> {
 	private int te1End = -1;
 	private int te2End = -1;
 	private Vehicle v1;
-	private Vehicle v2;
+	private RobotReport v2;
 	private PrecedencesFounder prec = new PrecedencesFounder();
 	private boolean csTruncated;
+	private boolean precedenza;
 
-	public CriticalSection(Vehicle v1, Vehicle v2, int te1Start, int te2Start, int te1End, int te2End,
+	public CriticalSection(Vehicle v1, RobotReport v2, int te1Start, int te2Start, int te1End, int te2End,
 			boolean csTruncated) {
 		this.te1Start = te1Start;
 		this.te2Start = te2Start;
@@ -21,6 +22,14 @@ public class CriticalSection implements Comparable<CriticalSection> {
 		this.v1 = v1;
 		this.v2 = v2;
 		this.csTruncated = csTruncated;
+	}
+
+	public boolean isPrecedenza() {
+		return precedenza;
+	}
+
+	public void setPrecedenza(boolean precedenza) {
+		this.precedenza = precedenza;
 	}
 
 	public boolean isCsTruncated() {
@@ -58,10 +67,10 @@ public class CriticalSection implements Comparable<CriticalSection> {
 	public void setVehicle1(Vehicle v1) {
 		this.v1 = v1;
 	}
-	public Vehicle getVehicle2() {
+	public RobotReport getVehicle2() {
 		return v2;
 	}
-	public void setVehicle2(Vehicle v2) {
+	public void setVehicle2(RobotReport v2) {
 		this.v2 = v2;
 	}
 	
