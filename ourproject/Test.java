@@ -79,7 +79,7 @@ public class Test {
 		vh.sendNewRr();
 		vh.setVisualization(viz);
 	}
-	System.out.println("\n" + "Radius "  + rMax );
+	//System.out.println("\n" + "Radius "  + rMax );
 	
 	thread1.start();
 	thread2.start();

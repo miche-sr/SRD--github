@@ -5,6 +5,7 @@ import se.oru.coordination.coordination_oru.motionplanning.AbstractMotionPlanner
 import se.oru.coordination.coordination_oru.motionplanning.ompl.ReedsSheppCarPlanner;
 import se.oru.coordination.coordination_oru.ourproject.models.CriticalSection;
 import se.oru.coordination.coordination_oru.ourproject.models.RobotReport;
+import se.oru.coordination.coordination_oru.ourproject.models.TrafficLights;
 import se.oru.coordination.coordination_oru.ourproject.models.Vehicle;
 
 import java.util.ArrayList;
@@ -194,5 +195,35 @@ public class CriticalSectionsFounder {
 			return true;
 	
 	
+	}
+
+	public int SmStopIndex(Vehicle v, TrafficLights Sm){
+		SpatialEnvelope se1 = v.getWholeSpatialEnvelope();
+		PoseSteering[] path1 = se1.getPath();
+		Geometry shape1 = se1.getPolygon();
+		Geometry shape2 = Sm.getCorridorPath().getPolygon();
+		Geometry g = shape1.intersection(shape2);
+		boolean started = false;
+		int te1Start = -1;
+		//int te1End;
+		for (int j = v.getPathIndex(); j < path1.length; j++) {
+			Geometry placement1 = TrajectoryEnvelope.getFootprint(se1.getFootprint(), path1[j].getPose().getX(), path1[j].getPose().getY(), path1[j].getPose().getTheta());
+			int jAbs = j ;//+v.getPathIndex();		// LO SI RIPORTA RISPETTO A INDICE ASSOLUTO
+			if (!started && placement1.intersects(g)) {		// CALCOLO INIZIO S.C.
+				started = true;
+				te1Start = jAbs;
+				break;
+			}
+			// else if (started && !placement1.intersects(g)) {// NON INTERSECA XK IMPRONTA È USCITA DA SC
+			// 	te1End = (jAbs-1 > 0 ? jAbs-1 : 0);
+			// 	started = false;
+			// }
+			// if (started && j == path1.length-1) {
+			// 	te1End = jAbs;
+
+			// }
+		}
+		return te1Start;
+
 	}
 }

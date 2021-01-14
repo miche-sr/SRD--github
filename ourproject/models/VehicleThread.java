@@ -6,6 +6,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.TreeSet;
 
+import javax.lang.model.util.ElementScanner6;
+
+//import org.graalvm.compiler.phases.verify.VerifyDebugUsage;
+
 import se.oru.coordination.coordination_oru.ourproject.algorithms.CriticalSectionsFounder;
 import se.oru.coordination.coordination_oru.ourproject.algorithms.ConstantAccelerationForwardModel.Behavior;
 
@@ -23,6 +27,8 @@ public class VehicleThread implements Runnable {
 //	private ArrayList<RobotReport> rrNears = new ArrayList<RobotReport>();
 	private Boolean prec = true;
 	private CriticalSection csOld;
+	private boolean FreeAccess = true;
+	int smStopIndex = -1;
 
 	public VehicleThread(Vehicle v){
 		this.v = v;
@@ -39,15 +45,11 @@ public class VehicleThread implements Runnable {
 			while(v.getForwardModel().getRobotBehavior() != Behavior.reached){
 				
 				//// UNPACK MESSAGES ////
-				if(v.getID()==1) System.out.println("before: "+v.getMainTable().containsKey(3));
 				rrNears.clear();
-				if(v.getID()==1) System.out.println("after: "+v.getMainTable().containsKey(3));
 				for (Vehicle vh : v.getNears()){
 					rrNears.put(vh.getID(),v.getMainTable().get(vh.getID()));
-					//if(v.getID()==1) System.out.println("pathIndex3rr "+rrNears.get(3).getPathIndex());
 				}
-				//if(v.getID()==1) System.out.println("pathIndex3tb "+v.getMainTable().get(3).getPathIndex());
-
+				
 			/****************************
 			 * FILTER CRITICAL SECTIONS *
 			 ****************************/
@@ -56,10 +58,10 @@ public class VehicleThread implements Runnable {
 				this.analysedCs.clear();
 				for (CriticalSection analysedCs : v.getCs()){
 					int v2Id = analysedCs.getVehicle2().getID();
-					//System.out.println(v.getID()+": Index altrui: "+rrNears.get(v2Id).getPathIndex());
 					if (rrNears.containsKey(v2Id)){
 						if (v.getPathIndex() < analysedCs.getTe1Start() 
 								&& rrNears.get(v2Id).getPathIndex() < analysedCs.getTe2Start()
+								&& rrNears.get(v2Id).getFlagCs() != true
 									&& !analysedCs.isCsTruncated()) {
 							this.analysedCs.add(analysedCs);
 							analysedVehicles.add(analysedCs.getVehicle2());
@@ -73,15 +75,44 @@ public class VehicleThread implements Runnable {
 					v.getCs().add(analysedCs);
 				
 				List = "";
-				//boolean newPossibleCs = false;
 				for (RobotReport vh : rrNears.values()){
 					if (!analysedVehicles.contains(vh)) {
 						v.appendCs(vh);
-						//newPossibleCs = true;
 					}
-					//else System.out.println(v.getID()+": skip");
 					List = (List + vh.getID() + " " );
 				}
+
+				/**********************************
+				 		** SEMAPHORE **
+				 ++++++++++++++++++++++++++++++++*/
+
+				 for (TrafficLights TL : v.getTrafficLightsNears()){
+					synchronized(TL){
+						if (v.getWholeSpatialEnvelope().getPolygon().intersects(TL.getCorridorPath().getPolygon())){
+	
+							if (!TL.getRobotInsideCorridor().contains(v.getID())){
+								if (TL.checkSemophore(v)){ // entro nel corridioi
+										TL.addVehicleInside(v);
+										FreeAccess = true;
+								}
+								else{ // semaforo rosso
+									if (FreeAccess == true) smStopIndex = intersect.SmStopIndex(v, TL);
+									FreeAccess = false;
+								}
+							}
+						}
+						if (!v.getSpatialEnvelope().getPolygon().intersects(TL.getCorridorPath().getPolygon())) {
+						 	if (FreeAccess == true) {//lo stavo attraversando e sono uscito
+								if (TL.getRobotInsideCorridor().contains(v.getID()))	TL.removeVehicleInside(v);
+							}
+					
+						}
+						
+					}
+				}
+
+
+
 				
 				/*******************************
 				 ** CALCULATE THE PRECEDENCES ** 
@@ -108,17 +139,17 @@ public class VehicleThread implements Runnable {
 					csOld = cs;
 				}
 
-
-
+				if(FreeAccess== false && v.getStoppingPoint() != -1 && smStopIndex >= 6)
+					v.setCriticalPoint( Math.min(v.getCriticalPoint(),smStopIndex-6) );
+				
 				if (oldCp != v.getCriticalPoint()) {
 					v.setSlowingPointNew();
 					sp = v.getForwardModel().getPathIndex(v.getWholePath(), v.getSlowingPoint());
 					oldCp = v.getCriticalPoint();
 				}
 				
-				//// UPDATE VALUES ////
-				
-				
+
+				//// UPDATE VALUES ///
 				v.setPathIndex(elapsedTrackingTime);
 				v.setPose(v.getWholePath()[v.getPathIndex()].getPose());
 				v.setStoppingPoint();
@@ -127,7 +158,8 @@ public class VehicleThread implements Runnable {
 				v.setSpatialEnvelope();
 
 				//// SEND NEW ROBOT REPORT ////
-				printLog(List, prec);
+				
+				//printLog(List, prec);
 				v.sendNewRr();
 
 				

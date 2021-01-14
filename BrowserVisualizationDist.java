@@ -459,7 +459,7 @@ public void displayPoint(Vehicle v, int pathIndex, String color) {
 }
 
 public void addCorridor(Geometry geom, int ID) {
-	String color = "#03409c";
+	String color = "#ffffff";
 	String jsonString = "{ \"operation\" : \"addGeometry\", \"data\" : " + this.geometryToJSONString("_S"+ID, geom, color, -1, false, null) + "}";
 	enqueueMessage(jsonString);
 }

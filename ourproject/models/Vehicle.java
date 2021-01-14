@@ -63,6 +63,8 @@ public class Vehicle {
 	// DA USARE PER I VICINI
 	private ArrayList<Vehicle> vehicleList = new ArrayList<Vehicle>();
 	private ArrayList<Vehicle> vehicleNear = new ArrayList<Vehicle>();
+	private ArrayList<TrafficLights> trafficLightsList = new ArrayList<TrafficLights>();
+	private ArrayList<TrafficLights> trafficLightsNear = new ArrayList<TrafficLights>();
 	private HashMap<Integer, RobotReport> mainTable;
 
 	private ConstantAccelerationForwardModel forward;
@@ -96,7 +98,7 @@ public class Vehicle {
 				System.out.println("Unknown vehicle");
 		}
 		double stopTimeMax = this.velMax / this.accMax;
-		this.radius = (2 * this.Tc * mill2sec + stopTimeMax) * this.velMax +2;
+		this.radius = (2 * this.Tc * mill2sec + stopTimeMax) * this.velMax + 2;
 		this.path = createWholePath(yamlFile);
 		this.forward = new ConstantAccelerationForwardModel(this, 1000); // ???
 
@@ -414,6 +416,16 @@ public class Vehicle {
 	public void setVehicleList(ArrayList<Vehicle> vehicleList) {
 		this.vehicleList = vehicleList;
 	}
+
+	public void setTrafficLightsList( ArrayList<TrafficLights>  trafficLightsList) {
+		this.trafficLightsList = trafficLightsList;
+	}
+	public ArrayList<TrafficLights> getTrafficLightsList() {
+		return trafficLightsList;
+	}
+
+
+
 	
 	public void setMainTable(HashMap<Integer, RobotReport> mainTable) {
 		this.mainTable = mainTable;
@@ -440,12 +452,43 @@ public class Vehicle {
 		return vehicleNear;
 	}
 	
+
+	public ArrayList<TrafficLights> getTrafficLightsNears() {
+		//this.trafficLightsNear.clear();
+		double sm1X, sm1Y, dist1;
+		double sm2X, sm2Y, dist2;
+		double x = this.getPose().getX();
+		double y = this.getPose().getY();
+		for (TrafficLights TL : this.trafficLightsList) {
+			sm1X = TL.getSemaphore1().getX();
+			sm1Y = TL.getSemaphore1().getY();
+			dist1 = Math.sqrt(Math.pow((x - sm1X), 2.0) + Math.pow((y - sm1Y), 2.0));
+			if (dist1 <=1.5*this.radius && dist1 > 0) {
+				if (!this.trafficLightsNear.contains(TL)) 
+					this.trafficLightsNear.add(TL);
+			}
+			sm2X = TL.getSemaphore2().getX();
+			sm2Y = TL.getSemaphore2().getY();
+			dist2 = Math.sqrt(Math.pow((x - sm2X), 2.0) + Math.pow((y - sm2Y), 2.0));
+			if (dist2 <=1.5*this.radius && dist2 > 0) {
+				if (!this.trafficLightsNear.contains(TL)) 
+					this.trafficLightsNear.add(TL);	
+			}
+
+
+		}
+		return trafficLightsNear;
+	}
+
+
+
 	public void sendNewRr() {
 		HashMap<Integer,Double> TruTim = (HashMap<Integer,Double>) truncateTimes.clone();
 		RobotReport rr = new RobotReport(this.ID, this.priority, this.pathIndex, 
-				this.se, TruTim, this.stoppingPoint);
+				this.se, TruTim, this.stoppingPoint,this.isCsTooClose());
 		
 		mainTable.put(ID, rr);
+		
 	}
 	
 

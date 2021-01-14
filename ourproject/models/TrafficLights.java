@@ -6,9 +6,11 @@ import org.metacsp.multi.spatioTemporal.paths.TrajectoryEnvelope;
 import se.oru.coordination.coordination_oru.motionplanning.ompl.ReedsSheppCarPlanner;
 import se.oru.coordination.coordination_oru.util.BrowserVisualizationDist;
 
+import java.util.ArrayList;
+
 import com.vividsolutions.jts.geom.Coordinate;
 
-public class trafficLights {
+public class TrafficLights {
     private Pose semaphore1;
     private Pose semaphore2;
     private Boolean s1Access = true;
@@ -17,19 +19,22 @@ public class trafficLights {
     private int counter = 0;
     private double size = 0.0;
     private int ID;
-
+    private ArrayList<Integer> robotInsideCorridor = new ArrayList<Integer>();
 
     ReedsSheppCarPlanner rsp = new ReedsSheppCarPlanner();
     private BrowserVisualizationDist viz;
 
-    public trafficLights(Pose semaphore1, Pose semaphore2, SpatialEnvelope corridorPath) {
+    public TrafficLights(Pose semaphore1, Pose semaphore2, SpatialEnvelope corridorPath) {
         this.semaphore1 = semaphore1;
         this.semaphore2 = semaphore2;
         this.corridorPath = corridorPath;
 
     }
 
-    public trafficLights(int ID,Pose semaphore1, Pose semaphore2, double size,BrowserVisualizationDist viz) {
+
+    
+
+    public TrafficLights(int ID, Pose semaphore1, Pose semaphore2, double size, BrowserVisualizationDist viz) {
         this.ID = ID;
         this.semaphore1 = semaphore1;
         this.semaphore2 = semaphore2;
@@ -106,8 +111,70 @@ public class trafficLights {
         this.counter = counter;
     }
 
+    public ArrayList<Integer> getRobotInsideCorridor() {
+        return robotInsideCorridor;
+    }
+
+    public void setRobotInsideCorridor(ArrayList<Integer> robotInsideCorridor) {
+        this.robotInsideCorridor = robotInsideCorridor;
+        }
+
+    public boolean checkSemophore(Vehicle v){
+        double sm1X, sm1Y, dist1;
+		double sm2X, sm2Y, dist2;
+		double x = v.getPose().getX();
+		double y = v.getPose().getY();
+		
+        sm1X = semaphore1.getX();
+        sm1Y = semaphore1.getY();
+        dist1 = Math.sqrt(Math.pow((x - sm1X), 2.0) + Math.pow((y - sm1Y), 2.0));
+
+        sm2X = semaphore2.getX();
+        sm2Y = semaphore2.getY();
+        dist2 = Math.sqrt(Math.pow((x - sm2X), 2.0) + Math.pow((y - sm2Y), 2.0));
+
+        if (dist1 == Math.min(dist1,dist2)) return s1Access;
+        else return s2Access;
+    }
+
+    public void changeSemophoreColor(Vehicle v){
+        double sm1X, sm1Y, dist1;
+		double sm2X, sm2Y, dist2;
+		double x = v.getPose().getX();
+		double y = v.getPose().getY();
+		
+        sm1X = semaphore1.getX();
+        sm1Y = semaphore1.getY();
+        dist1 = Math.sqrt(Math.pow((x - sm1X), 2.0) + Math.pow((y - sm1Y), 2.0));
+
+        sm2X = semaphore2.getX();
+        sm2Y = semaphore2.getY();
+        dist2 = Math.sqrt(Math.pow((x - sm2X), 2.0) + Math.pow((y - sm2Y), 2.0));
+
+        if (dist1 == Math.min(dist1,dist2)) s2Access = false;
+        else s1Access = false;
+    }
 
 
+    public void addVehicleInside(Vehicle v){
+        robotInsideCorridor.add(v.getID());
+        if (robotInsideCorridor.size() == 1){
+            changeSemophoreColor(v);
+            viz.displayLight(semaphore1, ID, 1, s1Access);
+            viz.displayLight(semaphore2, ID, 2, s2Access);
+        }
 
+    }
+
+    public void removeVehicleInside(Vehicle v){
+        robotInsideCorridor.remove(Integer.valueOf(v.getID()));
+        if (robotInsideCorridor.size() == 0){
+            s2Access = true;
+            s1Access = true;
+            viz.displayLight(semaphore1, ID, 1, s1Access);
+            viz.displayLight(semaphore2, ID, 2, s2Access);
+        }
+        
+    }
     
 }
