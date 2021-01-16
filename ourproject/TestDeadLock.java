@@ -28,9 +28,9 @@ public class TestDeadLock{
 
 		
 		/* deaD Lock*/
-		Pose start1 = new Pose(18.5, 1, 0); Pose[] goal1 = { new Pose(0, 1, 0) };
-		Pose start2 = new Pose(5.5, -6, -Math.PI / 1.5); Pose[] goal2 = { new Pose(15, 10, -Math.PI / 2) };
-		Pose start3 = new Pose(4, 7.5, Math.PI / 1.5); Pose[] goal3 = { new Pose(18, -8, Math.PI / 2) };
+		Pose start1 = new Pose(18.5, 1, 0); Pose[] goal1 = { new Pose(0, 1, 0), new Pose(18.5, 1, 0) }; 
+		Pose start2 = new Pose(5.5, -6, -Math.PI / 1.5); Pose[] goal2 = { new Pose(15, 10, -Math.PI / 2),new Pose(5.5, -6, -Math.PI / 1.5) };
+		Pose start3 = new Pose(4, 7.5, Math.PI / 1.5); Pose[] goal3 = { new Pose(18, -8, Math.PI / 2),new Pose(4, 7.5, Math.PI / 1.5) };
 
 	
 

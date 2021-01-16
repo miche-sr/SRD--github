@@ -70,6 +70,7 @@ public class Vehicle {
 
 	private ConstantAccelerationForwardModel forward;
 	private BrowserVisualizationDist viz;
+	private PrecedencesFounder prec = new PrecedencesFounder();
 
 	// COSTRUTTORE
 	public Vehicle(int ID, Category category, Pose start, Pose[] goal, String yamlFile) {
@@ -242,6 +243,7 @@ public class Vehicle {
 		//System.out.print(this.getRobotID() + "SPatial " + pathIndex+ "\n"+times );
 		while ( times.get(pathIndex + i) <= secForSafety || pathIndex + i <= csEnd+1 ) {
 			this.truncateTimes.put(pathIndex + i, times.get(pathIndex + i));
+			
 			this.truncatedPath.add(path[pathIndex + i]);
 			i++;
 			//System.out.print("\n "+this.getRobotID()+" path+i  " + (pathIndex+i) + "\n" + times);
@@ -314,7 +316,8 @@ public class Vehicle {
 	}
 
 	public void setCriticalPoint(CriticalSection cs) {
-		this.criticalPoint = cs.getTe1Start()-1;
+		if (cs.getTe1Start()== 0) this.criticalPoint = 0;
+		else this.criticalPoint = cs.getTe1Start()-1;
 	}
 
 	public double getSlowingPoint() {
@@ -410,6 +413,14 @@ public class Vehicle {
 	public void setStoppingPoint() {
 		this.stoppingPoint = forward.getEarliestStoppingPathIndex(this);
 	}
+
+		/********************************
+	** SET & GET PER LE PRECEDENZE **
+	*********************************/
+	public Boolean ComputePrecedences(CriticalSection cs) {
+		return prec.ComputePrecedences(cs);
+	}
+	
 
 	/*******************************
 	 ** SET & GET PER LISTA VICINI **

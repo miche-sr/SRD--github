@@ -31,14 +31,14 @@ public class TestStar{
 		Pose start1 = new Pose(5, 10, -Math.PI/6); Pose[] goal1 = { new Pose(20, 0, -Math.PI/6) };
 		Pose start2 = new Pose(5, 6, Math.PI ); Pose[] goal2 = { new Pose(20, 6, Math.PI ) };
 		Pose start3 = new Pose(5, 0, Math.PI/6); Pose[] goal3 = { new Pose(20, 10, Math.PI/6) };
-		Pose start4 = new Pose(15, -5, Math.PI/2); Pose[] goal4 = { new Pose(15, 15, Math.PI/2) };
+		Pose start4 = new Pose(13, -3, Math.PI/2); Pose[] goal4 = { new Pose(13, 10, Math.PI/2) };
 
 	
 
 		Thread thread1 = initThread(3, c, start1, goal1);
 		Thread thread2 = initThread(2, c, start2, goal2);
 		Thread thread3 = initThread(1, c, start3, goal3);
-		//Thread thread4 = initThread(4, c, start4, goal4);
+		Thread thread4 = initThread(4, c, start4, goal4);
 
 		BrowserVisualizationDist viz = new BrowserVisualizationDist();
 		if (yamlFile != null) viz.setMap(yamlFile);
@@ -74,7 +74,7 @@ public class TestStar{
 	thread1.start();
 	thread2.start();
 	thread3.start();
-	//thread4.start();
+	thread4.start();
 
 	}
 }

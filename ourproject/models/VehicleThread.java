@@ -79,8 +79,7 @@ public class VehicleThread implements Runnable {
 						}
 					}
 				}
-				if(run == false)
-				System.out.println("\u001B[31m" + "R" + v.getID() +"veicoli già calcolati" +analysedVehicles+ "\u001B[0m");
+				
 				
 				// re-add the cs already analysed and find the cs of other vehicles
 				v.clearCs();
@@ -138,7 +137,7 @@ public class VehicleThread implements Runnable {
 				if (v.getCs().size() <= 1)  v.setCsTooClose(false);
 				for (CriticalSection cs : this.v.getCs()){
 					
-					prec =cs.ComputePrecedences();
+					prec =v.ComputePrecedences(cs);
 					
 					if (csOld != null) v.setCsTooClose(intersect.csTooClose(v, csOld, cs));
 		
@@ -174,7 +173,7 @@ public class VehicleThread implements Runnable {
 				//// SEND NEW ROBOT REPORT ////
 				
 				
-				printLog(List, prec);
+				//printLog(List, prec);
 				v.sendNewRr();
 
 				

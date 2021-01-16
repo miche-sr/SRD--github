@@ -62,20 +62,24 @@ public class CriticalSectionsFounder {
 		System.out.println(v.getWholePath());
 		System.out.println(mp.getPath());
 		PoseSteering[] newPath = doReplanning(mp, currentWaitingPose, currentWaitingGoal, obstacles);
-		System.out.println(newPath.length);
-		PoseSteering[] newCompletePath = new PoseSteering[newPath.length+currentWaitingIndex];
+		// System.out.println(newPath.length);
+		// PoseSteering[] newCompletePath = new PoseSteering[newPath.length+currentWaitingIndex];
 		if (newPath != null && newPath.length > 0) {
+			System.out.println(newPath.length);
+			PoseSteering[] newCompletePath = new PoseSteering[newPath.length+currentWaitingIndex];
 			for (int i = 0; i < newCompletePath.length; i++) {
 				if (i < currentWaitingIndex) newCompletePath[i] = oldPath[i];
 				else newCompletePath[i] = newPath[i-currentWaitingIndex];
 			}
 //				v.setNewWholePath(newCompletePath);
 			System.out.println("Successfully re-planned path of Robot" + v.getID());
+			return newCompletePath;
 		}
 		else {
 			System.out.println("Failed to re-plan path of Robot" + v.getID());
+			return oldPath;
 		}
-		return newCompletePath;
+		//return newCompletePath;
 	}
 	
 	/************************
