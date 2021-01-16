@@ -1,15 +1,25 @@
 package se.oru.coordination.coordination_oru.ourproject.models;
 
+import static org.junit.Assert.fail;
+
 //import java.lang.reflect.Array;
 //import java.sql.Time;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.TreeSet;
 
+import javax.lang.model.util.ElementScanner6;
+
+//import org.graalvm.compiler.phases.verify.VerifyDebugUsage;
+
+import se.oru.coordination.coordination_oru.ourproject.algorithms.CriticalSectionsFounder;
 import se.oru.coordination.coordination_oru.ourproject.algorithms.ConstantAccelerationForwardModel.Behavior;
 
 public class VehicleThread implements Runnable {
 	
+	private CriticalSectionsFounder intersect = new CriticalSectionsFounder();
+
+	private boolean run = true;
 	private Vehicle v;
 	private double elapsedTrackingTime = 0.0;
 	private int sp = -1;
@@ -19,6 +29,10 @@ public class VehicleThread implements Runnable {
 	private HashMap<Integer, RobotReport> rrNears = new HashMap<Integer, RobotReport>();
 //	private ArrayList<RobotReport> rrNears = new ArrayList<RobotReport>();
 	private Boolean prec = true;
+	private CriticalSection csOld;
+	private boolean FreeAccess = true;
+	private int smStopIndex = -1;
+	private String List = " ";
 
 	public VehicleThread(Vehicle v){
 		this.v = v;
@@ -29,19 +43,24 @@ public class VehicleThread implements Runnable {
 	***************************/
 
 	public void run() {
-		String List;
+		
 
 		try{
-			while(v.getForwardModel().getRobotBehavior() != Behavior.reached){
+			while(v.getForwardModel().getRobotBehavior() != Behavior.reached && run){
 				
 				//// UNPACK MESSAGES ////
 				rrNears.clear();
+				List = " ";
 				for (Vehicle vh : v.getNears()){
 					rrNears.put(vh.getID(),v.getMainTable().get(vh.getID()));
-					//if(v.getID()==1) System.out.println("pathIndex3rr "+rrNears.get(3).getPathIndex());
+					List = (List + vh.getID() + " " );
+					if (v.checkCollision(vh) ) {
+						System.out.println("\u001B[31m" + "ATTENZIONE COLLISIONE  R" + v.getID() +" E R" +vh.getID()+ "\u001B[0m");
+//						printLog(List, prec);
+						run = false;
+					}
 				}
-				//if(v.getID()==1) System.out.println("pathIndex3tb "+v.getMainTable().get(3).getPathIndex());
-
+				
 			/****************************
 			 * FILTER CRITICAL SECTIONS *
 			 ****************************/
@@ -50,53 +69,100 @@ public class VehicleThread implements Runnable {
 				this.analysedCs.clear();
 				for (CriticalSection analysedCs : v.getCs()){
 					int v2Id = analysedCs.getVehicle2().getID();
-//					System.out.println(v.getID()+": Index altrui: "+rrNears.get(v2Id).getPathIndex());
-					if (v.getPathIndex() < analysedCs.getTe1Start() 
-							&& rrNears.get(v2Id).getPathIndex() < analysedCs.getTe2Start()
-								&& !analysedCs.isCsTruncated()) {
-						this.analysedCs.add(analysedCs);
-						analysedVehicles.add(analysedCs.getVehicle2());
+					if (rrNears.containsKey(v2Id)){
+						if (v.getPathIndex() < analysedCs.getTe1Start() 
+								&& rrNears.get(v2Id).getPathIndex() < analysedCs.getTe2Start()
+								&& rrNears.get(v2Id).getFlagCs() != true && v.isCsTooClose() !=true
+									&& !analysedCs.isCsTruncated()) {
+							this.analysedCs.add(analysedCs);
+							analysedVehicles.add(analysedCs.getVehicle2());
+						}
 					}
-//					if (analysedCs.isCsTruncated()) System.out.println("troncato");
 				}
+				
 				
 				// re-add the cs already analysed and find the cs of other vehicles
 				v.clearCs();
 				for (CriticalSection analysedCs : this.analysedCs)
 					v.getCs().add(analysedCs);
 				
-				List = "";
-				boolean newPossibleCs = false;
+				
 				for (RobotReport vh : rrNears.values()){
 					if (!analysedVehicles.contains(vh)) {
 						v.appendCs(vh);
-						newPossibleCs = true;
 					}
-//					else System.out.println(v.getID()+": skip");
-					List = (List + vh.getID() + " " );
 				}
+				if(run == false)
+				System.out.println("\u001B[31m" + "R" + v.getID() +"Cs" +v.getCs().toString()+ "\u001B[0m");
+
+				/**********************************
+				 		** SEMAPHORE **
+				 ++++++++++++++++++++++++++++++++*/
+
+				 for (TrafficLights TL : v.getTrafficLightsNears()){
+					synchronized(TL){
+						if (v.getWholeSpatialEnvelope().getPolygon().intersects(TL.getCorridorPath().getPolygon())){
+	
+							if (!TL.getRobotInsideCorridor().contains(v.getID())){
+								if (TL.checkSemophore(v)){ // entro nel corridioi
+										TL.addVehicleInside(v);
+										FreeAccess = true;
+								}
+								else{ // semaforo rosso
+									if (FreeAccess == true) smStopIndex = intersect.SmStopIndex(v, TL);
+									FreeAccess = false;
+								}
+							}
+						}
+						if (!v.getSpatialEnvelope().getPolygon().intersects(TL.getCorridorPath().getPolygon())) {
+						 	if (FreeAccess == true) {//lo stavo attraversando e sono uscito
+								if (TL.getRobotInsideCorridor().contains(v.getID()))	TL.removeVehicleInside(v);
+							}
+					
+						}
+						
+					}
+				}
+
+
+
 				
 				/*******************************
 				 ** CALCULATE THE PRECEDENCES ** 
 				 *******************************/
 				prec = true;
+				
 				v.setCriticalPoint(v.getWholePath().length-1); // ex -1
+				csOld = null;
+				if (v.getCs().size() <= 1)  v.setCsTooClose(false);
 				for (CriticalSection cs : this.v.getCs()){
-					prec = cs.ComputePrecedences();
-					if (prec == false) {		//calculate precedence as long as I have precedence
+					
+					prec =v.ComputePrecedences(cs);
+					
+					if (csOld != null) v.setCsTooClose(intersect.csTooClose(v, csOld, cs));
+		
+					if (prec == false && v.isCsTooClose() && csOld != null){		//calculate precedence as long as I have precedence
+						v.setCriticalPoint(csOld);
+						break;
+					}
+					else if (prec == false){
 						v.setCriticalPoint(cs);
 						break;
 					}
+					csOld = cs;
 				}
+
+				if(FreeAccess== false && v.getStoppingPoint() != -1 && smStopIndex >= 6)
+					v.setCriticalPoint( Math.min(v.getCriticalPoint(),smStopIndex-6) );
+				
 				if (oldCp != v.getCriticalPoint()) {
 					v.setSlowingPointNew();
 					sp = v.getForwardModel().getPathIndex(v.getWholePath(), v.getSlowingPoint());
 					oldCp = v.getCriticalPoint();
 				}
-
-				//// UPDATE VALUES ////	
-				printLog(List, prec);
 				
+
+				//// UPDATE VALUES ///
 				v.setPathIndex(elapsedTrackingTime);
 				v.setPose(v.getWholePath()[v.getPathIndex()].getPose());
 				v.setStoppingPoint();
@@ -105,21 +171,22 @@ public class VehicleThread implements Runnable {
 				v.setSpatialEnvelope();
 
 				//// SEND NEW ROBOT REPORT ////
+				
+				
+				printLog(List, prec);
 				v.sendNewRr();
-//				if(v.getID()==1) System.out.println(v.getMainTable().get(3).getPathIndex());
-//				if(v.getID()==1 && rrNears.containsKey(3)) System.out.println(rrNears.get(3));
 
 				
 				/***********************************
 				 ****** VISUALIZATION AND PRINT ****
 				 ***********************************/
-//				/*if(v.getID()==1)*/ printLog(List, prec);
+
 				
 				v.getVisualization().addEnvelope(v.getWholeSpatialEnvelope().getPolygon(),v,"#f600f6");
 				v.getVisualization().addEnvelope(v.getSpatialEnvelope().getPolygon(),v,"#efe007");
-//				v.getVisualization().displayPoint(v, v.getCriticalPoint(), "#29f600"); //-1 perche array parte da zero
-//				v.getVisualization().displayPoint(v, sp, "#0008f6");
-//				v.getVisualization().displayPoint(v, v.getStoppingPoint(), "#ffffff");
+				v.getVisualization().displayPoint(v, v.getCriticalPoint(), "#29f600"); //-1 perche array parte da zero
+				v.getVisualization().displayPoint(v, sp, "#0008f6");
+				v.getVisualization().displayPoint(v, v.getStoppingPoint(), "#ffffff");
 
 				String infoCs = v.getForwardModel().getRobotBehavior().toString();
 				v.getVisualization().displayRobotState(v.getSpatialEnvelope().getFootprint(), v,infoCs);
@@ -128,8 +195,7 @@ public class VehicleThread implements Runnable {
 				Thread.sleep(v.getTc());
 				this.elapsedTrackingTime += v.getTc()*Vehicle.mill2sec;
 			}
-			System.out.println("\n R" + this.v.getID() + " : GOAL RAGGIUNTO" );
-			System.out.println("\u001B[35m" + "R"+v.getID()+" DEADLOCK RESOLVED!!!!!!!!!" + "\u001B[0m");
+			System.out.println("\u001B[34m"+"\n R" + this.v.getID() + " : GOAL RAGGIUNTO" +"\u001B[0m");
 		}	
 		catch (InterruptedException e) {
 			System.out.println("Thread interrotto");
@@ -151,7 +217,8 @@ public class VehicleThread implements Runnable {
 				CsString = CsString + (i+1 +"° Sezione Critica" +
 				"\t Mia: " + cs.getTe1Start()+"-"+cs.getTe1End() +
 				"\t R" + cs.getVehicle2().getID() + ":" +
-				"\t" + cs.getTe2Start()+"-"+cs.getTe2End()) + "\n";
+				"\t" + cs.getTe2Start()+"-"+cs.getTe2End()) + 
+				"\t precedenza:" + cs.isPrecedenza() + "\n";
 				i += 1;
 			}
 		}

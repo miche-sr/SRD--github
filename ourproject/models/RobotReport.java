@@ -11,16 +11,18 @@ public class RobotReport {
 	private SpatialEnvelope se = null;
 	private HashMap<Integer, Double> truncateTimes = new HashMap<Integer, Double>();
 	private int stoppingPoint = -1;
+	private Boolean flagCs = false;
 	
 	
 	public RobotReport(int ID, int priority, int pathIndex, SpatialEnvelope se, 
-			HashMap<Integer, Double> truncateTimes,	int stoppingPoint) {
+			HashMap<Integer, Double> truncateTimes,	int stoppingPoint,Boolean isTooClose) {
 		this.ID = ID;
 		this.priority = priority;
 		this.pathIndex = pathIndex;
 		this.se = se;
 		this.truncateTimes = truncateTimes;
 		this.stoppingPoint = stoppingPoint;
+		this.flagCs = isTooClose;
 	}
 
 	public int getID() {
@@ -42,5 +44,8 @@ public class RobotReport {
 		return stoppingPoint;
 	}
 	
+	public boolean getFlagCs(){
+		return flagCs;
+	}
 	
 }
