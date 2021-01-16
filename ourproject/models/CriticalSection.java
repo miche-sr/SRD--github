@@ -76,7 +76,9 @@ public class CriticalSection implements Comparable<CriticalSection> {
 	
 	@Override
     public int compareTo(CriticalSection cs) {
-        return this.getTe1Start() - cs.getTe1Start();
+		int compare = this.getTe1Start() - cs.getTe1Start();
+		if (compare == 0) compare = 1;
+        return compare;
     }
 	
 	/********************************
