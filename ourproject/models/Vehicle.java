@@ -10,6 +10,7 @@ import org.metacsp.multi.spatioTemporal.paths.TrajectoryEnvelope.SpatialEnvelope
 import org.metacsp.multi.spatioTemporal.paths.TrajectoryEnvelope;
 
 import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.Geometry;
 
 import java.util.*;
 
@@ -69,6 +70,7 @@ public class Vehicle {
 
 	private ConstantAccelerationForwardModel forward;
 	private BrowserVisualizationDist viz;
+	private PrecedencesFounder prec = new PrecedencesFounder();
 
 	// COSTRUTTORE
 	public Vehicle(int ID, Category category, Pose start, Pose[] goal, String yamlFile) {
@@ -241,6 +243,7 @@ public class Vehicle {
 		//System.out.print(this.getRobotID() + "SPatial " + pathIndex+ "\n"+times );
 		while ( times.get(pathIndex + i) <= secForSafety || pathIndex + i <= csEnd+1 ) {
 			this.truncateTimes.put(pathIndex + i, times.get(pathIndex + i));
+			
 			this.truncatedPath.add(path[pathIndex + i]);
 			i++;
 			//System.out.print("\n "+this.getRobotID()+" path+i  " + (pathIndex+i) + "\n" + times);
@@ -313,7 +316,8 @@ public class Vehicle {
 	}
 
 	public void setCriticalPoint(CriticalSection cs) {
-		this.criticalPoint = cs.getTe1Start()-1;
+		if (cs.getTe1Start()== 0) this.criticalPoint = 0;
+		else this.criticalPoint = cs.getTe1Start()-1;
 	}
 
 	public double getSlowingPoint() {
@@ -410,6 +414,14 @@ public class Vehicle {
 		this.stoppingPoint = forward.getEarliestStoppingPathIndex(this);
 	}
 
+		/********************************
+	** SET & GET PER LE PRECEDENZE **
+	*********************************/
+	public Boolean ComputePrecedences(CriticalSection cs) {
+		return prec.ComputePrecedences(cs);
+	}
+	
+
 	/*******************************
 	 ** SET & GET PER LISTA VICINI **
 	 ********************************/
@@ -451,7 +463,19 @@ public class Vehicle {
 		}
 		return vehicleNear;
 	}
-	
+	public Boolean checkCollision(Vehicle vh) {
+		
+		SpatialEnvelope pose1 = TrajectoryEnvelope.createSpatialEnvelope(new PoseSteering[] { path[pathIndex] }, footprint);
+		Geometry shape1 = pose1.getPolygon();
+
+		SpatialEnvelope pose2 = TrajectoryEnvelope.createSpatialEnvelope(new PoseSteering[] { vh.getSpatialEnvelope().getPath()[0] }, vh.getFootprint());
+		Geometry shape2 = pose2.getPolygon();
+
+		if (shape1.intersects(shape2)) 
+			return true;
+		else
+			return false;
+	}
 
 	public ArrayList<TrafficLights> getTrafficLightsNears() {
 		//this.trafficLightsNear.clear();

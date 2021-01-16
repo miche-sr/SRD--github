@@ -9,7 +9,6 @@ public class CriticalSection implements Comparable<CriticalSection> {
 	private int te2End = -1;
 	private Vehicle v1;
 	private RobotReport v2;
-	private PrecedencesFounder prec = new PrecedencesFounder();
 	private boolean csTruncated;
 	private boolean precedenza;
 
@@ -76,15 +75,11 @@ public class CriticalSection implements Comparable<CriticalSection> {
 	
 	@Override
     public int compareTo(CriticalSection cs) {
-        return this.getTe1Start() - cs.getTe1Start();
+		int compare = this.getTe1Start() - cs.getTe1Start();
+		if (compare == 0) compare = 1;
+        return compare;
     }
 	
-	/********************************
-	** SET & GET PER LE PRECEDENZE **
-	*********************************/
-	public Boolean ComputePrecedences() {
-		return prec.ComputePrecedences(this);
-	}
-	
+
 
 }

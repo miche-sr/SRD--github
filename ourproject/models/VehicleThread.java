@@ -1,5 +1,7 @@
 package se.oru.coordination.coordination_oru.ourproject.models;
 
+import static org.junit.Assert.fail;
+
 //import java.lang.reflect.Array;
 //import java.sql.Time;
 import java.util.ArrayList;
@@ -17,6 +19,7 @@ public class VehicleThread implements Runnable {
 	
 	private CriticalSectionsFounder intersect = new CriticalSectionsFounder();
 
+	private boolean run = true;
 	private Vehicle v;
 	private double elapsedTrackingTime = 0.0;
 	private int sp = -1;
@@ -28,7 +31,8 @@ public class VehicleThread implements Runnable {
 	private Boolean prec = true;
 	private CriticalSection csOld;
 	private boolean FreeAccess = true;
-	int smStopIndex = -1;
+	private int smStopIndex = -1;
+	private String List = " ";
 
 	public VehicleThread(Vehicle v){
 		this.v = v;
@@ -39,15 +43,22 @@ public class VehicleThread implements Runnable {
 	***************************/
 
 	public void run() {
-		String List;
+		
 
 		try{
-			while(v.getForwardModel().getRobotBehavior() != Behavior.reached){
+			while(v.getForwardModel().getRobotBehavior() != Behavior.reached && run){
 				
 				//// UNPACK MESSAGES ////
 				rrNears.clear();
+				List = " ";
 				for (Vehicle vh : v.getNears()){
 					rrNears.put(vh.getID(),v.getMainTable().get(vh.getID()));
+					List = (List + vh.getID() + " " );
+					if (v.checkCollision(vh) ) {
+						System.out.println("\u001B[31m" + "ATTENZIONE COLLISIONE  R" + v.getID() +" E R" +vh.getID()+ "\u001B[0m");
+						printLog(List, prec);
+						run = false;
+					}
 				}
 				
 			/****************************
@@ -61,7 +72,7 @@ public class VehicleThread implements Runnable {
 					if (rrNears.containsKey(v2Id)){
 						if (v.getPathIndex() < analysedCs.getTe1Start() 
 								&& rrNears.get(v2Id).getPathIndex() < analysedCs.getTe2Start()
-								&& rrNears.get(v2Id).getFlagCs() != true
+								&& rrNears.get(v2Id).getFlagCs() != true && v.isCsTooClose() !=true
 									&& !analysedCs.isCsTruncated()) {
 							this.analysedCs.add(analysedCs);
 							analysedVehicles.add(analysedCs.getVehicle2());
@@ -69,18 +80,20 @@ public class VehicleThread implements Runnable {
 					}
 				}
 				
+				
 				// re-add the cs already analysed and find the cs of other vehicles
 				v.clearCs();
 				for (CriticalSection analysedCs : this.analysedCs)
 					v.getCs().add(analysedCs);
 				
-				List = "";
+				
 				for (RobotReport vh : rrNears.values()){
 					if (!analysedVehicles.contains(vh)) {
 						v.appendCs(vh);
 					}
-					List = (List + vh.getID() + " " );
 				}
+				if(run == false)
+				System.out.println("\u001B[31m" + "R" + v.getID() +"Cs" +v.getCs().toString()+ "\u001B[0m");
 
 				/**********************************
 				 		** SEMAPHORE **
@@ -124,7 +137,7 @@ public class VehicleThread implements Runnable {
 				if (v.getCs().size() <= 1)  v.setCsTooClose(false);
 				for (CriticalSection cs : this.v.getCs()){
 					
-					prec =cs.ComputePrecedences();
+					prec =v.ComputePrecedences(cs);
 					
 					if (csOld != null) v.setCsTooClose(intersect.csTooClose(v, csOld, cs));
 		
@@ -158,6 +171,7 @@ public class VehicleThread implements Runnable {
 				v.setSpatialEnvelope();
 
 				//// SEND NEW ROBOT REPORT ////
+				
 				
 				//printLog(List, prec);
 				v.sendNewRr();

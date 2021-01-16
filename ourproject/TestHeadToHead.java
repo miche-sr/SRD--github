@@ -29,8 +29,8 @@ public class TestHeadToHead {
 
 
 		// /*Head-To-Head*/
-		 Pose start1 = new Pose(10, 5, Math.PI); Pose[] goal1 = { new Pose(25, 5, Math.PI) };
-		 Pose start2 = new Pose(30, 4, 0); Pose[] goal2 = { new Pose(5, 4, 0) };
+		 Pose start1 = new Pose(10, 5, Math.PI); Pose[] goal1 = { new Pose(30, 5, Math.PI) };
+		 Pose start2 = new Pose(25, 4, 0); Pose[] goal2 = { new Pose(12, 4, 0) };
 		
 
 		Thread thread1 = initThread(1, c, start1, goal1);

@@ -5,7 +5,8 @@ import se.oru.coordination.coordination_oru.ourproject.models.RobotReport;
 import se.oru.coordination.coordination_oru.ourproject.models.Vehicle;
 
 public class PrecedencesFounder {
-	
+    private int count = 0;
+    
     public Boolean ComputePrecedences(CriticalSection cs) {
         Boolean prec;
         Vehicle v1 = cs.getVehicle1();
@@ -14,9 +15,7 @@ public class PrecedencesFounder {
         int te1start = cs.getTe1Start();
         int te2start = cs.getTe2Start();
         
-        //System.out.println("\u001B[35m" + "my ID: "+v1.getID()+"\t other Id: " +v2.getID()+"\n"+
-        //cs.getTe1Start()+ ": "+ v1.getTruncateTimes().get(cs.getTe1Start()) + "  -  "+cs.getTe2Start()+": "+v2.getTruncateTimes().get(cs.getTe2Start()) +
-         //" flag:" + v1.isCsTooClose() + "\u001B[0m");
+       
         
         double timeAtCsStart1 = v1.getTruncateTimes().get(cs.getTe1Start());
         double timeAtCsEnd1 = v1.getTruncateTimes().get(cs.getTe1End());
@@ -26,12 +25,20 @@ public class PrecedencesFounder {
     	double braking2 = timeAtCsEnd1 - timeAtCsStart2;
 
         if (v1.getStoppingPoint() >= te1start && v2.getStoppingPoint() >= te2start){
-            System.out.println("\u001B[31m" + "HeadToHead " + v1.getID() + " E "+ v2.getID() + "\n" + "\u001B[0m");
+            System.out.println("\u001B[35m" + "HeadToHead " + v1.getID() + " E "+ v2.getID() + "\n" + "count" + count+ "\u001B[0m");
             prec = false;
-            if(v1.getForwardModel().getRobotBehavior()==ConstantAccelerationForwardModel.Behavior.stop
-            		&& v1.getID() > v2.getID()) {
-                v1.setNewWholePath(v2);
-                System.out.println("\u001B[31m" + "Ricalcolo Percorso di R" + v1.getID() +"\u001B[0m");
+            if(v1.getForwardModel().getRobotBehavior()==ConstantAccelerationForwardModel.Behavior.stop){
+                if( v1.getID() > v2.getID()) {
+                    v1.setNewWholePath(v2);
+                    count = 0;
+                    System.out.println("\u001B[35m" + "Ricalcolo Percorso di R" + v1.getID() +"\u001B[0m");
+                }
+                else if (count == 10){
+                    v1.setNewWholePath(v2);
+                    System.out.println("\u001B[35m" + "Ricalcolo Percorso di R" + v1.getID() +"\u001B[0m");
+                    count = 0;
+                }
+                else count = count+ 1;
             }
         }
         
@@ -39,21 +46,23 @@ public class PrecedencesFounder {
         else if (v2.getStoppingPoint() >= te2start) prec = false;
         else if (v1.getStoppingPoint() >= te1start) prec = true;
 
-
-        /** CASO CORRIDOIO */
-        // else if ( semaforo == null ){
-        //     if (semaforo == true) prec = true;
-        //     else prec = false;
-        // }
         
         /**SE ENTRAMBI IN T_stop DOVRANNO ANCORA ACCEDERE,
          SI PUÒ PASSARE A ORDINAMENTI SECONDARI EURISTICI **/
         else{
             if (v1.isCsTooClose()   // caso deadlock
                 && timeAtCsStart2 == -1 && timeAtCsStart1 == -1 ){
-                    System.out.println("\u001B[35m" + "R"+v1.getID()+"-R"+v2.getID()+"  DEADLOCK RESOLVED!!!!!!!!!" + "\u001B[0m");
+                    System.out.println("\u001B[35m" + "R"+v1.getID()+"-R"+v2.getID()+"  DEADLOCK !!!!!!!!!" + "\u001B[0m");
                     if(v1.getID() > v2.getID()) prec = true;
-                    else prec = false;
+                    else {
+                        prec = false;
+                        count = count + 1;
+                    }
+                    if (count == 20){
+                        v1.setNewWholePath(v2);
+                        System.out.println("\u001B[35m" + "DEADLOCK Ricalcolo Percorso di R" + v1.getID() +"\u001B[0m");
+                        count = 0;
+                    }
             }
             //caso standard
         
@@ -78,6 +87,11 @@ public class PrecedencesFounder {
         
         }
         cs.setPrecedenza(prec);
+        // System.out.println("\u001B[35m" + "my ID: "+v1.getID()+ "  sp" + v1.getStoppingPoint() +
+        // " \n other Id: " +v2.getID()+"  sp" + v2.getStoppingPoint() + "\n"+
+        // cs.getTe1Start()+ ": "+ v1.getTruncateTimes().get(cs.getTe1Start()) + "  -  "+cs.getTe2Start()+": "+v2.getTruncateTimes().get(cs.getTe2Start()) +
+        //  "\n flag:" + v1.isCsTooClose() + " precedenza calcolata "+prec +"\n "+"\u001B[0m");
+
         return prec;
     }
 	
