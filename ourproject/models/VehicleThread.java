@@ -56,7 +56,7 @@ public class VehicleThread implements Runnable {
 					List = (List + vh.getID() + " " );
 					if (v.checkCollision(vh) ) {
 						System.out.println("\u001B[31m" + "ATTENZIONE COLLISIONE  R" + v.getID() +" E R" +vh.getID()+ "\u001B[0m");
-//						printLog(List, prec);
+						printLog(List, prec);
 						run = false;
 					}
 				}

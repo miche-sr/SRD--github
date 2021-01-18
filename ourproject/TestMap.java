@@ -43,9 +43,9 @@ public class TestMap {
 		Thread thread2 = initThread(2, c, start2, goal2);
 		Thread thread3 = initThread(3, c, start3, goal3);
 		Thread thread4 = initThread(4, c, start4, goal4);
-		Thread thread5 = initThread(5, c, start5, goal5);
+		Thread thread5 = initThread(5, a, start5, goal5);
 		Thread thread6 = initThread(6, c, start6, goal6);
-		Thread thread7 = initThread(7, c, start7, goal7);
+		Thread thread7 = initThread(7, a, start7, goal7);
 		Thread thread8 = initThread(8, c, start8, goal8);
 
 		BrowserVisualizationDist viz = new BrowserVisualizationDist();
