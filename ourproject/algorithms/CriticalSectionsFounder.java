@@ -177,7 +177,7 @@ public class CriticalSectionsFounder {
 
 	public boolean csTooClose(Vehicle v, CriticalSection csOld, CriticalSection csNew){
 		int end1 = csOld.getTe1End();
-		int start2 = csNew.getTe2Start();
+		int start2 = csNew.getTe1Start();
 		double RobotDimesion = v.getWholeSpatialEnvelope().getFootprint().getArea();
 		SpatialEnvelope SpaceBetweenCs;
 		double SpaceBetweenCsDimesion;
@@ -189,7 +189,6 @@ public class CriticalSectionsFounder {
 			PoseSteering[] pathArray = path.toArray(new PoseSteering[path.size()]);
 			SpaceBetweenCs = TrajectoryEnvelope.createSpatialEnvelope(pathArray, v.getFootprint());
 			SpaceBetweenCsDimesion = SpaceBetweenCs.getPolygon().getArea();
-
 			if(SpaceBetweenCsDimesion < RobotDimesion) 
 				return true;
 			else 
@@ -197,6 +196,7 @@ public class CriticalSectionsFounder {
 		}
 		else
 			return true;
+		
 	
 	
 	}

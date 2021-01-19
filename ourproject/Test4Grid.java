@@ -8,7 +8,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.metacsp.multi.spatioTemporal.paths.Pose;
 
-public class Test {
+public class Test4Grid {
 
 	private static ArrayList<Vehicle> vehicleList = new ArrayList<Vehicle>();
 	private static HashMap<Integer,RobotReport> mainTable = new HashMap<Integer,RobotReport>();
@@ -26,6 +26,9 @@ public class Test {
 		Vehicle.Category a = Vehicle.Category.AMBULANCE;
 		Vehicle.Category c = Vehicle.Category.CAR;
 
+        BrowserVisualizationDist viz = new BrowserVisualizationDist();
+		if (yamlFile != null) viz.setMap(yamlFile);
+		viz.setInitialTransform(25, 10, 2);
 
 
 		/* pose libere */
@@ -210,9 +213,8 @@ public class Test {
 
 
 
-		BrowserVisualizationDist viz = new BrowserVisualizationDist();
-		if (yamlFile != null) viz.setMap(yamlFile);
-		viz.setInitialTransform(25, 12, 15);
+
+        
 		//viz.setInitialTransform(15, -10, 5);
 		try {
 			TimeUnit.SECONDS.sleep(5);

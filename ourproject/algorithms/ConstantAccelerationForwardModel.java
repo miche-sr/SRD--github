@@ -123,6 +123,7 @@ public class ConstantAccelerationForwardModel {
 			skipIntegration = true;
 			robotBehavior = Behavior.stop; // sono fermo
 		}	
+		
 		if (!skipIntegration) {
  
 
@@ -132,6 +133,10 @@ public class ConstantAccelerationForwardModel {
 				if (v.getPathIndex()>= v.getWholePath().length-3 ){
 					robotBehavior = Behavior.reached;
 					state.setPosition(computeDistance(v.getWholePath(), 0, v.getWholePath().length-1));
+				}
+				else if (v.getPathIndex()>= v.getCriticalPoint()-2 && v.getPathIndex()<= v.getCriticalPoint()){
+					robotBehavior = Behavior.stop;
+					state.setPosition(computeDistance(v.getWholePath(), 0, v.getCriticalPoint()));
 				}
 				else{
 					robotBehavior = Behavior.stop; // fermo
@@ -218,10 +223,10 @@ public class ConstantAccelerationForwardModel {
 		//inserisco anche PathIndx tra CP e fine SC inserndo come tempo -1
 		if (v.getCs().size() != 0)
 			csEnd = v.getCs().last().getTe1End();
-		else csEnd = -1;
+		else csEnd = -1;//v.getPathIndex() + 25; //-1;
 		
 		currentPathIndex += 1;
-		while ((currentPathIndex <= csEnd+1 ) && currentPathIndex <= v.getWholePath().length-1){
+		while ((currentPathIndex <= csEnd+1 ) && currentPathIndex <= v.getWholePath().length-1 &&  isInsideRadius(v,currentPathIndex)){
 			times.put(currentPathIndex, -1.0);
 			currentPathIndex += 1;
 		}
@@ -233,4 +238,19 @@ public class ConstantAccelerationForwardModel {
 	public Behavior getRobotBehavior(){
 		return robotBehavior;
 	}
+
+	public Boolean isInsideRadius(Vehicle v , int pathIndex) {
+
+		double x = v.getPose().getX();
+		double y = v.getPose().getY();
+
+		double px = v.getWholePath()[pathIndex].getPose().getX();
+		double py = v.getWholePath()[pathIndex].getPose().getY();
+		double dist = Math.sqrt(Math.pow((x - px), 2.0) + Math.pow((y - py), 2.0));
+
+		if (dist  < v.getRadius()) return true;
+		else return false;
+	}
+
+
 }

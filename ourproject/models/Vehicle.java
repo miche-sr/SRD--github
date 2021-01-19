@@ -261,6 +261,32 @@ public class Vehicle {
 		
 	}
 
+	public void setSpatialEnvelope2(Boolean FreeAcces) {
+		this.truncatedPath.clear();
+		this.truncateTimes.clear();
+		double px;
+		double py;
+		double x = this.getPose().getX();
+		double y = this.getPose().getY();
+
+		double dist = 0.0;
+		int i = 0;
+		int Maxdist = path.length;
+		if (!FreeAcces) Maxdist = getCriticalPoint();
+		while (dist < this.radius && (pathIndex+i)<= Maxdist){
+			px = path[pathIndex+i].getPose().getX();
+			py = path[pathIndex+i].getPose().getY();
+			dist = Math.sqrt(Math.pow((x - px), 2.0) + Math.pow((y - py), 2.0));
+			this.truncateTimes.put(pathIndex + i, times.get(pathIndex + i));
+			this.truncatedPath.add(path[pathIndex + i]);
+			i++;
+
+			if (!times.containsKey(pathIndex + i)) break;
+		}
+		PoseSteering[] truncatedPathArray = truncatedPath.toArray(new PoseSteering[truncatedPath.size()]);
+		se = TrajectoryEnvelope.createSpatialEnvelope(truncatedPathArray, footprint);
+	}
+
 	public int getPathIndex() {
 		return pathIndex;
 	}

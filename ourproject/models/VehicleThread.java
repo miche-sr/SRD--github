@@ -25,7 +25,7 @@ public class VehicleThread implements Runnable {
 	private int sp = -1;
 	private int oldCp = -1;
 	private TreeSet<CriticalSection> analysedCs = new TreeSet<CriticalSection>(); 
-	private ArrayList<RobotReport> analysedVehicles = new ArrayList<RobotReport>();
+	private ArrayList<Integer> analysedVehiclesI = new ArrayList<Integer>();
 	private HashMap<Integer, RobotReport> rrNears = new HashMap<Integer, RobotReport>();
 //	private ArrayList<RobotReport> rrNears = new ArrayList<RobotReport>();
 	private Boolean prec = true;
@@ -65,17 +65,18 @@ public class VehicleThread implements Runnable {
 			 * FILTER CRITICAL SECTIONS *
 			 ****************************/
 			// if a cs has already been found and no one is inside it then I don't recalculate it //
-				analysedVehicles.clear();
+
+				analysedVehiclesI.clear();
 				this.analysedCs.clear();
 				for (CriticalSection analysedCs : v.getCs()){
 					int v2Id = analysedCs.getVehicle2().getID();
 					if (rrNears.containsKey(v2Id)){
-						if (v.getPathIndex() < analysedCs.getTe1Start() 
-								&& rrNears.get(v2Id).getPathIndex() < analysedCs.getTe2Start()
-								&& rrNears.get(v2Id).getFlagCs() != true && v.isCsTooClose() !=true
-									&& !analysedCs.isCsTruncated()) {
+						if (v.getPathIndex() < analysedCs.getTe1Start() && rrNears.get(v2Id).getPathIndex() < analysedCs.getTe2Start() // Cs non intrapresa
+									&&	analysedCs.getVehicle2().getTruncateTimes().get(analysedCs.getTe2Start()) == rrNears.get(v2Id).getTruncateTimes().get(analysedCs.getTe2Start())
+									//&& rrNears.get(v2Id).getFlagCs() != true && v.isCsTooClose() !=true // no rischio deadlock
+									&& !analysedCs.isCsTruncated()) { // no cs troncata
 							this.analysedCs.add(analysedCs);
-							analysedVehicles.add(analysedCs.getVehicle2());
+							analysedVehiclesI.add( analysedCs.getVehicle2().getID());
 						}
 					}
 				}
@@ -83,17 +84,17 @@ public class VehicleThread implements Runnable {
 				
 				// re-add the cs already analysed and find the cs of other vehicles
 				v.clearCs();
-				for (CriticalSection analysedCs : this.analysedCs)
+				for (CriticalSection analysedCs : this.analysedCs){
 					v.getCs().add(analysedCs);
+				}
 				
 				
 				for (RobotReport vh : rrNears.values()){
-					if (!analysedVehicles.contains(vh)) {
+					if (!analysedVehiclesI.contains(vh.getID())) {
 						v.appendCs(vh);
 					}
 				}
-				if(run == false)
-				System.out.println("\u001B[31m" + "R" + v.getID() +"Cs" +v.getCs().toString()+ "\u001B[0m");
+
 
 				/**********************************
 				 		** SEMAPHORE **
@@ -137,9 +138,9 @@ public class VehicleThread implements Runnable {
 				if (v.getCs().size() <= 1)  v.setCsTooClose(false);
 				for (CriticalSection cs : this.v.getCs()){
 					
-					prec =v.ComputePrecedences(cs);
-					
 					if (csOld != null) v.setCsTooClose(intersect.csTooClose(v, csOld, cs));
+
+					prec =v.ComputePrecedences(cs);
 		
 					if (prec == false && v.isCsTooClose() && csOld != null){		//calculate precedence as long as I have precedence
 						v.setCriticalPoint(csOld);
@@ -149,7 +150,8 @@ public class VehicleThread implements Runnable {
 						v.setCriticalPoint(cs);
 						break;
 					}
-					csOld = cs;
+					if (v.isCsTooClose() == false) 
+						csOld = cs;
 				}
 
 				if(FreeAccess== false && v.getStoppingPoint() != -1 && smStopIndex >= 6)
@@ -160,7 +162,8 @@ public class VehicleThread implements Runnable {
 					sp = v.getForwardModel().getPathIndex(v.getWholePath(), v.getSlowingPoint());
 					oldCp = v.getCriticalPoint();
 				}
-				
+				if (v.getForwardModel().getRobotBehavior() == Behavior.stop)
+					v.setSlowingPointNew();
 
 				//// UPDATE VALUES ///
 				v.setPathIndex(elapsedTrackingTime);
@@ -168,12 +171,13 @@ public class VehicleThread implements Runnable {
 				v.setStoppingPoint();
 				
 				v.setTimes();
+				//v.setSpatialEnvelope2(FreeAccess);
 				v.setSpatialEnvelope();
 
 				//// SEND NEW ROBOT REPORT ////
 				
 				
-				printLog(List, prec);
+				//printLog(List, prec);
 				v.sendNewRr();
 
 				
@@ -182,7 +186,7 @@ public class VehicleThread implements Runnable {
 				 ***********************************/
 
 				
-				v.getVisualization().addEnvelope(v.getWholeSpatialEnvelope().getPolygon(),v,"#f600f6");
+				v.getVisualization().addEnvelope(v.getWholeSpatialEnvelope().getPolygon(),v,"#f600f6"); 
 				v.getVisualization().addEnvelope(v.getSpatialEnvelope().getPolygon(),v,"#efe007");
 				v.getVisualization().displayPoint(v, v.getCriticalPoint(), "#29f600"); //-1 perche array parte da zero
 				v.getVisualization().displayPoint(v, sp, "#0008f6");
