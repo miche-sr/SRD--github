@@ -74,8 +74,8 @@ public class Test8Robot {
 		vh.setMainTable(mainTable);
 		vh.setSlowingPointNew();
 		vh.setTimes();
-		vh.setSpatialEnvelope();
-		vh.getNears();
+		vh.setSpatialEnvelope2(true);
+		//vh.getNears();
 		vh.sendNewRr();
 		vh.setVisualization(viz);
 	}

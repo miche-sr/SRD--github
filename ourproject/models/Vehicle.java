@@ -94,9 +94,9 @@ public class Vehicle {
 				break;
 
 			case AMBULANCE:
-				this.velMax = 3.0;
-				this.accMax = 2.0;
-				this.priority = 2;
+				this.velMax = 2.0;
+				this.accMax = 1.0;
+				this.priority = 1;
 				this.Tc = 150;
 				this.side = sideAmb;
 				this.footprint = fpAmb;
@@ -106,7 +106,7 @@ public class Vehicle {
 				System.out.println("Unknown vehicle");
 		}
 		double brakingDistanceMax = Math.pow(this.velMax,2.0) / (2*this.accMax);
-		this.myDistanceToSend= (2 * this.Tc * mill2sec ) * this.velMax + brakingDistanceMax + side;
+		this.myDistanceToSend= (2 * this.Tc * mill2sec ) * this.velMax + brakingDistanceMax + 2*side;
 		this.radius= this.myDistanceToSend;
 		this.path = createWholePath(yamlFile);
 		this.forward = new ConstantAccelerationForwardModel(this, 1000); // ???
@@ -233,35 +233,35 @@ public class Vehicle {
 		return se;
 	}
 
-	// CALCOLO PATH TRAIETTORIA TRONCATA //
-	public void setSpatialEnvelope() {
-		this.truncatedPath.clear();
-		this.truncateTimes.clear();
-		int csEnd;
+	// // CALCOLO PATH TRAIETTORIA TRONCATA //
+	// public void setSpatialEnvelope() {
+	// 	this.truncatedPath.clear();
+	// 	this.truncateTimes.clear();
+	// 	int csEnd;
 
-		// from cp to Pathndex //
-		if (cs.size() != 0)
-			csEnd = this.cs.last().getTe1End();
-		else
-			csEnd = -1;
+	// 	// from cp to Pathndex //
+	// 	if (cs.size() != 0)
+	// 		csEnd = this.cs.last().getTe1End();
+	// 	else
+	// 		csEnd = -1;
 
-		int i = 0;
-		// trasmetto solo traiettoria all'interno del raggio(in tempi) e comunque sempre fino alla fine della prima sezione critica //
-		//System.out.print(this.getRobotID() + "SPatial " + pathIndex+ "\n"+times );
-		while ( times.get(pathIndex + i) <= secForSafety || pathIndex + i <= csEnd+1 ) {
-			this.truncateTimes.put(pathIndex + i, times.get(pathIndex + i));
+	// 	int i = 0;
+	// 	// trasmetto solo traiettoria all'interno del raggio(in tempi) e comunque sempre fino alla fine della prima sezione critica //
+	// 	//System.out.print(this.getRobotID() + "SPatial " + pathIndex+ "\n"+times );
+	// 	while ( times.get(pathIndex + i) <= secForSafety || pathIndex + i <= csEnd+1 ) {
+	// 		this.truncateTimes.put(pathIndex + i, times.get(pathIndex + i));
 			
-			this.truncatedPath.add(path[pathIndex + i]);
-			i++;
-			//System.out.print("\n "+this.getRobotID()+" path+i  " + (pathIndex+i) + "\n" + times);
-			if (!times.containsKey(pathIndex + i)){
-				break;// questo forse serve per l'ultimo path index?
-			}
-		}
-		PoseSteering[] truncatedPathArray = truncatedPath.toArray(new PoseSteering[truncatedPath.size()]);
-		se = TrajectoryEnvelope.createSpatialEnvelope(truncatedPathArray, footprint);
+	// 		this.truncatedPath.add(path[pathIndex + i]);
+	// 		i++;
+	// 		//System.out.print("\n "+this.getRobotID()+" path+i  " + (pathIndex+i) + "\n" + times);
+	// 		if (!times.containsKey(pathIndex + i)){
+	// 			break;// questo forse serve per l'ultimo path index?
+	// 		}
+	// 	}
+	// 	PoseSteering[] truncatedPathArray = truncatedPath.toArray(new PoseSteering[truncatedPath.size()]);
+	// 	se = TrajectoryEnvelope.createSpatialEnvelope(truncatedPathArray, footprint);
 		
-	}
+	//}
 
 
 	public void setSpatialEnvelope2(Boolean FreeAcces) {
@@ -274,20 +274,15 @@ public class Vehicle {
 		int Maxdist = path.length-1;
 		if (!FreeAcces) Maxdist = getCriticalPoint()+1;
 		while (dist < this.myDistanceToSend && (pathIndex+i)<= Maxdist){
+			if (!times.containsKey(pathIndex + i)) break;
 			
 			dist = forward.computeDistance(path, pathIndex, pathIndex+i);
 			this.truncateTimes.put(pathIndex + i, times.get(pathIndex + i));
 			this.truncatedPath.add(path[pathIndex + i]);
 			i++;
-
-			if (!times.containsKey(pathIndex + i)){  
-				System.out.println("R"+ID +"perchè?");
-				break;}
 		}
 		
 		PoseSteering[] truncatedPathArray = truncatedPath.toArray(new PoseSteering[truncatedPath.size()]);
-		//SpatialEnvelope se2 = TrajectoryEnvelope.createSpatialEnvelope(truncatedPathArray, footprint);
-		//viz.addEnvelope(se2.getPolygon(), this, "#ffffff");
 		se = TrajectoryEnvelope.createSpatialEnvelope(truncatedPathArray, footprint);
 	}
 

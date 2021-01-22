@@ -28,21 +28,21 @@ public class TestDeadLock{
 
 		
 		/* deaD Lock*/
-		Pose start1 = new Pose(18, 1, 0); Pose[] goal1 = { new Pose(0, 1, 0)/*, new Pose(19.5, 1, 0)*/ }; 
+		Pose start1 = new Pose(16, 1, 0); Pose[] goal1 = { new Pose(0, 1, 0)/*, new Pose(19.5, 1, 0)*/ }; 
 		Pose start2 = new Pose(5.5, -6, -Math.PI / 1.5); Pose[] goal2 = { new Pose(15, 10, -Math.PI / 2)/*,new Pose(5.5, -6, -Math.PI / 1.5)*/ };
 		Pose start3 = new Pose(4, 7.5, Math.PI / 1.5); Pose[] goal3 = { new Pose(18, -8, Math.PI / 2)/*,new Pose(4, 7.5, Math.PI / 1.5)*/ };
 		Pose start4 = new Pose(11, -7, Math.PI / 2); Pose[] goal4 = { new Pose(11, 7, Math.PI / 2)};
 	
 
-		Thread thread1 = initThread(2, c, start1, goal1);
-		Thread thread2 = initThread(3, c, start2, goal2);
-		Thread thread3 = initThread(1, c, start3, goal3);
-		Thread thread4 = initThread(4, c, start4, goal4);
+		Thread thread1 = initThread(1, a, start1, goal1);
+		Thread thread2 = initThread(2, c, start2, goal2);
+		Thread thread3 = initThread(3, c, start3, goal3);
+		//Thread thread4 = initThread(4, c, start4, goal4);
 
 
 		BrowserVisualizationDist viz = new BrowserVisualizationDist();
 		if (yamlFile != null) viz.setMap(yamlFile);
-		viz.setInitialTransform(25, 12, 15);
+		viz.setInitialTransform(35, 12, 15);
 		try {
 			TimeUnit.SECONDS.sleep(5);
 		} catch (InterruptedException e) {
@@ -64,7 +64,7 @@ public class TestDeadLock{
 		vh.setMainTable(mainTable);
 		vh.setSlowingPointNew();
 		vh.setTimes();
-		vh.setSpatialEnvelope();
+		vh.setSpatialEnvelope2(true);
 		vh.getNears();
 		vh.sendNewRr();
 		vh.setVisualization(viz);
@@ -74,7 +74,7 @@ public class TestDeadLock{
 	thread1.start();
 	thread2.start();
 	thread3.start();
-	thread4.start();
+	//thread4.start();
 
 	}
 }

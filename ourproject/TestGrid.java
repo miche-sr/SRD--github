@@ -100,7 +100,7 @@ public class TestGrid {
 		vh.setMainTable(mainTable);
 		vh.setSlowingPointNew();
 		vh.setTimes();
-		vh.setSpatialEnvelope();
+		vh.setSpatialEnvelope2(true);
 		vh.getNears();
 		vh.sendNewRr();
 		vh.setVisualization(viz);

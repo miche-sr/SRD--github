@@ -83,7 +83,7 @@ public class VehicleThread implements Runnable {
 					}
 				}
 				
-				//analysedVehiclesI.clear();
+				analysedVehiclesI.clear();
 				// re-add the cs already analysed and find the cs of other vehicles
 				v.clearCs();
 				for (CriticalSection analysedCs : this.analysedCs){
@@ -140,10 +140,10 @@ public class VehicleThread implements Runnable {
 				if (v.getCs().size() <= 1)  v.setCsTooClose(false);
 				for (CriticalSection cs : this.v.getCs()){
 					
-					if (csOld != null) v.setCsTooClose(intersect.csTooClose(v, csOld, cs));
+					
 
 					prec =v.ComputePrecedences(cs);
-		
+					if (csOld != null) v.setCsTooClose(intersect.csTooClose(v, csOld, cs));
 					if (prec == false && v.isCsTooClose() && csOld != null){		//calculate precedence as long as I have precedence
 						v.setCriticalPoint(csOld);
 						break;
@@ -152,7 +152,7 @@ public class VehicleThread implements Runnable {
 						v.setCriticalPoint(cs);
 						break;
 					}
-					if (v.isCsTooClose() == false) 
+					if (v.isCsTooClose() == false || csOld == null) 
 						csOld = cs;
 				}
 

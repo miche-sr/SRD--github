@@ -63,7 +63,7 @@ public class TestCorridoio {
 		Pose[] goal3 = { goal31, goal32, goal33};		
 
 		Thread thread1 = initThread(1, c, start1, goal1);
-		Thread thread2 = initThread(2, c, start2, goal2);
+		Thread thread2 = initThread(2, a, start2, goal2);
 		Thread thread3 = initThread(3, c, start3, goal3);
 
 
@@ -85,7 +85,7 @@ public class TestCorridoio {
 		vh.setMainTable(mainTable);
 		vh.setSlowingPointNew();
 		vh.setTimes();
-		vh.setSpatialEnvelope();
+		vh.setSpatialEnvelope2(true);
 		vh.getNears();
 		vh.sendNewRr();
 		vh.setVisualization(viz);

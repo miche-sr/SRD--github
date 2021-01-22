@@ -68,12 +68,15 @@ public class PrecedencesFounder {
             //caso standard
         
             else if (timeAtCsStart2 == -1 && timeAtCsStart1 == -1 ){
-                    if(v1.getID() > v2.getID()) {prec = true; debug =" E";}
-                    else {prec = false; debug =" F";}
+                    if (count == 0) {prec = false; count = count +1;}
+                    else {
+                        if(v1.getID() > v2.getID()) {prec = true; count = 0; debug =" E";}
+                        else {prec = false; count = 0; debug =" F";}
+                        }
                     }
             else if (timeAtCsStart2 == -1 || timeAtCsEnd2 == -1) {prec = true; debug =" G";}
             else if (timeAtCsStart1 == -1 || timeAtCsEnd1 == -1) {prec = false; debug = " H";}
-            else if (braking1 < 0 || braking2 < 0) {prec = true; debug =" I";}
+            else if (braking1+ v1.getTc() < 0 || braking2 + v1.getTc() < 0) {prec = true; debug =" I";}
             else if (v1.getPriority() > v2.getPriority()){ prec = true; debug =" L";}
             else if (v1.getPriority() < v2.getPriority()) {prec = false; debug =" M";}
             else{	// A PARITÀ DI PRIORITÀ, SI PROCEDE PER DISTANZA TEMPORALE
@@ -88,7 +91,7 @@ public class PrecedencesFounder {
         
         }
         cs.setPrecedenza(prec);
-        //System.out.println("R"+v1.getID()+" debug Prec" + debug);
+        System.out.println("R"+v1.getID() +"-R"+v2.getID()+ " debug Prec " + prec +" "+ debug );
         // System.out.println("\u001B[35m" + "my ID: "+v1.getID()+ "  sp" + v1.getStoppingPoint() +
         // " \n other Id: " +v2.getID()+"  sp" + v2.getStoppingPoint() + "\n"+
         // cs.getTe1Start()+ ": "+ v1.getTruncateTimes().get(cs.getTe1Start()) + "  -  "+cs.getTe2Start()+": "+v2.getTruncateTimes().get(cs.getTe2Start()) +
