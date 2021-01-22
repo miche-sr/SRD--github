@@ -3,12 +3,15 @@ package se.oru.coordination.coordination_oru.ourproject.algorithms;
 
 import se.oru.coordination.coordination_oru.motionplanning.AbstractMotionPlanner;
 import se.oru.coordination.coordination_oru.motionplanning.ompl.ReedsSheppCarPlanner;
+import se.oru.coordination.coordination_oru.ourproject.algorithms.ConstantAccelerationForwardModel.Behavior;
 import se.oru.coordination.coordination_oru.ourproject.models.CriticalSection;
 import se.oru.coordination.coordination_oru.ourproject.models.RobotReport;
 import se.oru.coordination.coordination_oru.ourproject.models.TrafficLights;
 import se.oru.coordination.coordination_oru.ourproject.models.Vehicle;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+
 import org.metacsp.multi.spatioTemporal.paths.Pose;
 import org.metacsp.multi.spatioTemporal.paths.PoseSteering;
 import org.metacsp.multi.spatioTemporal.paths.TrajectoryEnvelope;
@@ -44,42 +47,54 @@ public class CriticalSectionsFounder {
 		return null;
 	}
 	
-	public PoseSteering[] rePlanPath(Vehicle v, RobotReport robotToAvoid) {
+	public PoseSteering[] rePlanPath(Vehicle v, HashMap<Integer,RobotReport> mainTable, ArrayList<Integer> nears) {
 		int currentWaitingIndex = v.getPathIndex();
 		Pose currentWaitingPose = v.getPose();
 		Pose[] currentWaitingGoal = v.getGoal();
-		Geometry obstacles = makeObstacle(robotToAvoid);
 		PoseSteering[] oldPath = v.getWholePath();
-
-		System.out.println("Attempting to re-plan path of Robot" + v.getID() + " (with robot" + robotToAvoid.getID() + " as obstacle), "
-				+ "with starting point in "+currentWaitingPose+"...");
-		//ReedsSheppCarPlanner mp = new ReedsSheppCarPlanner();
+		ArrayList<Geometry> obstacles =  new ArrayList<Geometry>();;
 		AbstractMotionPlanner mp = v.getMotionPlanner();
-		// mp.setRadius(0.2);
-		// mp.setTurningRadius(4.0);
-		// mp.setDistanceBetweenPathPoints(0.5);
-		// mp.setFootprint(v.getFootprint());
-		System.out.println(v.getWholePath());
-		System.out.println(mp.getPath());
-		PoseSteering[] newPath = doReplanning(mp, currentWaitingPose, currentWaitingGoal, obstacles);
-		// System.out.println(newPath.length);
-		// PoseSteering[] newCompletePath = new PoseSteering[newPath.length+currentWaitingIndex];
-		if (newPath != null && newPath.length > 0) {
-			System.out.println(newPath.length);
-			PoseSteering[] newCompletePath = new PoseSteering[newPath.length+currentWaitingIndex];
-			for (int i = 0; i < newCompletePath.length; i++) {
-				if (i < currentWaitingIndex) newCompletePath[i] = oldPath[i];
-				else newCompletePath[i] = newPath[i-currentWaitingIndex];
+		int count = 0;
+		String List = " ";
+		//Geometry ob2 = null;
+		for (Integer vh : nears){
+			if (mainTable.get(vh).getBehavior() == Behavior.stop || mainTable.get(vh).getBehavior() == Behavior.reached){
+				obstacles.add(makeObstacle(mainTable.get(vh)));
+				//ob2 = makeObstacle(mainTable.get(vh));
+				List = (List + vh + " " );
+				count = count + 1;
 			}
-//				v.setNewWholePath(newCompletePath);
-			System.out.println("Successfully re-planned path of Robot" + v.getID());
-			return newCompletePath;
 		}
-		else {
-			System.out.println("Failed to re-plan path of Robot" + v.getID());
+		if(count != 0){
+			Geometry[] obstaclesG = obstacles.toArray(new Geometry[obstacles.size()]);
+			System.out.println("\u001B[35m" + "Attempting to re-plan path of Robot" + v.getID() + " (with robot" + List + " as obstacle), "
+					+ "with starting point in "+currentWaitingPose+"..." + "\u001B[0m");
+					System.out.println("\u001B[35m" + obstaclesG + "\u001B[0m");
+		
+			PoseSteering[] newPath = doReplanning(mp, currentWaitingPose, currentWaitingGoal, obstaclesG);
+			// System.out.println(newPath.length);
+			// PoseSteering[] newCompletePath = new PoseSteering[newPath.length+currentWaitingIndex];
+			if (newPath != null && newPath.length > 0) {
+				System.out.println(newPath.length);
+				PoseSteering[] newCompletePath = new PoseSteering[newPath.length+currentWaitingIndex];
+				for (int i = 0; i < newCompletePath.length; i++) {
+					if (i < currentWaitingIndex) newCompletePath[i] = oldPath[i];
+					else newCompletePath[i] = newPath[i-currentWaitingIndex];
+				}
+	//				v.setNewWholePath(newCompletePath);
+				System.out.println("\u001B[32m" + "Successfully re-planned path of Robot" + v.getID() + "\u001B[0m" );
+				return newCompletePath;
+			}
+			else {
+				System.out.println("\u001B[31m" + "Failed to re-plan path of Robot" + v.getID() + "\u001B[0m");
+				return oldPath;
+			}
+		}
+		else{
+			System.out.println("\u001B[31m" + "no need to recalculate, wait a little longer R" + v.getID() + "\u001B[0m");
 			return oldPath;
 		}
-		//return newCompletePath;
+		
 	}
 	
 	/************************

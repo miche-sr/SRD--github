@@ -67,7 +67,7 @@ public class Vehicle {
 
 	// DA USARE PER I VICINI
 	private ArrayList<Vehicle> vehicleList = new ArrayList<Vehicle>();
-	private ArrayList<Vehicle> vehicleNear = new ArrayList<Vehicle>();
+	private ArrayList<Integer> vehicleNear = new ArrayList<Integer>();
 	private ArrayList<TrafficLights> trafficLightsList = new ArrayList<TrafficLights>();
 	private ArrayList<TrafficLights> trafficLightsNear = new ArrayList<TrafficLights>();
 	private HashMap<Integer, RobotReport> mainTable;
@@ -208,8 +208,8 @@ public class Vehicle {
 		return rsp.getPath();
 	}
 	
-	public void setNewWholePath(RobotReport r) {
-		this.path = intersect.rePlanPath(this, r);
+	public void setNewWholePath() {
+		this.path = intersect.rePlanPath(this, mainTable , getNears());
 		wholeSe = TrajectoryEnvelope.createSpatialEnvelope(this.path, this.footprint);
 	}
 
@@ -479,7 +479,7 @@ public class Vehicle {
 
 
 	// CALCOLO QUALI SONO I ROBOT VICINI //
-	public ArrayList<Vehicle> getNears() {
+	public ArrayList<Integer> getNears() {
 		this.vehicleNear.clear();
 		double vhX, vhY, dist;
 		double x = this.getPose().getX();
@@ -489,13 +489,13 @@ public class Vehicle {
 			vhY = vh.getPose().getY();
 			dist = Math.sqrt(Math.pow((x - vhX), 2.0) + Math.pow((y - vhY), 2.0));
 			if (dist <=2*this.radius && dist > 0) {
-				this.vehicleNear.add(vh);
+				this.vehicleNear.add(vh.getID());
 			}
 		}
 		return vehicleNear;
 	}
-	public Boolean checkCollision(Vehicle vh) {
-		
+	public Boolean checkCollision(Integer v) {
+		RobotReport vh = mainTable.get(v);
 		SpatialEnvelope pose1 = TrajectoryEnvelope.createSpatialEnvelope(new PoseSteering[] { path[pathIndex] }, footprint);
 		Geometry shape1 = pose1.getPolygon();
 
@@ -539,8 +539,9 @@ public class Vehicle {
 
 	public void sendNewRr() {
 		HashMap<Integer,Double> TruTim = (HashMap<Integer,Double>) truncateTimes.clone();
-		RobotReport rr = new RobotReport(this.ID, this.priority, this.pathIndex, 
-				this.se, TruTim, this.stoppingPoint,this.isCsTooClose());
+		
+		RobotReport rr = new RobotReport(this.ID, this.priority,this.footprint, this.pathIndex, 
+				this.se, TruTim, this.stoppingPoint,this.isCsTooClose(),forward.getRobotBehavior());
 		
 		mainTable.put(ID, rr);
 		

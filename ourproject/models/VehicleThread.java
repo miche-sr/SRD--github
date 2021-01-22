@@ -53,11 +53,11 @@ public class VehicleThread implements Runnable {
 				//// UNPACK MESSAGES ////
 				rrNears.clear();
 				List = " ";
-				for (Vehicle vh : v.getNears()){
-					rrNears.put(vh.getID(),v.getMainTable().get(vh.getID()));
-					List = (List + vh.getID() + " " );
+				for (Integer vh : v.getNears()){
+					rrNears.put(vh,v.getMainTable().get(vh));
+					List = (List + vh + " " );
 					if (v.checkCollision(vh) ) {
-						System.out.println("\u001B[31m" + "ATTENZIONE COLLISIONE  R" + v.getID() +" E R" +vh.getID()+ "\u001B[0m");
+						System.out.println("\u001B[31m" + "ATTENZIONE COLLISIONE  R" + v.getID() +" E R" +vh + "\u001B[0m");
 						printLog(List, prec);
 						run = false;
 					}
