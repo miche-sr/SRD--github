@@ -119,7 +119,7 @@ public class ConstantAccelerationForwardModel {
 		
 		boolean skipIntegration = false;
 		
-		if (v.getPathIndex() >= v.getCriticalPoint()-3 && state.getVelocity() <= 0.0 ) {
+		if (v.getPathIndex() >= v.getCriticalPoint() -3 && state.getVelocity() <= 0.0 ) { //-3
 			skipIntegration = true;
 			robotBehavior = Behavior.stop; // sono fermo
 		}	
@@ -128,7 +128,7 @@ public class ConstantAccelerationForwardModel {
  
 
 			//saturazioni velocità
-			if (state.getVelocity() < v.getTc()*Vehicle.mill2sec*v.getAccMAx()&& robotBehavior==Behavior.slowing){
+			if (state.getVelocity() < v.getTc()*Vehicle.mill2sec*v.getAccMAx() && robotBehavior==Behavior.slowing){
 				state.setVelocity(0.0);
 				if (v.getPathIndex()>= v.getWholePath().length-3 ){
 					robotBehavior = Behavior.reached;
@@ -214,21 +214,29 @@ public class ConstantAccelerationForwardModel {
 			}
 		}
 			
-		//inserisco anche il pathIndex relativo al CP
-//		currentPathIndex  = getPathIndex(v.getWholePath(), state);
-//		if (!times.containsKey(currentPathIndex)) {
-//			times.put(currentPathIndex, time);
-//		}
-
-		//inserisco anche PathIndx tra CP e fine SC inserndo come tempo -1
-		if (v.getCs().size() != 0)
-			csEnd = v.getCs().last().getTe1End();
-		else csEnd = -1;//v.getPathIndex() + 25; //-1;
+		// //inserisco anche PathIndx tra CP e fine SC inserndo come tempo -1
+		// if (v.getCs().size() != 0)
+		// 	if (!v.getCs().last().isPrecedenza())
+		// 		csEnd = v.getCs().last().getTe1End();
+		// 	else csEnd = -1; //non fare il calcolo sottostante
+		// else csEnd = -1; //non fare il calcolo sottostante
 		
-		currentPathIndex += 1;
-		while ((currentPathIndex <= csEnd+1 ) && currentPathIndex <= v.getWholePath().length-1 &&  isInsideRadius(v,currentPathIndex)){
-			times.put(currentPathIndex, -1.0);
+		// //currentPathIndex += 1;
+		// while ((currentPathIndex <= csEnd+1 ) && currentPathIndex <= v.getWholePath().length-1 &&  isInsideRadius(v,currentPathIndex)){
+		// 	if (!times.containsKey(currentPathIndex)) {
+		// 		times.put(currentPathIndex, -1.0);
+		// 		}
+		// 	currentPathIndex += 1;
+		// }
+
+
+		double dist = computeDistance(v.getWholePath(),v.getPathIndex(), currentPathIndex);
+		while (dist <= v.getRadius()+1 && currentPathIndex <= v.getWholePath().length-1 ){
+			if (!times.containsKey(currentPathIndex)) {
+				times.put(currentPathIndex, -1.0);
+				}
 			currentPathIndex += 1;
+			dist = computeDistance(v.getWholePath(),v.getPathIndex(), currentPathIndex);
 		}
 
 		return times;

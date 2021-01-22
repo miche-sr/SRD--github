@@ -47,6 +47,8 @@ public class VehicleThread implements Runnable {
 
 		try{
 			while(v.getForwardModel().getRobotBehavior() != Behavior.reached && run){
+				long start = System.currentTimeMillis();
+				
 				
 				//// UNPACK MESSAGES ////
 				rrNears.clear();
@@ -81,7 +83,7 @@ public class VehicleThread implements Runnable {
 					}
 				}
 				
-				
+				//analysedVehiclesI.clear();
 				// re-add the cs already analysed and find the cs of other vehicles
 				v.clearCs();
 				for (CriticalSection analysedCs : this.analysedCs){
@@ -171,8 +173,8 @@ public class VehicleThread implements Runnable {
 				v.setStoppingPoint();
 				
 				v.setTimes();
-				//v.setSpatialEnvelope2(FreeAccess);
-				v.setSpatialEnvelope();
+				v.setSpatialEnvelope2(FreeAccess);
+				//v.setSpatialEnvelope();
 
 				//// SEND NEW ROBOT REPORT ////
 				
@@ -180,7 +182,9 @@ public class VehicleThread implements Runnable {
 				//printLog(List, prec);
 				v.sendNewRr();
 
-				
+				long finish = System.currentTimeMillis();
+				long timeElapsed = finish - start;
+				//if (v.getID() == 1) System.out.println("Time Elapsed " + timeElapsed);
 				/***********************************
 				 ****** VISUALIZATION AND PRINT ****
 				 ***********************************/

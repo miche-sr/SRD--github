@@ -64,12 +64,12 @@ public class Test8Robot {
 		double r = vh.getRadius();
 		if (r > rMax) {
 			rMax = r;
-			tMax = r/vh.getVelMax();
+			//tMax = r/vh.getVelMax();
 		}
 	}
 	for (Vehicle vh : vehicleList){
 		vh.setRadius(rMax);
-		vh.setSecForSafety(tMax);
+		//vh.setSecForSafety(tMax);
 		vh.setVehicleList(vehicleList);
 		vh.setMainTable(mainTable);
 		vh.setSlowingPointNew();

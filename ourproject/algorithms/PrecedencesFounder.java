@@ -29,7 +29,7 @@ public class PrecedencesFounder {
             System.out.println("\u001B[35m" + "HeadToHead " + v1.getID() + " E "+ v2.getID() + "\n" + "count" + count+ "\u001B[0m");
             prec = false;
             if(v1.getForwardModel().getRobotBehavior()==ConstantAccelerationForwardModel.Behavior.stop){
-                if( v1.getID() > v2.getID()) {
+                if( v1.getID() < v2.getID()) {
                     v1.setNewWholePath(v2);
                     count = 0;
                     System.out.println("\u001B[35m" + "Ricalcolo Percorso di R" + v1.getID() +"\u001B[0m");
