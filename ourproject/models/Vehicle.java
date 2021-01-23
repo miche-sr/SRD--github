@@ -94,9 +94,9 @@ public class Vehicle {
 				break;
 
 			case AMBULANCE:
-				this.velMax = 2.0;
-				this.accMax = 1.0;
-				this.priority = 1;
+				this.velMax = 3.0;
+				this.accMax = 2.0;
+				this.priority = 2;
 				this.Tc = 150;
 				this.side = sideAmb;
 				this.footprint = fpAmb;
@@ -106,7 +106,7 @@ public class Vehicle {
 				System.out.println("Unknown vehicle");
 		}
 		double brakingDistanceMax = Math.pow(this.velMax,2.0) / (2*this.accMax);
-		this.myDistanceToSend= (2 * this.Tc * mill2sec ) * this.velMax + brakingDistanceMax + 2*side;
+		this.myDistanceToSend= (2 * this.Tc * mill2sec ) * this.velMax + brakingDistanceMax + side;
 		this.radius= this.myDistanceToSend;
 		this.path = createWholePath(yamlFile);
 		this.forward = new ConstantAccelerationForwardModel(this, 1000); // ???

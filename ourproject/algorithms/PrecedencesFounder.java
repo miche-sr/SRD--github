@@ -34,12 +34,10 @@ public class PrecedencesFounder {
             if(v1.getForwardModel().getRobotBehavior()==ConstantAccelerationForwardModel.Behavior.stop){
                 if (v1.getPriority()<v2.getPriority()){
                     v1.setNewWholePath();
-                    countHead = 0; countLock = 0; countPark = 0;
                     System.out.println("\u001B[35m" + "Heat To Head Ricalcolo Percorso di R" + v1.getID() +"\u001B[0m");
                 }
                 else if( v1.getPriority()== v2.getPriority() && v1.getID() < v2.getID()) {
                     v1.setNewWholePath();
-                    countHead = 0; countLock = 0; countPark = 0;
                     System.out.println("\u001B[35m" + " Heat To Head Ricalcolo Percorso di R" + v1.getID() +"\u001B[0m");
                 }
                 else countHead = countHead + 1;
@@ -47,7 +45,10 @@ public class PrecedencesFounder {
         }
         
         /**SE UNO DEI DUE GIÀ NON PUÒ FERMARSI PRIMA DI SC**/
-        else if (v2.getStoppingPoint() >= te2start) {prec = false;  debug =" A";}
+        else if (v2.getStoppingPoint() >= te2start) {
+            prec = false; 
+            debug =" A";
+        }
         else if (v1.getStoppingPoint() >= te1start) {prec = true; debug =" B";}
 
         
@@ -56,21 +57,19 @@ public class PrecedencesFounder {
         else{
             if (v1.isCsTooClose()   // caso deadlock
                 && timeAtCsStart2 == -1 && timeAtCsStart1 == -1 ){
-                    System.out.println("\u001B[35m" + "R"+v1.getID()+"-R"+v2.getID()+"  DEADLOCK !!!!!!!!!" + "\u001B[0m");
-                    if(v1.getID() > v2.getID()) {prec = true; countLock =0; debug = " C";}
+                    if(v1.getID() > v2.getID()) {prec = true; debug = " C";}
                     else {
                         prec = false;  debug = " D";
-                        countLock = countLock + 1;
                     }
+                    System.out.println("\u001B[35m" + "R"+v1.getID()+"-R"+v2.getID()+"  DeadLock  cross1 - prec: "+ prec + "\u001B[0m");
+                    countLock = countLock + 1;
             }
             //caso standard
         
             else if (timeAtCsStart2 == -1 && timeAtCsStart1 == -1 ){
-                    if (countPark == 0) prec = false;
-                    else {
-                        if(v1.getID() > v2.getID()) {prec = true;  debug =" E";}
-                        else {prec = false;  debug =" F";}
-                        }
+                    if(v1.getID() > v2.getID()) {prec = true;  debug =" E";}
+                    else {prec = false;  debug =" F";}
+                    System.out.println("\u001B[35m" + "R"+v1.getID()+"-R"+v2.getID()+" DeadLock cross2 - prec: "+ prec  + "\u001B[0m");
                     }
             else if (timeAtCsStart2 == -1 || timeAtCsEnd2 == -1) {prec = true; debug =" G";}
             else if (timeAtCsStart1 == -1 || timeAtCsEnd1 == -1) {prec = false; debug = " H";}
@@ -90,8 +89,8 @@ public class PrecedencesFounder {
         }
 
         if(v1.getForwardModel().getRobotBehavior()== Behavior.stop) countPark = countPark+1;
-        else countPark = 0;countHead = 0;countLock = 0;
-        if (countHead == 25 || countLock == 30|| countPark == 40 || v2.getBehavior()== Behavior.reached){
+        else {countHead = 0;countLock = 0;countPark=0;}
+        if (countHead == 25 || countLock == 40|| countPark == 45 || v2.getBehavior()== Behavior.reached){
             
             System.out.println("\u001B[35m" + "Provo a ricalcolare Percorso di R" + v1.getID() +"\u001B[0m");
             v1.setNewWholePath();
@@ -101,10 +100,10 @@ public class PrecedencesFounder {
         }
 
         cs.setPrecedenza(prec);
-        //System.out.println("R"+v1.getID() +"-R"+v2.getID()+ " debug Prec " + prec +" "+ debug );
-        // System.out.println("\u001B[35m" + "my ID: "+v1.getID()+ "  sp" + v1.getStoppingPoint() +
-        // " \n other Id: " +v2.getID()+"  sp" + v2.getStoppingPoint() + "\n"+
-        // cs.getTe1Start()+ ": "+ v1.getTruncateTimes().get(cs.getTe1Start()) + "  -  "+cs.getTe2Start()+": "+v2.getTruncateTimes().get(cs.getTe2Start()) +
+        System.out.println("R"+v1.getID() +"-R"+v2.getID()+ " debug Prec " + prec +" "+ debug );
+        // System.out.println("\u001B[35m" + "my ID: "+v1.getID()+ "  sp: " + v1.getStoppingPoint() +
+        // " \nother Id: " +v2.getID()+"  sp:" + v2.getStoppingPoint() + "\n"+
+        // cs.getTe1Start()+ ": "+ v1.getTruncateTimes().get(cs.getTe1Start()) + "  -  "+ te2start+": "+v2.getTruncateTimes().get(cs.getTe2Start()) +
         //  "\n flag:" + v1.isCsTooClose() + " precedenza calcolata "+prec +"\n "+"\u001B[0m");
 
         return prec;

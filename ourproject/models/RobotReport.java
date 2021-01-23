@@ -16,7 +16,7 @@ public class RobotReport {
 	private HashMap<Integer, Double> truncateTimes = new HashMap<Integer, Double>();
 	private int stoppingPoint = -1;
 	private Boolean flagCs = false;
-	private Behavior behavior = Behavior.moving;
+	private Behavior behavior = Behavior.start;
 	private Coordinate[] footprint;
 
 	public RobotReport(int ID, int priority, Coordinate[] footprint, int pathIndex, SpatialEnvelope se,

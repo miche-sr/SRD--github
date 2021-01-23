@@ -142,7 +142,7 @@ public class ConstantAccelerationForwardModel {
 				}
 				else if ( v.getPathIndex()< v.getCriticalPoint()){
 					robotBehavior = Behavior.slowing;
-					integrateRK4(state, elapsedTrackingTime, deltaT, false, deltaT*v.getAccMAx(), 1.0, deltaT*v.getAccMAx()/1.3);
+					integrateRK4(state, elapsedTrackingTime, deltaT, false, deltaT*v.getAccMAx(), 1.0, deltaT*v.getAccMAx()*0.9);
 				}
 				else{
 					state.setVelocity(0.0);
@@ -198,7 +198,7 @@ public class ConstantAccelerationForwardModel {
 			if (state.getPosition() >= distanceToCp || state.getVelocity() <= 0) break;
 			if (state.getPosition() >= v.getSlowingPoint()) {
 				if (state.getVelocity() < deltaTime*v.getAccMAx())
-					integrateRK4(state, time, deltaTime, false, deltaTime*v.getAccMAx(), 1.0, deltaTime*v.getAccMAx()/1.3);
+					integrateRK4(state, time, deltaTime, false, deltaTime*v.getAccMAx(), 1.0, deltaTime*v.getAccMAx()*0.9);
 				else
 					integrateRK4(state, time, deltaTime, true, maxVel, 1.0, maxAccel);
 			}
