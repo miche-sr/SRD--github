@@ -241,7 +241,7 @@ public class ConstantAccelerationForwardModel {
 
 
 		double dist = computeDistance(v.getWholePath(),v.getPathIndex(), currentPathIndex);
-		while (dist <= v.getRadius()+1 && currentPathIndex <= v.getWholePath().length-1 ){
+		while (dist <= v.getMyDistanceToSend()+1 && currentPathIndex <= v.getWholePath().length-1 ){
 			if (!times.containsKey(currentPathIndex)) {
 				times.put(currentPathIndex, -1.0);
 				}

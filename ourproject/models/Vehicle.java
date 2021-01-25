@@ -106,8 +106,8 @@ public class Vehicle {
 				System.out.println("Unknown vehicle");
 		}
 		double brakingDistanceMax = Math.pow(this.velMax,2.0) / (2*this.accMax);
-		this.myDistanceToSend= (2 * this.Tc * mill2sec ) * this.velMax + brakingDistanceMax + side;
-		this.radius= this.myDistanceToSend;
+		this.radius= (2 * this.Tc * mill2sec ) * this.velMax + brakingDistanceMax + side ;
+		this.myDistanceToSend = this.radius ; 
 		this.path = createWholePath(yamlFile);
 		this.forward = new ConstantAccelerationForwardModel(this, 1000); // ???
 
@@ -167,6 +167,10 @@ public class Vehicle {
 
 	public Coordinate[] getFootprint() {
 		return footprint;
+	}
+
+	public double getMyDistanceToSend(){
+		return myDistanceToSend;
 	}
 
 

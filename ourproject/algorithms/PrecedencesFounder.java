@@ -58,9 +58,7 @@ public class PrecedencesFounder {
             if (v1.isCsTooClose()   // caso deadlock
                 && timeAtCsStart2 == -1 && timeAtCsStart1 == -1 ){
                     if(v1.getID() > v2.getID()) {prec = true; debug = " C";}
-                    else {
-                        prec = false;  debug = " D";
-                    }
+                    else { prec = false;  debug = " D";}
                     System.out.println("\u001B[35m" + "R"+v1.getID()+"-R"+v2.getID()+"  DeadLock  cross1 - prec: "+ prec + "\u001B[0m");
                     countLock = countLock + 1;
             }

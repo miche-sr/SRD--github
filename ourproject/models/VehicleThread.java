@@ -22,17 +22,23 @@ public class VehicleThread implements Runnable {
 	private boolean run = true;
 	private Vehicle v;
 	private double elapsedTrackingTime = 0.0;
-	private int sp = -1;
+	private int slp = -1;
 	private int oldCp = -1;
 	private TreeSet<CriticalSection> analysedCs = new TreeSet<CriticalSection>(); 
 	private ArrayList<Integer> analysedVehiclesI = new ArrayList<Integer>();
 	private HashMap<Integer, RobotReport> rrNears = new HashMap<Integer, RobotReport>();
-//	private ArrayList<RobotReport> rrNears = new ArrayList<RobotReport>();
 	private Boolean prec = true;
 	private CriticalSection csOld;
 	private boolean FreeAccess = true;
 	private int smStopIndex = -1;
 	private String List = " ";
+
+
+	private static String colorEnv = "#adadad"; //"#f600f6"
+	private static String colorTruEnv ="#000000"; //#efe007";
+	private static String colorStp = "#047d00"; //"#0008f6"; //"#ffffff";
+	private static String colorCrp = "#a30202"; //"#29f600";
+	//private static String colorSlp =  "#0008f6";
 
 	public VehicleThread(Vehicle v){
 		this.v = v;
@@ -161,7 +167,7 @@ public class VehicleThread implements Runnable {
 				
 				if (oldCp != v.getCriticalPoint()) {
 					v.setSlowingPointNew();
-					sp = v.getForwardModel().getPathIndex(v.getWholePath(), v.getSlowingPoint());
+					slp = v.getForwardModel().getPathIndex(v.getWholePath(), v.getSlowingPoint());
 					oldCp = v.getCriticalPoint();
 				}
 				if (v.getForwardModel().getRobotBehavior() == Behavior.stop)
@@ -190,11 +196,11 @@ public class VehicleThread implements Runnable {
 				 ***********************************/
 
 				
-				v.getVisualization().addEnvelope(v.getWholeSpatialEnvelope().getPolygon(),v,"#f600f6"); 
-				v.getVisualization().addEnvelope(v.getSpatialEnvelope().getPolygon(),v,"#efe007");
-				v.getVisualization().displayPoint(v, v.getCriticalPoint(), "#29f600"); //-1 perche array parte da zero
-				v.getVisualization().displayPoint(v, sp, "#0008f6");
-				v.getVisualization().displayPoint(v, v.getStoppingPoint(), "#ffffff");
+				v.getVisualization().addEnvelope(v.getWholeSpatialEnvelope().getPolygon(),v,colorEnv); 
+				v.getVisualization().addEnvelope(v.getSpatialEnvelope().getPolygon(),v,colorTruEnv);
+				v.getVisualization().displayPoint(v, v.getCriticalPoint(), colorCrp); //-1 perche array parte da zero
+				//v.getVisualization().displayPoint(v, slp, colorSlp);
+				v.getVisualization().displayPoint(v, v.getStoppingPoint(), colorStp);
 
 				String infoCs = v.getForwardModel().getRobotBehavior().toString();
 				v.getVisualization().displayRobotState(v.getSpatialEnvelope().getFootprint(), v,infoCs);
