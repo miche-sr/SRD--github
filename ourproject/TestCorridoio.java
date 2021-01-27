@@ -39,7 +39,7 @@ public class TestCorridoio {
 		
 
 		Pose CorrStart = new Pose(9.0,5.5,0);
-		Pose CorrEnd  = new Pose(24.0,5.5,0);
+		Pose CorrEnd  = new Pose(25.5,5.5,0);
 		TrafficLights corridoio = new TrafficLights(1, CorrStart, CorrEnd, 2, viz);
 		trafficLightsList.add(corridoio);
 
@@ -85,7 +85,7 @@ public class TestCorridoio {
 		vh.setMainTable(mainTable);
 		vh.setSlowingPointNew();
 		vh.setTimes();
-		vh.setSpatialEnvelope2(true);
+		vh.setSpatialEnvelope2(true,0);
 		vh.getNears();
 		vh.sendNewRr();
 		vh.setVisualization(viz);

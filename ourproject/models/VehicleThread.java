@@ -112,26 +112,32 @@ public class VehicleThread implements Runnable {
 					synchronized(TL){
 						if (v.getWholeSpatialEnvelope().getPolygon().intersects(TL.getCorridorPath().getPolygon())){
 	
-							if (!TL.getRobotInsideCorridor().contains(v.getID())){
-								if (TL.checkSemophore(v)){ // entro nel corridioi
-										TL.addVehicleInside(v);
+							if (!TL.getRobotInsideCorridor().contains(v.getID()) ){
+								if (TL.checkSemophore(v) ){ // entro nel corridioi
 										FreeAccess = true;
+										if(v.getSpatialEnvelope().getPolygon().intersects(TL.getCorridorPath().getPolygon()))
+											TL.addVehicleInside(v);
 								}
-								else{ // semaforo rosso
-									if (FreeAccess == true) smStopIndex = intersect.SmStopIndex(v, TL);
+								else { // semaforo rosso
+									if (FreeAccess == true) smStopIndex = intersect.SmStopIndex(v, TL)-6;
 									FreeAccess = false;
 								}
 							}
 						}
 						if (!v.getSpatialEnvelope().getPolygon().intersects(TL.getCorridorPath().getPolygon())) {
 						 	if (FreeAccess == true) {//lo stavo attraversando e sono uscito
-								if (TL.getRobotInsideCorridor().contains(v.getID()))	TL.removeVehicleInside(v);
+								if (TL.getRobotInsideCorridor().contains(v.getID()))
+									TL.removeVehicleInside(v);
 							}
+							else if (v.getPathIndex() >= intersect.SmStopIndex(v, TL)) FreeAccess = true; // sono oltre
 					
 						}
 						
 					}
 				}
+				//
+				
+				if(v.getID() == 2) System.out.println(FreeAccess);
 
 
 
@@ -162,30 +168,34 @@ public class VehicleThread implements Runnable {
 						csOld = cs;
 				}
 
-				if(FreeAccess== false && v.getStoppingPoint() != -1 && smStopIndex >= 6)
-					v.setCriticalPoint( Math.min(v.getCriticalPoint(),smStopIndex-6) );
+				if(FreeAccess== false && v.getStoppingPoint() != -1 && smStopIndex >= 0){
+					//if (v.getCriticalPoint()== v.getWholePath().length-1) v.setCriticalPoint(v.getStoppingPoint());
+					//else
+					 v.setCriticalPoint( Math.min(v.getCriticalPoint(),smStopIndex) );//
+				}
 				
 				if (oldCp != v.getCriticalPoint()) {
-					v.setSlowingPointNew();
+					v.setSlowingPoint();
+					//v.setSlowingPointNew();
 					slp = v.getForwardModel().getPathIndex(v.getWholePath(), v.getSlowingPoint());
 					oldCp = v.getCriticalPoint();
 				}
 				if (v.getForwardModel().getRobotBehavior() == Behavior.stop)
-					v.setSlowingPointNew();
+					v.setSlowingPoint();
 
 				//// UPDATE VALUES ///
-				v.setPathIndex(elapsedTrackingTime);
+				v.setPathIndex(elapsedTrackingTime,FreeAccess);
 				v.setPose(v.getWholePath()[v.getPathIndex()].getPose());
 				v.setStoppingPoint();
 				
 				v.setTimes();
-				v.setSpatialEnvelope2(FreeAccess);
+				v.setSpatialEnvelope2(FreeAccess,smStopIndex);
 				//v.setSpatialEnvelope();
 
 				//// SEND NEW ROBOT REPORT ////
 				
 				
-				//printLog(List, prec);
+				if(v.getID()==2) printLog(List, prec);
 				v.sendNewRr();
 
 				long finish = System.currentTimeMillis();

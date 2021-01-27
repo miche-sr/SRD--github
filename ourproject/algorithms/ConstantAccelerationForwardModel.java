@@ -22,7 +22,7 @@ public class ConstantAccelerationForwardModel {
 	private static int MAX_TX_DELAY = 0;
 	
 	public static enum Behavior {
-		stop,moving,slowing,minVelocity,reached,start
+		start,moving,slowing,stop,waiting,reached,
 	};
 	
 	private Behavior robotBehavior = Behavior.start;
@@ -112,7 +112,7 @@ public class ConstantAccelerationForwardModel {
 	}
 	
 	//from run in TrajectoryEnvelopeTrackerRK4: line 548
-	public State updateState(Vehicle v, double elapsedTrackingTime) {
+	public State updateState(Vehicle v, double elapsedTrackingTime,boolean FreeAccess) {
 		
 		State state = new State(v.getDistanceTraveled(), v.getVelocity());	// state attuale
 		double velMaxL = v.getVelMax();
@@ -128,7 +128,8 @@ public class ConstantAccelerationForwardModel {
  
 
 			//saturazioni velocità
-			if (state.getVelocity() < deltaT*v.getAccMAx() && v.getDistanceTraveled() >= v.getSlowingPoint()){
+			if (state.getVelocity() < deltaT*v.getAccMAx() && v.getDistanceTraveled() >= v.getSlowingPoint()
+				&& robotBehavior == Behavior.slowing){
 				
 				if (v.getPathIndex()>= v.getWholePath().length-2 ){
 					state.setVelocity(0.0);
@@ -142,13 +143,15 @@ public class ConstantAccelerationForwardModel {
 				}
 				else if ( v.getPathIndex()< v.getCriticalPoint()){
 					robotBehavior = Behavior.slowing;
-					integrateRK4(state, elapsedTrackingTime, deltaT, false, deltaT*v.getAccMAx(), 1.0, deltaT*v.getAccMAx()*0.9);
+					integrateRK4(state, elapsedTrackingTime, deltaT, false, deltaT*v.getAccMAx(), 1.0, v.getAccMAx()*0.8); 
 				}
 				else{
 					state.setVelocity(0.0);
 					robotBehavior = Behavior.stop; // fermo
 					state.setPosition(v.getDistanceTraveled());
 				}
+				
+
 			} 
 
 			
@@ -167,6 +170,7 @@ public class ConstantAccelerationForwardModel {
 			}	
 
 		} 
+		if (robotBehavior == Behavior.stop && !FreeAccess)robotBehavior = Behavior.waiting;
 		return state;
 	}
 		
@@ -223,22 +227,6 @@ public class ConstantAccelerationForwardModel {
 				}
 			}
 		}
-			
-		// //inserisco anche PathIndx tra CP e fine SC inserndo come tempo -1
-		// if (v.getCs().size() != 0)
-		// 	if (!v.getCs().last().isPrecedenza())
-		// 		csEnd = v.getCs().last().getTe1End();
-		// 	else csEnd = -1; //non fare il calcolo sottostante
-		// else csEnd = -1; //non fare il calcolo sottostante
-		
-		// //currentPathIndex += 1;
-		// while ((currentPathIndex <= csEnd+1 ) && currentPathIndex <= v.getWholePath().length-1 &&  isInsideRadius(v,currentPathIndex)){
-		// 	if (!times.containsKey(currentPathIndex)) {
-		// 		times.put(currentPathIndex, -1.0);
-		// 		}
-		// 	currentPathIndex += 1;
-		// }
-
 
 		double dist = computeDistance(v.getWholePath(),v.getPathIndex(), currentPathIndex);
 		while (dist <= v.getMyDistanceToSend()+1 && currentPathIndex <= v.getWholePath().length-1 ){

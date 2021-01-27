@@ -30,8 +30,8 @@ public class TestHeadToHead {
 
 		// /*Head-To-Head*/
 		 Pose start1 = new Pose(0, 5, Math.PI); Pose[] goal1 = { new Pose(25, 5, Math.PI) };
-		 //Pose start2 = new Pose(20, 4, 0); Pose[] goal2 = { new Pose(-5, 4, 0) };
-		 Pose start2 = new Pose(20, 4, 0); Pose[] goal2 = { new Pose(15, 4, 0) };
+		 Pose start2 = new Pose(20, 4, 0); Pose[] goal2 = { new Pose(-5, 4, 0) };
+		 //Pose start2 = new Pose(20, 4, 0); Pose[] goal2 = { new Pose(15, 4, 0) };
 
 		Thread thread1 = initThread(1, a, start1, goal1);
 		Thread thread2 = initThread(2, a, start2, goal2);
@@ -61,7 +61,7 @@ public class TestHeadToHead {
 		vh.setMainTable(mainTable);
 		vh.setSlowingPointNew();
 		vh.setTimes();
-		vh.setSpatialEnvelope2(true);
+		vh.setSpatialEnvelope2(true,0);
 		vh.getNears();
 		vh.sendNewRr();
 		vh.setVisualization(viz);

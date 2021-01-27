@@ -58,7 +58,7 @@ public class CriticalSectionsFounder {
 		String List = " ";
 		//Geometry ob2 = null;
 		for (Integer vh : nears){
-			if (mainTable.get(vh).getBehavior() == Behavior.stop || mainTable.get(vh).getBehavior() == Behavior.reached){
+			if (mainTable.get(vh).getBehavior() == Behavior.stop || mainTable.get(vh).getBehavior() == Behavior.reached ||  mainTable.get(vh).getBehavior() == Behavior.waiting){
 				obstacles.add(makeObstacle(mainTable.get(vh)));
 				//ob2 = makeObstacle(mainTable.get(vh));
 				List = (List + vh + " " );
@@ -191,12 +191,14 @@ public class CriticalSectionsFounder {
 	}
 
 	public boolean csTooClose(Vehicle v, CriticalSection csOld, CriticalSection csNew){
+		int start1 = csOld.getTe1Start();
 		int end1 = csOld.getTe1End();
 		int start2 = csNew.getTe1Start();
 		double RobotDimesion = v.getWholeSpatialEnvelope().getFootprint().getArea();
 		SpatialEnvelope SpaceBetweenCs;
 		double SpaceBetweenCsDimesion;
 		ArrayList<PoseSteering> path = new ArrayList<PoseSteering>();
+		if (start1 == v.getPathIndex()) return false;
 		if (end1 < start2){
 			for (int i=end1; i < start2; i++){
 				path.add(v.getWholePath()[i]);
@@ -225,7 +227,7 @@ public class CriticalSectionsFounder {
 		boolean started = false;
 		int te1Start = -1;
 		//int te1End;
-		for (int j = v.getPathIndex(); j < path1.length; j++) {
+		for (int j = 0; j < path1.length; j++) {
 			Geometry placement1 = TrajectoryEnvelope.getFootprint(se1.getFootprint(), path1[j].getPose().getX(), path1[j].getPose().getY(), path1[j].getPose().getTheta());
 			int jAbs = j ;//+v.getPathIndex();		// LO SI RIPORTA RISPETTO A INDICE ASSOLUTO
 			if (!started && placement1.intersects(g)) {		// CALCOLO INIZIO S.C.

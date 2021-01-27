@@ -20,8 +20,8 @@ public class Vehicle {
 		CAR, AMBULANCE
 	};
 
-	private static final double sideCar = 1;
-	private static final double sideAmb = 2;
+	private static final double sideCar = 0.8;
+	private static final double sideAmb = 1.5;
 	private static final Coordinate[] fpCar = { new Coordinate(0, 0), new Coordinate(sideCar, 0), 
 												new Coordinate(sideCar, 1), new Coordinate(0, 1) };
 	private static final Coordinate[] fpAmb = { new Coordinate(0, 0), new Coordinate(sideAmb, 0), 
@@ -110,7 +110,7 @@ public class Vehicle {
 		this.myDistanceToSend = this.radius ; 
 		this.path = createWholePath(yamlFile);
 		this.forward = new ConstantAccelerationForwardModel(this, 1000); // ???
-
+		setCriticalPoint(path.length-1);
 	}
 
 
@@ -268,15 +268,16 @@ public class Vehicle {
 	//}
 
 
-	public void setSpatialEnvelope2(Boolean FreeAcces) {
+	public void setSpatialEnvelope2(Boolean FreeAcces, int smStopIndex) {
 		this.truncatedPath.clear();
 		this.truncateTimes.clear();
 
-
+		this.truncateTimes.put(pathIndex , times.get(pathIndex));
+		this.truncatedPath.add(path[pathIndex]);
 		double dist = 0.0;
-		int i = 0;
+		int i = 1;
 		int Maxdist = path.length-1;
-		if (!FreeAcces) Maxdist = getCriticalPoint()+1;
+		if (!FreeAcces) Maxdist = smStopIndex+1;
 		while (dist < this.myDistanceToSend && (pathIndex+i)<= Maxdist){
 			if (!times.containsKey(pathIndex + i)) break;
 			
@@ -302,8 +303,8 @@ public class Vehicle {
 		return forward;
 	}
 	// AGGIORNAMENTO POSIZIONE //
-	public void setPathIndex(double elapsedTrackingTime) {
-		State next_state = forward.updateState(this, elapsedTrackingTime);  //calcolo nuova velocità e posizione
+	public void setPathIndex(double elapsedTrackingTime,boolean FreeAccess) {
+		State next_state = forward.updateState(this, elapsedTrackingTime,FreeAccess);  //calcolo nuova velocità e posizione
 		setDistanceTraveled(next_state.getPosition());
 		setVelocity(next_state.getVelocity());
 		this.pathIndex = forward.getPathIndex(this.path, next_state);
@@ -372,26 +373,46 @@ public class Vehicle {
 
 
 
-/*
-	public void setSlowingPoint() {
-		boolean stop = false;
-		int i = this.criticalPoint;
-		int cp = this.criticalPoint;
-		
-		
-		if (this.criticalPoint == -1) {
-			i = this.path.length;
-			cp = this.path.length;
-		}
 
-		// itero per tentativi partendo da cp-1 fino a che non trovo il punto dal quale frenando riesco a fermarmi
-		while (!stop && i > 0) {
-			i -= 1;
-			stop = forward.canStop(this, cp, i, false);
+	public void setSlowingPoint() {
+	        int cp = this.criticalPoint;
+        if (cp == -1) cp = path.length-1;
+        
+		double distanceToCpAbsolute = forward.computeDistance(path, 0, cp);
+		double distanceToCpRelative = forward.computeDistance(path, pathIndex,cp);
+        // We compute the distance traveled:
+        // - accelerating up to vel max from current vel (distToVelMax)
+        // - decelerating up to zero vel from vel max (brakingVelMax)
+
+		double v0 = velocity;
+		double decMax = this.accMax*0.9;//new
+        double timeToVelMax = (velMax - v0)/accMax;
+        double distToVelMax = v0*timeToVelMax + accMax*Math.pow(timeToVelMax,2.0)/2;
+        double brakingFromVelMax = Math.pow(velMax,2.0)/(decMax*2);
+
+        // If sum of the two is lower than distanceToCp, than the move profile is trapezoidal.
+        // If higher, than the profile is triangular, but not reaching maximum speed.
+        // For triangular: accelerating distance == decelerating distance
+        double braking;
+        double traveledInTc = 0;
+        if (distToVelMax + brakingFromVelMax > distanceToCpRelative){	// triangular profile
+            // braking = brak1 (from NowVel to zero) + brak2 (from velReached to NowVel)
+            double brak1 = Math.pow(v0,2.0)/(accMax*2);
+            double brak2 = (distanceToCpRelative - brak1)/2;
+            braking = brak1 + brak2;
+            
+            double timeToTopVel = -v0/accMax + Math.sqrt(Math.pow(v0/accMax, 2)+2*brak2/accMax);
+            double topVel = v0 + accMax*timeToTopVel;
+            traveledInTc = topVel*Tc*mill2sec; //- Math.pow(Tc*mill2sec,2.0)*accMax/2;
 		}
-		this.slowingPoint = i;
+        else {
+        	braking = brakingFromVelMax;
+        	traveledInTc = velMax*Tc*mill2sec;
+        }
+        this.slowingPoint =Math.max(0, (distanceToCpAbsolute-(braking+traveledInTc)));
+
 	}
-*/
+
 	public void setSlowingPointNew(){
 
         int cp = this.criticalPoint;

@@ -64,7 +64,7 @@ public class TestDeadLock{
 		vh.setMainTable(mainTable);
 		vh.setSlowingPointNew();
 		vh.setTimes();
-		vh.setSpatialEnvelope2(true);
+		vh.setSpatialEnvelope2(true,0);
 		vh.getNears();
 		vh.sendNewRr();
 		vh.setVisualization(viz);

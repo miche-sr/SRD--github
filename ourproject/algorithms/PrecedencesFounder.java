@@ -10,6 +10,7 @@ public class PrecedencesFounder {
     private int countLock = 0;
     private int countPark = 0;
     private String debug = "";
+    private int V2id = -1;
     
     public Boolean ComputePrecedences(CriticalSection cs) {
         Boolean prec;
@@ -57,18 +58,34 @@ public class PrecedencesFounder {
         else{
             if (v1.isCsTooClose()   // caso deadlock
                 && timeAtCsStart2 == -1 && timeAtCsStart1 == -1 ){
+                    if(v1.getPriority() > v2.getPriority()){prec = true; debug = "C1";}
+                    else if (v1.getPriority() < v2.getPriority()){prec = true; debug = "C2";}
+                    
                     if(v1.getID() > v2.getID()) {prec = true; debug = " C";}
                     else { prec = false;  debug = " D";}
-                    System.out.println("\u001B[35m" + "R"+v1.getID()+"-R"+v2.getID()+"  DeadLock  cross1 - prec: "+ prec + "\u001B[0m");
+                    
+                    System.out.println("\u001B[35m" + "R"+v1.getID()+"-R"+v2.getID()+"\t DeadLock cross1 - prec:\t"+ prec + "\t waiting "+ countLock + "\u001B[0m");
                     countLock = countLock + 1;
-            }
+                    if (countLock >= 30) {
+                        prec = true; 
+                        if(v2.getID() == V2id) {countLock = 0; prec = false; V2id = -1;}
+                        else{
+                            if (countLock == 30) V2id = v2.getID();
+                            System.out.println("\u001B[33m" + "R"+v1.getID()+"-R"+v2.getID()+"\t  DeadLock  cross1 - IO VADO!" + "\u001B[0m");}
+                        }
+                }
             //caso standard
         
             else if (timeAtCsStart2 == -1 && timeAtCsStart1 == -1 ){
-                    if(v1.getID() > v2.getID()) {prec = true;  debug =" E";}
+                    if(v1.getPriority() > v2.getPriority()){prec = true; debug = "E1";}
+                    else if (v1.getPriority() < v2.getPriority()){prec = true; debug = "E2";}
+                    
+                    else if(v1.getID() > v2.getID()) {prec = true;  debug =" E3";}
                     else {prec = false;  debug =" F";}
-                    System.out.println("\u001B[35m" + "R"+v1.getID()+"-R"+v2.getID()+" DeadLock cross2 - prec: "+ prec  + "\u001B[0m");
-                    }
+                    
+                    System.out.println("\u001B[35m" + "R"+v1.getID()+"-R"+v2.getID()+"\t DeadLock cross2 - prec:\t"+ prec  + "\u001B[0m");
+                }
+            
             else if (timeAtCsStart2 == -1 || timeAtCsEnd2 == -1) {prec = true; debug =" G";}
             else if (timeAtCsStart1 == -1 || timeAtCsEnd1 == -1) {prec = false; debug = " H";}
             else if (braking1 < 0 || braking2 < 0) {prec = true; debug =" I";}
@@ -88,7 +105,7 @@ public class PrecedencesFounder {
 
         if(v1.getForwardModel().getRobotBehavior()== Behavior.stop) countPark = countPark+1;
         else {countHead = 0;countLock = 0;countPark=0;}
-        if (countHead == 25 || countLock == 40|| countPark == 45 || v2.getBehavior()== Behavior.reached){
+        if (countHead == 35  ||  countPark == 45 || v2.getBehavior()== Behavior.reached){
             
             System.out.println("\u001B[35m" + "Provo a ricalcolare Percorso di R" + v1.getID() +"\u001B[0m");
             v1.setNewWholePath();
