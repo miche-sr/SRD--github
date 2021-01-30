@@ -2,6 +2,7 @@ package se.oru.coordination.coordination_oru.ourproject.algorithms;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.concurrent.locks.Lock;
 
 import javax.lang.model.util.ElementScanner6;
 
@@ -72,18 +73,20 @@ public class ConstantAccelerationForwardModel {
 	}
 	
 	// fornisce il path index sul quale ci si fermerà date le condizioni attuali
-	public int getEarliestStoppingPathIndex(Vehicle v) {
+	public int getEarliestStoppingPathIndex(Vehicle v,boolean look) {
 		State auxState = new State(v.getDistanceTraveled(), v.getVelocity());
 		double time = 0.0;
 		double deltaTime = v.getTc()*Vehicle.mill2sec;
 
 		// considero ritardi dovuti a periodo di controllo e tempo di aggiornamento del ciclo //
-		long lookaheadInMillis = 0*(this.controlPeriodInMillis);// + MAX_TX_DELAY + trackingPeriodInMillis);
+		//long lookaheadInMillis = 0*(this.controlPeriodInMillis);// + MAX_TX_DELAY + trackingPeriodInMillis);
+		double lookaheadInMillis = 1*deltaTime;
 		//avanzamento nel periodo di ritardo
-		if (lookaheadInMillis > 0 && robotBehavior == Behavior.moving) {
-			while (time*temporalResolution < lookaheadInMillis) {	
+		if (lookaheadInMillis > 0 && robotBehavior == Behavior.moving && look) {
+			while (time < lookaheadInMillis) {	//time*temporalResolution 
 				integrateRK4(auxState, time, deltaTime, false, maxVel, 1.0, maxAccel);
 				time += deltaTime;
+				//System.out.println(v.getID() + " "+time+" + TC");
 			}
 		}
 		

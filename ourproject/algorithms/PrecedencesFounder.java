@@ -11,6 +11,11 @@ public class PrecedencesFounder {
     private int countPark = 0;
     private String debug = "";
     private int V2id = -1;
+    private boolean replanStop = true;
+
+    public void setReplanStop(boolean replanStop){
+        this.replanStop = replanStop;
+    }
     
     public Boolean ComputePrecedences(CriticalSection cs) {
         Boolean prec;
@@ -32,6 +37,7 @@ public class PrecedencesFounder {
         if (v1.getStoppingPoint() >= te1start && v2.getStoppingPoint() >= te2start){
             //System.out.println("\u001B[35m" + "HeadToHead " + v1.getID() + " E "+ v2.getID() + "\n" + "count" + countHead + "\u001B[0m");
             prec = false;
+            debug =" A0 E-breaking";
             if(v1.getForwardModel().getRobotBehavior()==ConstantAccelerationForwardModel.Behavior.stop){
                 if (v1.getPriority()<v2.getPriority()){
                     v1.setNewWholePath();
@@ -68,7 +74,8 @@ public class PrecedencesFounder {
                     countLock = countLock + 1;
                     if (countLock >= 10) {
                         prec = true; 
-                        if(v2.getID() == V2id) {countLock = 0; prec = false; V2id = -1;}
+                        debug = " D2";
+                        if(v2.getID() == V2id) {countLock = 0; prec = false; V2id = -1; debug = " D3";}
                         else{
                             if (countLock == 10) V2id = v2.getID();
                             //System.out.println("\u001B[33m" + "R"+v1.getID()+"-R"+v2.getID()+"\t  DeadLock  cross1 - IO VADO!" + "\u001B[0m");
@@ -88,7 +95,8 @@ public class PrecedencesFounder {
                    countLock = countLock + 1;
                    if (countLock >= 10) {
                        prec = true; 
-                       if(v2.getID() == V2id) {countLock = 0; prec = false; V2id = -1;}
+                       debug =" E4";
+                       if(v2.getID() == V2id) {countLock = 0; prec = false; V2id = -1; debug =" E5";}
                        else{
                            if (countLock == 10) V2id = v2.getID();
                            //System.out.println("\u001B[33m" + "R"+v1.getID()+"-R"+v2.getID()+"\t  DeadLock  cross2 - IO VADO!" + "\u001B[0m");
@@ -100,7 +108,8 @@ public class PrecedencesFounder {
             
             else if (timeAtCsStart2 == -1 || timeAtCsEnd2 == -1) {prec = true; debug =" G";}
             else if (timeAtCsStart1 == -1 || timeAtCsEnd1 == -1) {prec = false; debug = " H";}
-            else if (braking1 < 0 || braking2 < 0) {prec = true; debug =" I";}
+            //else if (braking1 < 0 ) {prec = false; debug =" I1";}
+            //else if (braking2 < 0) {prec = true; debug =" I2";}
             else if (v1.getPriority() > v2.getPriority()){ prec = true; debug =" L";}
             else if (v1.getPriority() < v2.getPriority()) {prec = false; debug =" M";}
             else{	// A PARITÀ DI PRIORITÀ, SI PROCEDE PER DISTANZA TEMPORALE
@@ -115,9 +124,9 @@ public class PrecedencesFounder {
         
         }
 
-        if(v1.getForwardModel().getRobotBehavior()== Behavior.stop) countPark = countPark+1;
+        if(v1.getForwardModel().getRobotBehavior()== Behavior.stop && replanStop) countPark = countPark+1;
         else {countHead = 0;countLock = 0;countPark=0;}
-        if (countHead == 35  ||  /*countPark == 25  ||*/ v2.getBehavior()== Behavior.reached){
+        if (countHead == 35  ||  countPark == 25  || v2.getBehavior()== Behavior.reached){
             
             //System.out.println("\u001B[35m" + "Provo a ricalcolare Percorso di R" + v1.getID() +"\u001B[0m");
             v1.setNewWholePath();
@@ -127,7 +136,8 @@ public class PrecedencesFounder {
         }
 
         cs.setPrecedenza(prec);
-        //System.out.println("R"+v1.getID() +"-R"+v2.getID()+ " debug Prec " + prec +" "+ debug );
+        if((v1.getID() == 1 &&  v2.getID() == 7) || (v2.getID() == 1 &&  v1.getID() == 7))
+        System.out.println("R"+v1.getID() +"-R"+v2.getID()+ " debug Prec " + prec +" "+ debug );
         // System.out.println("\u001B[35m" + "my ID: "+v1.getID()+ "  sp: " + v1.getStoppingPoint() +
         // " \nother Id: " +v2.getID()+"  sp:" + v2.getStoppingPoint() + "\n"+
         // cs.getTe1Start()+ ": "+ v1.getTruncateTimes().get(cs.getTe1Start()) + "  -  "+ te2start+": "+v2.getTruncateTimes().get(cs.getTe2Start()) +

@@ -32,14 +32,14 @@ public class TestCorridoio {
 		viz.setInitialTransform(25, 5, 5);
 		
 		
-		
+		Thread.sleep(3000);
 
 		Pose CorrStart = new Pose(9.0,5.0,0);
 		Pose CorrEnd  = new Pose(25.5,5.0,0);
 		TrafficLights corridoio = new TrafficLights(1, CorrStart, CorrEnd, 2, viz);
 		trafficLightsList.add(corridoio);
 
-		Thread.sleep(3000);
+		Thread.sleep(1000);
 
 		/* corridioio */
 		Pose start1 = new Pose(2.0,4.0,Math.PI);

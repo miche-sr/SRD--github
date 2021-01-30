@@ -59,10 +59,10 @@ public class Vehicle {
 	private HashMap<Integer, Double> truncateTimes = new HashMap<Integer, Double>();
 
 	// VARIABILI PER LE SEZIONI CRITICHE
-	private int criticalPoint = -1; // -1 if no critical point
+	private int criticalPoint = 0; // -1 if no critical point
 	private boolean csTooClose = false;
-	private int stoppingPoint = -1; // punto di fermata, a ogni ciclo: al quale mi fermo da dove sono
-	private double slowingPoint = -1; // punto di frenata, unico: per fermarsi prima del p. critico
+	private int stoppingPoint = 0; // punto di fermata, a ogni ciclo: al quale mi fermo da dove sono
+	private double slowingPoint = 0; // punto di frenata, unico: per fermarsi prima del p. critico
 	private TreeSet<CriticalSection> cs = new TreeSet<CriticalSection>();
 	private CriticalSectionsFounder intersect = new CriticalSectionsFounder();
 
@@ -408,11 +408,11 @@ public class Vehicle {
             
             double timeToTopVel = -v0/accMax + Math.sqrt(Math.pow(v0/accMax, 2)+2*brak2/accMax);
             double topVel = v0 + accMax*timeToTopVel;
-            traveledInTc = topVel*Tc*mill2sec; //- Math.pow(Tc*mill2sec,2.0)*accMax/2;
+            traveledInTc = 2*topVel*Tc*mill2sec; //- Math.pow(Tc*mill2sec,2.0)*accMax/2;
 		}
         else {
         	braking = brakingFromVelMax;
-        	traveledInTc = velMax*Tc*mill2sec;
+        	traveledInTc = 2*velMax*Tc*mill2sec;
         }
         this.slowingPoint =Math.max(0, (distanceToCpAbsolute-(braking+traveledInTc)));
 
@@ -471,8 +471,8 @@ public class Vehicle {
 		return stoppingPoint;
 	}
 
-	public void setStoppingPoint() {
-		this.stoppingPoint = forward.getEarliestStoppingPathIndex(this);
+	public void setStoppingPoint(boolean look) {
+		this.stoppingPoint = forward.getEarliestStoppingPathIndex(this, look);
 	}
 
 		/********************************
@@ -570,8 +570,9 @@ public class Vehicle {
 	public void sendNewRr() {
 		HashMap<Integer,Double> TruTim = (HashMap<Integer,Double>) truncateTimes.clone();
 		
+
 		RobotReport rr = new RobotReport(this.ID, this.priority,this.footprint, this.pathIndex, 
-				this.se, TruTim, this.stoppingPoint,this.isCsTooClose(),forward.getRobotBehavior());
+				this.se, TruTim, this.stoppingPoint,forward.getRobotBehavior());
 		
 		mainTable.put(ID, rr);
 		
@@ -594,6 +595,10 @@ public class Vehicle {
 		String infoCs = forward.getRobotBehavior().toString();
 		viz.displayRobotState(wholeSe.getFootprint(), this,infoCs);
 		viz.addEnvelope(wholeSe.getPolygon(),this,"#adadad");
+	}
+
+	public void setReplanStop(boolean replanStop){
+		prec.setReplanStop(replanStop);
 	}
 }
 

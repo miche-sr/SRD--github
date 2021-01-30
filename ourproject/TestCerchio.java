@@ -73,6 +73,7 @@ public class TestCerchio {
 			vh.getNears();
 			vh.sendNewRr();
 			vh.setVisualization(viz);
+			vh.setReplanStop(false);
 		}
 		System.out.println("\n" + "Radius "  + rMax );
 

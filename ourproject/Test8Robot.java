@@ -21,7 +21,7 @@ public class Test8Robot {
 		return thread;
 	}
 
-	public static void main(String args[]) {
+	public static void main(String args[]) throws InterruptedException {
 
 		Vehicle.Category a = Vehicle.Category.AMBULANCE;
 		Vehicle.Category c = Vehicle.Category.CAR;
@@ -80,8 +80,10 @@ public class Test8Robot {
 		//vh.getNears();
 		vh.sendNewRr();
 		vh.setVisualization(viz);
+		vh.InitVisualization();
 	}
 	System.out.println("\n" + "Radius "  + rMax );
+	Thread.sleep(3000);
 	
 	thread1.start();
 	thread2.start();

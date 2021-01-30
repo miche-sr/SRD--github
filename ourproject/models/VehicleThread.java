@@ -51,10 +51,14 @@ public class VehicleThread implements Runnable {
 	public void run() {
 		double start = System.currentTimeMillis();
 
+		
+
 		try{
 			while(v.getForwardModel().getRobotBehavior() != Behavior.reached && run){
 				
-				
+				//visualization();
+				v.sendNewRr();
+				v.setStoppingPoint(false);
 				
 				//// UNPACK MESSAGES ////
 				rrNears.clear();
@@ -89,7 +93,7 @@ public class VehicleThread implements Runnable {
 					}
 				}
 				
-				analysedVehiclesI.clear();
+				
 				// re-add the cs already analysed and find the cs of other vehicles
 				v.clearCs();
 				for (CriticalSection analysedCs : this.analysedCs){
@@ -186,7 +190,7 @@ public class VehicleThread implements Runnable {
 				//// UPDATE VALUES ///
 				v.setPathIndex(elapsedTrackingTime,FreeAccess);
 				v.setPose(v.getWholePath()[v.getPathIndex()].getPose());
-				v.setStoppingPoint();
+				v.setStoppingPoint(true);
 				
 				v.setTimes();
 				v.setSpatialEnvelope2(FreeAccess,smStopIndex);
@@ -198,24 +202,15 @@ public class VehicleThread implements Runnable {
 				//// SEND NEW ROBOT REPORT ////
 				
 				
-				//printLog(List, prec);
-				v.sendNewRr();
+				if(v.getID()==1 || v.getID()==7) printLog(List, prec);
+				//v.sendNewRr();
 
 				
 				/***********************************
 				 ****** VISUALIZATION AND PRINT ****
 				 ***********************************/
-
+				visualization();
 				
-				v.getVisualization().addEnvelope(v.getWholeSpatialEnvelope().getPolygon(),v,colorEnv); 
-				v.getVisualization().addEnvelope(v.getSpatialEnvelope().getPolygon(),v,colorTruEnv);
-				v.getVisualization().displayPoint(v, v.getCriticalPoint(), colorCrp); //-1 perche array parte da zero
-				//v.getVisualization().displayPoint(v, slp, colorSlp);
-				v.getVisualization().displayPoint(v, v.getStoppingPoint(), colorStp);
-
-				String infoCs = v.getForwardModel().getRobotBehavior().toString();
-				v.getVisualization().displayRobotState(v.getSpatialEnvelope().getFootprint(), v,infoCs);
-
 				/// SLEEPING TIME ////
 				Thread.sleep(v.getTc());
 				this.elapsedTrackingTime += v.getTc()*Vehicle.mill2sec;
@@ -267,6 +262,16 @@ public class VehicleThread implements Runnable {
 			);
 	}
 	
+	public void visualization(){
+		v.getVisualization().addEnvelope(v.getWholeSpatialEnvelope().getPolygon(),v,colorEnv); 
+		v.getVisualization().addEnvelope(v.getSpatialEnvelope().getPolygon(),v,colorTruEnv);
+		v.getVisualization().displayPoint(v, v.getCriticalPoint(), colorCrp); //-1 perche array parte da zero
+		//v.getVisualization().displayPoint(v, slp, colorSlp);
+		v.getVisualization().displayPoint(v, v.getStoppingPoint(), colorStp);
+		String infoCs = v.getForwardModel().getRobotBehavior().toString();
+		v.getVisualization().displayRobotState(v.getSpatialEnvelope().getFootprint(), v,infoCs);
+
+	}
 
 
 

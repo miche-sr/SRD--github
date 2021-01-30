@@ -89,9 +89,10 @@ public class TestBasement {
 		vh.getNears();
 		vh.sendNewRr();
 		vh.setVisualization(viz);
+		vh.InitVisualization();
 	}
 	System.out.println("\n" + "Radius "  + rMax );
-	
+	Thread.sleep(3000);
 	double start = System.currentTimeMillis();
 	thread1.start();
 	TimeUnit.MILLISECONDS.sleep(35);

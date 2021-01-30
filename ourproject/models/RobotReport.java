@@ -20,7 +20,7 @@ public class RobotReport {
 	private Coordinate[] footprint;
 
 	public RobotReport(int ID, int priority, Coordinate[] footprint, int pathIndex, SpatialEnvelope se,
-			HashMap<Integer, Double> truncateTimes, int stoppingPoint, Boolean isTooClose, Behavior behavior) {
+			HashMap<Integer, Double> truncateTimes, int stoppingPoint, Behavior behavior) {
 		this.ID = ID;
 		this.priority = priority;
 		this.footprint = footprint; // solo per check collisione
@@ -28,7 +28,7 @@ public class RobotReport {
 		this.se = se;
 		this.truncateTimes = truncateTimes;
 		this.stoppingPoint = stoppingPoint;
-		this.flagCs = isTooClose;
+		//this.flagCs = isTooClose;
 		this.behavior = behavior;
 	}
 
