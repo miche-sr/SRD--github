@@ -30,16 +30,16 @@ public class PrecedencesFounder {
     	double braking2 = timeAtCsEnd1 - timeAtCsStart2;
 
         if (v1.getStoppingPoint() >= te1start && v2.getStoppingPoint() >= te2start){
-            System.out.println("\u001B[35m" + "HeadToHead " + v1.getID() + " E "+ v2.getID() + "\n" + "count" + countHead + "\u001B[0m");
+            //System.out.println("\u001B[35m" + "HeadToHead " + v1.getID() + " E "+ v2.getID() + "\n" + "count" + countHead + "\u001B[0m");
             prec = false;
             if(v1.getForwardModel().getRobotBehavior()==ConstantAccelerationForwardModel.Behavior.stop){
                 if (v1.getPriority()<v2.getPriority()){
                     v1.setNewWholePath();
-                    System.out.println("\u001B[35m" + "Heat To Head Ricalcolo Percorso di R" + v1.getID() +"\u001B[0m");
+                    //System.out.println("\u001B[35m" + "Heat To Head Ricalcolo Percorso di R" + v1.getID() +"\u001B[0m");
                 }
                 else if( v1.getPriority()== v2.getPriority() && v1.getID() < v2.getID()) {
                     v1.setNewWholePath();
-                    System.out.println("\u001B[35m" + " Heat To Head Ricalcolo Percorso di R" + v1.getID() +"\u001B[0m");
+                    //System.out.println("\u001B[35m" + " Heat To Head Ricalcolo Percorso di R" + v1.getID() +"\u001B[0m");
                 }
                 else countHead = countHead + 1;
             }
@@ -59,31 +59,43 @@ public class PrecedencesFounder {
             if (v1.isCsTooClose()   // caso deadlock
                 && timeAtCsStart2 == -1 && timeAtCsStart1 == -1 ){
                     if(v1.getPriority() > v2.getPriority()){prec = true; debug = "C1";}
-                    else if (v1.getPriority() < v2.getPriority()){prec = true; debug = "C2";}
+                    else if (v1.getPriority() < v2.getPriority()){prec = false; debug = "C2";}
                     
-                    if(v1.getID() > v2.getID()) {prec = true; debug = " C";}
+                    else if(v1.getID() > v2.getID()) {prec = true; debug = " C";}
                     else { prec = false;  debug = " D";}
                     
-                    System.out.println("\u001B[35m" + "R"+v1.getID()+"-R"+v2.getID()+"\t DeadLock cross1 - prec:\t"+ prec + "\t waiting "+ countLock + "\u001B[0m");
+                    //System.out.println("\u001B[35m" + "R"+v1.getID()+"-R"+v2.getID()+"\t DeadLock cross1 - prec:\t"+ prec + "\t waiting "+ countLock + "\u001B[0m");
                     countLock = countLock + 1;
-                    if (countLock >= 30) {
+                    if (countLock >= 10) {
                         prec = true; 
                         if(v2.getID() == V2id) {countLock = 0; prec = false; V2id = -1;}
                         else{
-                            if (countLock == 30) V2id = v2.getID();
-                            System.out.println("\u001B[33m" + "R"+v1.getID()+"-R"+v2.getID()+"\t  DeadLock  cross1 - IO VADO!" + "\u001B[0m");}
+                            if (countLock == 10) V2id = v2.getID();
+                            //System.out.println("\u001B[33m" + "R"+v1.getID()+"-R"+v2.getID()+"\t  DeadLock  cross1 - IO VADO!" + "\u001B[0m");
                         }
+                    }
                 }
             //caso standard
         
             else if (timeAtCsStart2 == -1 && timeAtCsStart1 == -1 ){
                     if(v1.getPriority() > v2.getPriority()){prec = true; debug = "E1";}
-                    else if (v1.getPriority() < v2.getPriority()){prec = true; debug = "E2";}
+                    else if (v1.getPriority() < v2.getPriority()){prec = false; debug = "E2";}
                     
                     else if(v1.getID() > v2.getID()) {prec = true;  debug =" E3";}
                     else {prec = false;  debug =" F";}
                     
-                    System.out.println("\u001B[35m" + "R"+v1.getID()+"-R"+v2.getID()+"\t DeadLock cross2 - prec:\t"+ prec  + "\u001B[0m");
+                   //System.out.println("\u001B[35m" + "R"+v1.getID()+"-R"+v2.getID()+"\t DeadLock cross2 - prec:\t"+ prec  + "\u001B[0m");
+                   countLock = countLock + 1;
+                   if (countLock >= 10) {
+                       prec = true; 
+                       if(v2.getID() == V2id) {countLock = 0; prec = false; V2id = -1;}
+                       else{
+                           if (countLock == 10) V2id = v2.getID();
+                           //System.out.println("\u001B[33m" + "R"+v1.getID()+"-R"+v2.getID()+"\t  DeadLock  cross2 - IO VADO!" + "\u001B[0m");
+                       }
+                   }
+                
+                
                 }
             
             else if (timeAtCsStart2 == -1 || timeAtCsEnd2 == -1) {prec = true; debug =" G";}
@@ -105,9 +117,9 @@ public class PrecedencesFounder {
 
         if(v1.getForwardModel().getRobotBehavior()== Behavior.stop) countPark = countPark+1;
         else {countHead = 0;countLock = 0;countPark=0;}
-        if (countHead == 35  ||  countPark == 45 || v2.getBehavior()== Behavior.reached){
+        if (countHead == 35  ||  /*countPark == 25  ||*/ v2.getBehavior()== Behavior.reached){
             
-            System.out.println("\u001B[35m" + "Provo a ricalcolare Percorso di R" + v1.getID() +"\u001B[0m");
+            //System.out.println("\u001B[35m" + "Provo a ricalcolare Percorso di R" + v1.getID() +"\u001B[0m");
             v1.setNewWholePath();
             countHead = 0;
             countLock = 0;
@@ -115,7 +127,7 @@ public class PrecedencesFounder {
         }
 
         cs.setPrecedenza(prec);
-        System.out.println("R"+v1.getID() +"-R"+v2.getID()+ " debug Prec " + prec +" "+ debug );
+        //System.out.println("R"+v1.getID() +"-R"+v2.getID()+ " debug Prec " + prec +" "+ debug );
         // System.out.println("\u001B[35m" + "my ID: "+v1.getID()+ "  sp: " + v1.getStoppingPoint() +
         // " \nother Id: " +v2.getID()+"  sp:" + v2.getStoppingPoint() + "\n"+
         // cs.getTe1Start()+ ": "+ v1.getTruncateTimes().get(cs.getTe1Start()) + "  -  "+ te2start+": "+v2.getTruncateTimes().get(cs.getTe2Start()) +
@@ -123,6 +135,6 @@ public class PrecedencesFounder {
 
         return prec;
     }
-	
+
 	
 }

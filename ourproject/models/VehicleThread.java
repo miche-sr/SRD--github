@@ -49,11 +49,11 @@ public class VehicleThread implements Runnable {
 	***************************/
 
 	public void run() {
-		
+		double start = System.currentTimeMillis();
 
 		try{
 			while(v.getForwardModel().getRobotBehavior() != Behavior.reached && run){
-				long start = System.currentTimeMillis();
+				
 				
 				
 				//// UNPACK MESSAGES ////
@@ -137,7 +137,7 @@ public class VehicleThread implements Runnable {
 				}
 				//
 				
-				if(v.getID() == 2) System.out.println(FreeAccess);
+				//if(v.getID() == 2) System.out.println(FreeAccess);
 
 
 
@@ -190,17 +190,18 @@ public class VehicleThread implements Runnable {
 				
 				v.setTimes();
 				v.setSpatialEnvelope2(FreeAccess,smStopIndex);
+				if(v.getCriticalPoint() == v.getWholePath().length-1)
+					v.setCriticalPoint(v.getPathIndex() + v.getSpatialEnvelope().getPath().length-1 ) ;
+				
 				//v.setSpatialEnvelope();
 
 				//// SEND NEW ROBOT REPORT ////
 				
 				
-				if(v.getID()==2) printLog(List, prec);
+				//printLog(List, prec);
 				v.sendNewRr();
 
-				long finish = System.currentTimeMillis();
-				long timeElapsed = finish - start;
-				//if (v.getID() == 1) System.out.println("Time Elapsed " + timeElapsed);
+				
 				/***********************************
 				 ****** VISUALIZATION AND PRINT ****
 				 ***********************************/
@@ -219,7 +220,11 @@ public class VehicleThread implements Runnable {
 				Thread.sleep(v.getTc());
 				this.elapsedTrackingTime += v.getTc()*Vehicle.mill2sec;
 			}
-			System.out.println("\u001B[34m"+"\n R" + this.v.getID() + " : GOAL RAGGIUNTO" +"\u001B[0m");
+			double finish = System.currentTimeMillis();
+			double timeElapsed = (finish - start)/1000;
+			//System.out.println("R"+v.getID() + " - Time Elapsed " + timeElapsed);
+			System.out.println("\u001B[34m"+"R" + this.v.getID() /*+ " : GOAL RAGGIUNTO"+ " - Time Elapsed " */ + "\t" + timeElapsed +"\u001B[0m");
+
 		}	
 		catch (InterruptedException e) {
 			System.out.println("Thread interrotto");

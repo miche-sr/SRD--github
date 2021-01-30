@@ -20,12 +20,13 @@ public class Vehicle {
 		CAR, AMBULANCE
 	};
 
-	private static final double sideCar = 0.8;
-	private static final double sideAmb = 1.5;
-	private static final Coordinate[] fpCar = { new Coordinate(0, 0), new Coordinate(sideCar, 0), 
-												new Coordinate(sideCar, 1), new Coordinate(0, 1) };
-	private static final Coordinate[] fpAmb = { new Coordinate(0, 0), new Coordinate(sideAmb, 0), 
-												new Coordinate(sideAmb, 1), new Coordinate(0, 1) };
+	private static final double sideCar = 0.5;
+	private static final double sideAmb = 0.5;
+	private static final Coordinate[] fpCar = { new Coordinate(-sideCar,sideCar), new Coordinate(sideCar,sideCar), 
+												new Coordinate(sideCar,-sideCar), new Coordinate(-sideCar,-sideCar)};
+	private static final Coordinate[] fpAmb = { new Coordinate(-2*sideAmb,sideAmb), new Coordinate(2*sideAmb,sideAmb), 
+												new Coordinate(2*sideAmb,-sideAmb), new Coordinate(-2*sideAmb,-sideAmb)};
+
 
 	// CONSTANT
 	public static double mill2sec = 0.001;
@@ -85,7 +86,7 @@ public class Vehicle {
 
 		switch (category) {
 			case CAR:
-				this.velMax = 2;
+				this.velMax = 3.0;
 				this.accMax = 1.0;
 				this.priority = 1;
 				this.Tc = 350;
@@ -94,7 +95,7 @@ public class Vehicle {
 				break;
 
 			case AMBULANCE:
-				this.velMax = 3.0;
+				this.velMax = 4.0;
 				this.accMax = 2.0;
 				this.priority = 2;
 				this.Tc = 150;
@@ -105,12 +106,16 @@ public class Vehicle {
 			default:
 				System.out.println("Unknown vehicle");
 		}
-		double brakingDistanceMax = Math.pow(this.velMax,2.0) / (2*this.accMax);
-		this.radius= (2 * this.Tc * mill2sec ) * this.velMax + brakingDistanceMax + side ;
+		double brakingDistanceMax = Math.pow(this.velMax,2.0) / (2*this.accMax );
+		this.radius= ((2*this.Tc* mill2sec ) * this.velMax + brakingDistanceMax + side) ; //+(2 * this.Tc* mill2sec ) * this.velMax + ;
 		this.myDistanceToSend = this.radius ; 
 		this.path = createWholePath(yamlFile);
 		this.forward = new ConstantAccelerationForwardModel(this, 1000); // ???
 		setCriticalPoint(path.length-1);
+
+		// String infoCs = forward.getRobotBehavior().toString();
+		// viz.displayRobotState(path, this,infoCs);
+		// viz.addEnvelope(path.getPolygon(),this,"#adadad");
 	}
 
 
@@ -585,4 +590,10 @@ public class Vehicle {
 		return this.viz;
 	}
 
+	public  void InitVisualization(){
+		String infoCs = forward.getRobotBehavior().toString();
+		viz.displayRobotState(wholeSe.getFootprint(), this,infoCs);
+		viz.addEnvelope(wholeSe.getPolygon(),this,"#adadad");
+	}
 }
+

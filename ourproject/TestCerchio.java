@@ -23,13 +23,13 @@ public class TestCerchio {
 		return thread;
 	}
 
-	public static void main(String args[]) {
+	public static void main(String args[]) throws InterruptedException {
 
 		Vehicle.Category a = Vehicle.Category.AMBULANCE;
 		Vehicle.Category c = Vehicle.Category.CAR;
 		
-		int NUMBER_ROBOTS = 80;
-		double radius = 65;
+		int NUMBER_ROBOTS = 65;
+		double radius = 40;
 
 
 		BrowserVisualizationDist viz = new BrowserVisualizationDist();
@@ -38,7 +38,7 @@ public class TestCerchio {
 
 		double theta = 0.0;
 		ArrayList<Thread> threads = new ArrayList<Thread>();
-		for (int i = 0; i < NUMBER_ROBOTS; i++) {
+		for (int i = 3; i < NUMBER_ROBOTS-3; i++) {
 			//In case deadlocks occur, we make the coordinator capable of re-planning on the fly (experimental, not working properly yet)
 			
 			//Place robots.
@@ -46,7 +46,7 @@ public class TestCerchio {
 			Pose startPose = new Pose(radius*Math.cos(alpha), radius*Math.sin(alpha), alpha);
 			Pose[] goalPose ={ new Pose(radius*Math.cos(alpha+Math.PI), radius*Math.sin(alpha+Math.PI), alpha)};
 
-			Thread thread = initThread(i, c, startPose, goalPose);
+			Thread thread = initThread(NUMBER_ROBOTS-i, c, startPose, goalPose);
 			threads.add(thread);
 		}
 		
@@ -76,15 +76,23 @@ public class TestCerchio {
 		}
 		System.out.println("\n" + "Radius "  + rMax );
 
+		double start = System.currentTimeMillis();
 		for(Thread tr : threads){
 			tr.start();
 			try {
-				TimeUnit.MILLISECONDS.sleep(2000);
+				TimeUnit.MILLISECONDS.sleep(5);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
 			
 		}
+		for(Thread tr : threads){
+			tr.join();}
+		
+		double finish = System.currentTimeMillis();
+		double timeElapsed = (finish - start)/1000;
+		System.out.println("\n Numero Robot  - " + NUMBER_ROBOTS );
+		System.out.println("\n Time Elapsed Complessivo - " + timeElapsed + "  ovvero in minuti: "+timeElapsed/60 );
 	
 	}
 }

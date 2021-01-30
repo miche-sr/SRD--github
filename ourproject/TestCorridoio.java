@@ -23,30 +23,28 @@ public class TestCorridoio {
 		return thread;
 	}
 
-	public static void main(String args[]) {
+	public static void main(String args[]) throws InterruptedException {
 
 		Vehicle.Category a = Vehicle.Category.AMBULANCE;
 		Vehicle.Category c = Vehicle.Category.CAR;
 
 		BrowserVisualizationDist viz = new BrowserVisualizationDist();
 		viz.setInitialTransform(25, 5, 5);
-		try {
-			TimeUnit.SECONDS.sleep(5);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
+		
 		
 		
 
-		Pose CorrStart = new Pose(9.0,5.5,0);
-		Pose CorrEnd  = new Pose(25.5,5.5,0);
+		Pose CorrStart = new Pose(9.0,5.0,0);
+		Pose CorrEnd  = new Pose(25.5,5.0,0);
 		TrafficLights corridoio = new TrafficLights(1, CorrStart, CorrEnd, 2, viz);
 		trafficLightsList.add(corridoio);
 
+		Thread.sleep(3000);
+
 		/* corridioio */
 		Pose start1 = new Pose(2.0,4.0,Math.PI);
-		Pose goal11 = new Pose(10.0,7.0,Math.PI);
-		Pose goal12 = new Pose(25.0,7.0,Math.PI);
+		Pose goal11 = new Pose(10.0,6.0,Math.PI);
+		Pose goal12 = new Pose(25.0,6.0,Math.PI);
 		Pose goal13 = new Pose(35.0,4.0,Math.PI);
 		Pose[] goal1 = { goal11, goal12, goal13};
 		
@@ -56,10 +54,10 @@ public class TestCorridoio {
 		Pose goal23 = new Pose(2.0,9.0,0);
 		Pose[] goal2 = { goal21, goal22, goal23};
 		
-		Pose start3 = new Pose(2.0,7.0,Math.PI);
-		Pose goal31 = new Pose(10.0,7.0,Math.PI);
-		Pose goal32 = new Pose(25.0,7.0,Math.PI);
-		Pose goal33 = new Pose(35.0,7.0,Math.PI);
+		Pose start3 = new Pose(2.0,6.0,Math.PI);
+		Pose goal31 = new Pose(10.0,6.0,Math.PI);
+		Pose goal32 = new Pose(25.0,6.0,Math.PI);
+		Pose goal33 = new Pose(35.0,6.0,Math.PI);
 		Pose[] goal3 = { goal31, goal32, goal33};		
 
 		Thread thread1 = initThread(1, c, start1, goal1);
@@ -89,10 +87,13 @@ public class TestCorridoio {
 		vh.getNears();
 		vh.sendNewRr();
 		vh.setVisualization(viz);
+		vh.InitVisualization();
 	}
 	System.out.println("\n" + "Radius "  + rMax );
 	
 	
+	
+	Thread.sleep(3000);
 
 
 	thread1.start();

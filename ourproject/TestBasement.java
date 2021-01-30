@@ -23,7 +23,8 @@ public class TestBasement {
 		return thread;
 	}
 
-	public static void main(String args[]) {
+	public static void main(String args[]) throws InterruptedException {
+
 
 		Vehicle.Category a = Vehicle.Category.AMBULANCE;
 		Vehicle.Category c = Vehicle.Category.CAR;
@@ -40,18 +41,18 @@ public class TestBasement {
 		
 		/* Mappa */
 		
-		Pose start1 = new Pose(1.3, 11, -Math.PI/2); 	Pose[] goal1 = {new Pose(20, 24.5, Math.PI)};
-		Pose start2 = new Pose(1.3, 13.5, -Math.PI/2); 	Pose[] goal2 = {new Pose(11, 2, Math.PI/2)};
-		Pose start3 = new Pose(1.3, 15, -Math.PI/2); 	Pose[] goal3 = {new Pose(33, 33, Math.PI)};
-		Pose start4 = new Pose(16, 4, -Math.PI/2); 		Pose[] goal4 = {new Pose(14, 29, -Math.PI/2)};
-		Pose start5 = new Pose(24, 13.5, 0); 			Pose[] goal5 = {new Pose(2.5, 2, Math.PI/2)};
-		Pose start6 = new Pose(34, 13, Math.PI/2); 		Pose[] goal6 = {new Pose(33, 3, Math.PI)};
-		Pose start7 = new Pose(32, 3, 0); 				Pose[] goal7 = {new Pose(7, 2, Math.PI/2)};
+		Pose start1 = new Pose(1.8, 11, -Math.PI/2); 	Pose[] goal1 = {new Pose(20, 24.5, Math.PI)};
+		Pose start2 = new Pose(1.8, 13.5, -Math.PI/2); 	Pose[] goal2 = {new Pose(11, 2, Math.PI/2)};
+		Pose start3 = new Pose(1.8, 15, -Math.PI/2); 	Pose[] goal3 = {new Pose(33, 33, Math.PI)};
+		Pose start4 = new Pose(16, 4, -Math.PI/2); 		Pose[] goal4 = {new Pose(13.5, 28.5, -Math.PI/2)};
+		Pose start5 = new Pose(24, 14, 0); 				Pose[] goal5 = {new Pose(2.5, 2, Math.PI/2)};
+		Pose start6 = new Pose(34, 14, Math.PI/2); 		Pose[] goal6 = {new Pose(33, 3, Math.PI)};
+		Pose start7 = new Pose(32, 3, 0); 				Pose[] goal7 = {new Pose(7, 2.5, Math.PI/2)};
 		Pose start8 = new Pose(32, 6, 0); 				Pose[] goal8 = {new Pose(33, 11, -Math.PI/2) };
-		Pose start9 = new Pose(34, 11, Math.PI/2);		Pose[] goal9 = {new Pose(12, 28, Math.PI)};
-		Pose start10 = new Pose(34, 15, Math.PI/2);		Pose[] goal10 = {new Pose(22, 19, Math.PI)};
+		Pose start9 = new Pose(34, 11.5, Math.PI/2);		Pose[] goal9 = {new Pose(11.5, 28, Math.PI)};
+		Pose start10 = new Pose(34, 15.5, Math.PI/2);		Pose[] goal10 = {new Pose(22, 19, Math.PI)};
 		
-		Thread thread1 = initThread(1, c, start1, goal1);
+		Thread thread1 = initThread(1, a, start1, goal1);
 		Thread thread2 = initThread(2, c, start2, goal2);
 		Thread thread3 = initThread(3, c, start3, goal3);
 		Thread thread4 = initThread(4, c, start4, goal4);
@@ -59,7 +60,7 @@ public class TestBasement {
 		Thread thread6 = initThread(6, c, start6, goal6);
 		Thread thread7 = initThread(7, a, start7, goal7);
 		Thread thread8 = initThread(8, c, start8, goal8);
-		Thread thread9 = initThread(9, c, start9, goal9);
+		Thread thread9 = initThread(9, a, start9, goal9);
 		//Thread thread10 = initThread(10, c, start10, goal10);
 
 		try {
@@ -91,15 +92,35 @@ public class TestBasement {
 	}
 	System.out.println("\n" + "Radius "  + rMax );
 	
+	double start = System.currentTimeMillis();
 	thread1.start();
+	TimeUnit.MILLISECONDS.sleep(35);
 	thread2.start();
 	thread3.start();
+	TimeUnit.MILLISECONDS.sleep(35);
 	thread4.start();
 	thread5.start();
 	thread6.start();
+	TimeUnit.MILLISECONDS.sleep(35);
 	thread7.start();
 	thread8.start();
+	TimeUnit.MILLISECONDS.sleep(35);
 	thread9.start();
 	//thread10.start();	
+
+
+	thread1.join();
+	thread2.join();
+	thread3.join();
+	thread4.join();
+	thread5.join();
+	thread6.join();
+	thread7.join();
+	thread8.join();
+	thread9.join();
+
+	double finish = System.currentTimeMillis();
+	double timeElapsed = (finish - start)/1000;
+	System.out.println("Time Elapsed Complessivo - " + timeElapsed);
 	}
 }
