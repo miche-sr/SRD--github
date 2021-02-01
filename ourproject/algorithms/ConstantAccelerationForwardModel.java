@@ -170,6 +170,10 @@ public class ConstantAccelerationForwardModel {
 			}	
 
 		} 
+		if(state.getVelocity()< 0.0){
+			state.setVelocity(0.0);
+			state.setPosition(v.getDistanceTraveled());
+		}
 		if (robotBehavior == Behavior.stop && !FreeAccess)robotBehavior = Behavior.waiting;
 		return state;
 	}

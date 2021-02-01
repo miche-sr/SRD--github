@@ -39,6 +39,7 @@ public class VehicleThread implements Runnable {
 	private static String colorStp = "#047d00"; //"#0008f6"; //"#ffffff";
 	private static String colorCrp = "#a30202"; //"#29f600";
 	//private static String colorSlp =  "#0008f6";
+	private ArrayList<Double> timesCs = new ArrayList<Double>();
 
 	public VehicleThread(Vehicle v){
 		this.v = v;
@@ -53,7 +54,7 @@ public class VehicleThread implements Runnable {
 
 		try{
 			while(v.getForwardModel().getRobotBehavior() != Behavior.reached && run){
-				
+				double startTc = System.currentTimeMillis();
 				
 				
 				//// UNPACK MESSAGES ////
@@ -73,7 +74,7 @@ public class VehicleThread implements Runnable {
 			 * FILTER CRITICAL SECTIONS *
 			 ****************************/
 			// if a cs has already been found and no one is inside it then I don't recalculate it //
-
+				double startCs = System.currentTimeMillis();
 				analysedVehiclesI.clear();
 				this.analysedCs.clear();
 				for (CriticalSection analysedCs : v.getCs()){
@@ -89,7 +90,7 @@ public class VehicleThread implements Runnable {
 					}
 				}
 				
-				analysedVehiclesI.clear();
+				//analysedVehiclesI.clear();
 				// re-add the cs already analysed and find the cs of other vehicles
 				v.clearCs();
 				for (CriticalSection analysedCs : this.analysedCs){
@@ -103,12 +104,15 @@ public class VehicleThread implements Runnable {
 					}
 				}
 
+				double finishCs = System.currentTimeMillis();
+				double timeElapsedCs = (finishCs - startCs);
+				if(v.getCs().size() != 0) timesCs.add(timeElapsedCs);
 
-				/**********************************
-				 		** SEMAPHORE **
-				 ++++++++++++++++++++++++++++++++*/
+					/**********************************
+							** SEMAPHORE **
+					++++++++++++++++++++++++++++++++*/
 
-				 for (TrafficLights TL : v.getTrafficLightsNears()){
+				for (TrafficLights TL : v.getTrafficLightsNears()){
 					synchronized(TL){
 						if (v.getWholeSpatialEnvelope().getPolygon().intersects(TL.getCorridorPath().getPolygon())){
 	
@@ -217,14 +221,38 @@ public class VehicleThread implements Runnable {
 				v.getVisualization().displayRobotState(v.getSpatialEnvelope().getFootprint(), v,infoCs);
 
 				/// SLEEPING TIME ////
+				
+				double finishTc = System.currentTimeMillis();
+				double timeElapsedTc = (finishTc - startTc);
+				if (timeElapsedTc > v.getTc())
+				System.out.println("\u001B[31m"+"R" + this.v.getID() + " - ATTENZIONE Time Elapsed Tc " + "\t" + timeElapsedTc + " > Tc " +v.getTc() + "\u001B[0m");
+
 				Thread.sleep(v.getTc());
 				this.elapsedTrackingTime += v.getTc()*Vehicle.mill2sec;
+
 			}
+
+
+
+
+
 			double finish = System.currentTimeMillis();
 			double timeElapsed = (finish - start)/1000;
 			//System.out.println("R"+v.getID() + " - Time Elapsed " + timeElapsed);
-			System.out.println("\u001B[34m"+"R" + this.v.getID() /*+ " : GOAL RAGGIUNTO"+ " - Time Elapsed " */ + "\t" + timeElapsed +"\u001B[0m");
-
+			//System.out.println("\u001B[34m"+"R" + this.v.getID() /*+ " : GOAL RAGGIUNTO"+ " - Time Elapsed " */ + "\t" + timeElapsed +"\u001B[0m");
+			double sum = 0;
+			double tmax = 0;
+			int count = 0;
+			for(double t : timesCs){
+				if ( t != 0.0 ){
+				sum = sum + t;
+				count = count +1;}
+				
+				if(t > tmax) tmax = t;
+			}
+			double media = sum/ count ;
+			System.out.println("\u001B[34m"+"R" + this.v.getID() + "\t" +  String.format("%.3f", timeElapsed)+ 
+			"\t" + String.format("%.2f", media)+ "\t" + String.format("%.2f", tmax) + "\u001B[0m");
 		}	
 		catch (InterruptedException e) {
 			System.out.println("Thread interrotto");

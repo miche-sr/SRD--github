@@ -86,7 +86,7 @@ public class Vehicle {
 
 		switch (category) {
 			case CAR:
-				this.velMax = 3.0;
+				this.velMax = 1.0;
 				this.accMax = 1.0;
 				this.priority = 1;
 				this.Tc = 350;

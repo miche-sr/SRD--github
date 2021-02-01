@@ -28,7 +28,7 @@ public class TestCerchio {
 		Vehicle.Category a = Vehicle.Category.AMBULANCE;
 		Vehicle.Category c = Vehicle.Category.CAR;
 		
-		int NUMBER_ROBOTS = 65;
+		int NUMBER_ROBOTS = 66;
 		double radius = 40;
 
 
@@ -46,7 +46,7 @@ public class TestCerchio {
 			Pose startPose = new Pose(radius*Math.cos(alpha), radius*Math.sin(alpha), alpha);
 			Pose[] goalPose ={ new Pose(radius*Math.cos(alpha+Math.PI), radius*Math.sin(alpha+Math.PI), alpha)};
 
-			Thread thread = initThread(NUMBER_ROBOTS-i, c, startPose, goalPose);
+			Thread thread = initThread(NUMBER_ROBOTS-i, a, startPose, goalPose);
 			threads.add(thread);
 		}
 		
