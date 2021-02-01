@@ -20,13 +20,12 @@ public class Vehicle {
 		CAR, AMBULANCE
 	};
 
-	private static final double sideCar = 1;
-	private static final double sideAmb = 2;
-	private static final Coordinate[] fpCar = { new Coordinate(0, 0), new Coordinate(sideCar, 0), 
-												new Coordinate(sideCar, 1), new Coordinate(0, 1) };
-	private static final Coordinate[] fpAmb = { new Coordinate(0, 0), new Coordinate(sideAmb, 0), 
-												new Coordinate(sideAmb, 1), new Coordinate(0, 1) };
-
+	private static final double sideCar = 0.5;
+	private static final double sideAmb = 0.5;
+	private static final Coordinate[] fpCar = { new Coordinate(-sideCar,sideCar), new Coordinate(sideCar,sideCar), 
+												new Coordinate(sideCar,-sideCar), new Coordinate(-sideCar,-sideCar)};
+	private static final Coordinate[] fpAmb = { new Coordinate(-2*sideAmb,sideAmb), new Coordinate(2*sideAmb,sideAmb), 
+												new Coordinate(2*sideAmb,-sideAmb), new Coordinate(-2*sideAmb,-sideAmb)};
 	// CONSTANT
 	public static double mill2sec = 0.001;
 
@@ -41,6 +40,7 @@ public class Vehicle {
 	private double accMax = 0.0; // [ m/s^2 ]
 	private Coordinate[] footprint;
 	private double side;
+	private double myDistanceToSend;
 
 	// VARIABILI DI PERCORSO E TRAIETTORIA
 	ReedsSheppCarPlanner rsp = new ReedsSheppCarPlanner();
@@ -66,7 +66,7 @@ public class Vehicle {
 
 	// DA USARE PER I VICINI
 	private ArrayList<Vehicle> vehicleList = new ArrayList<Vehicle>();
-	private ArrayList<Vehicle> vehicleNear = new ArrayList<Vehicle>();
+	private ArrayList<Integer> vehicleNear = new ArrayList<Integer>();
 	private ArrayList<TrafficLights> trafficLightsList = new ArrayList<TrafficLights>();
 	private ArrayList<TrafficLights> trafficLightsNear = new ArrayList<TrafficLights>();
 	private HashMap<Integer, RobotReport> mainTable;
@@ -84,7 +84,7 @@ public class Vehicle {
 
 		switch (category) {
 			case CAR:
-				this.velMax = 2;
+				this.velMax = 3.0;
 				this.accMax = 1.0;
 				this.priority = 1;
 				this.Tc = 350;
@@ -93,7 +93,7 @@ public class Vehicle {
 				break;
 
 			case AMBULANCE:
-				this.velMax = 3.0;
+				this.velMax = 4.0;
 				this.accMax = 2.0;
 				this.priority = 2;
 				this.Tc = 150;
@@ -104,8 +104,9 @@ public class Vehicle {
 			default:
 				System.out.println("Unknown vehicle");
 		}
-		double stopTimeMax = this.velMax / (this.accMax);
-		this.radius = (2 * this.Tc * mill2sec + stopTimeMax) * this.velMax + side;
+		double brakingDistanceMax = Math.pow(this.velMax,2.0) / (2*this.accMax);
+		this.radius = 1*((2 * this.Tc * mill2sec ) * this.velMax + brakingDistanceMax + side);
+		this.myDistanceToSend = this.radius; 
 		this.path = createWholePath(yamlFile);
 		this.forward = new ConstantAccelerationForwardModel(this, 1000); // ???
 
@@ -167,6 +168,10 @@ public class Vehicle {
 		return footprint;
 	}
 
+	public double getMyDistanceToSend(){
+		return myDistanceToSend;
+	}
+
 
 
 	/*****************************************
@@ -206,8 +211,8 @@ public class Vehicle {
 		return rsp.getPath();
 	}
 	
-	public void setNewWholePath(RobotReport r) {
-		this.path = intersect.rePlanPath(this, r);
+	public void setNewWholePath() {
+		this.path = intersect.rePlanPath(this, mainTable , getNears());
 		wholeSe = TrajectoryEnvelope.createSpatialEnvelope(this.path, this.footprint);
 	}
 
@@ -231,34 +236,57 @@ public class Vehicle {
 		return se;
 	}
 
-	// CALCOLO PATH TRAIETTORIA TRONCATA //
-	public void setSpatialEnvelope() {
+	// // CALCOLO PATH TRAIETTORIA TRONCATA //
+	// public void setSpatialEnvelope() {
+	// 	this.truncatedPath.clear();
+	// 	this.truncateTimes.clear();
+	// 	int csEnd;
+
+	// 	// from cp to Pathndex //
+	// 	if (cs.size() != 0)
+	// 		csEnd = this.cs.last().getTe1End();
+	// 	else
+	// 		csEnd = -1;
+
+	// 	int i = 0;
+	// 	// trasmetto solo traiettoria all'interno del raggio(in tempi) e comunque sempre fino alla fine della prima sezione critica //
+	// 	//System.out.print(this.getRobotID() + "SPatial " + pathIndex+ "\n"+times );
+	// 	while ( times.get(pathIndex + i) <= secForSafety || pathIndex + i <= csEnd+1 ) {
+	// 		this.truncateTimes.put(pathIndex + i, times.get(pathIndex + i));
+			
+	// 		this.truncatedPath.add(path[pathIndex + i]);
+	// 		i++;
+	// 		//System.out.print("\n "+this.getRobotID()+" path+i  " + (pathIndex+i) + "\n" + times);
+	// 		if (!times.containsKey(pathIndex + i)){
+	// 			break;// questo forse serve per l'ultimo path index?
+	// 		}
+	// 	}
+	// 	PoseSteering[] truncatedPathArray = truncatedPath.toArray(new PoseSteering[truncatedPath.size()]);
+	// 	se = TrajectoryEnvelope.createSpatialEnvelope(truncatedPathArray, footprint);
+		
+	//}
+
+
+	public void setSpatialEnvelope2(Boolean FreeAcces) {
 		this.truncatedPath.clear();
 		this.truncateTimes.clear();
-		int csEnd;
 
-		// from cp to Pathndex //
-		if (cs.size() != 0)
-			csEnd = this.cs.last().getTe1End();
-		else
-			csEnd = -1;
 
+		double dist = 0.0;
 		int i = 0;
-		// trasmetto solo traiettoria all'interno del raggio(in tempi) e comunque sempre fino alla fine della prima sezione critica //
-		//System.out.print(this.getRobotID() + "SPatial " + pathIndex+ "\n"+times );
-		while ( times.get(pathIndex + i) <= secForSafety || pathIndex + i <= csEnd+1 ) {
-			this.truncateTimes.put(pathIndex + i, times.get(pathIndex + i));
+		int Maxdist = path.length-1;
+		if (!FreeAcces) Maxdist = getCriticalPoint()+1;
+		while (dist < this.myDistanceToSend && (pathIndex+i)<= Maxdist){
+			if (!times.containsKey(pathIndex + i)) break;
 			
+			dist = forward.computeDistance(path, pathIndex, pathIndex+i);
+			this.truncateTimes.put(pathIndex + i, times.get(pathIndex + i));
 			this.truncatedPath.add(path[pathIndex + i]);
 			i++;
-			//System.out.print("\n "+this.getRobotID()+" path+i  " + (pathIndex+i) + "\n" + times);
-			if (!times.containsKey(pathIndex + i)){
-				break;// questo forse serve per l'ultimo path index?
-			}
 		}
+		
 		PoseSteering[] truncatedPathArray = truncatedPath.toArray(new PoseSteering[truncatedPath.size()]);
 		se = TrajectoryEnvelope.createSpatialEnvelope(truncatedPathArray, footprint);
-		
 	}
 
 	public int getPathIndex() {
@@ -278,7 +306,7 @@ public class Vehicle {
 		setDistanceTraveled(next_state.getPosition());
 		setVelocity(next_state.getVelocity());
 		this.pathIndex = forward.getPathIndex(this.path, next_state);
-//		System.out.println("pathIndex"+ID+" "+this.pathIndex);
+
 	}
 
 	public HashMap<Integer, Double> getTimes() {
@@ -370,45 +398,15 @@ public class Vehicle {
         
 		double distanceToCpAbsolute = forward.computeDistance(path, 0, cp);
 		double distanceToCpRelative = forward.computeDistance(path, pathIndex,cp);
-        // We compute the distance traveled:
-        // - accelerating up to vel max from current vel (distToVelMax)
-        // - decelerating up to zero vel from vel max (brakingVelMax)
 
-        double v0 = velocity;
-        double timeToVelMax = (velMax - v0)/accMax;
-        double distToVelMax = v0*timeToVelMax + accMax*Math.pow(timeToVelMax,2.0)/2;
-        double brakingFromVelMax = Math.pow(velMax,2.0)/(accMax*2);
-
-        // If sum of the two is lower than distanceToCp, than the move profile is trapezoidal.
-        // If higher, than the profile is triangular, but not reaching maximum speed.
-        // For triangular: accelerating distance == decelerating distance
+		double v0 = velocity;
+		double decMax = this.accMax*0.9;
+        double brakingFromVelMax = Math.pow(velMax,2.0)/(decMax*2);
         double braking;
-        double traveledInTc = 0;
-        if (distToVelMax + brakingFromVelMax > distanceToCpRelative){	// triangular profile
-            // braking = brak1 (from NowVel to zero) + brak2 (from velReached to NowVel)
-            double brak1 = Math.pow(v0,2.0)/(accMax*2);
-            double brak2 = (distanceToCpRelative - brak1)/2;
-            braking = brak1 + brak2;
-            
-            double timeToTopVel = -v0/accMax + Math.sqrt(Math.pow(v0/accMax, 2)+2*brak2/accMax);
-            double topVel = v0 + accMax*timeToTopVel;
-            traveledInTc = topVel*Tc*mill2sec; //- Math.pow(Tc*mill2sec,2.0)*accMax/2;
-		}
-        else {
-        	braking = brakingFromVelMax;
-        	traveledInTc = velMax*Tc*mill2sec;
-        }
+        double traveledInTc = velMax*Tc;
+    	braking = brakingFromVelMax;
+    	traveledInTc = velMax*Tc*mill2sec;
         this.slowingPoint = distanceToCpAbsolute-(braking+traveledInTc);
-//        System.out.println("braking"+braking);
-        /*
-		//System.out.println("SP NEW: "+(distanceToCp - braking));
-        State slowpoint = new State(distanceToCpAbsolute-(braking+traveledInTc), 0.0); //arbitrary vel, not used
-        //System.out.println("SP NEW: "+forward.getPathIndex(path, slowpoint));
-		this.slowingPoint = forward.getPathIndex(path, slowpoint);
-		double distanceToSlow = forward.computeDistance(path, 0, this.slowingPoint);
-		//System.out.println("distToSlowNew: "+distanceToSlow);
-		 * 
-		 */
 	}
 
 	public int getStoppingPoint() {
@@ -453,7 +451,7 @@ public class Vehicle {
 
 
 	// CALCOLO QUALI SONO I ROBOT VICINI //
-	public ArrayList<Vehicle> getNears() {
+	public ArrayList<Integer> getNears() {
 		this.vehicleNear.clear();
 		double vhX, vhY, dist;
 		double x = this.getPose().getX();
@@ -463,13 +461,13 @@ public class Vehicle {
 			vhY = vh.getPose().getY();
 			dist = Math.sqrt(Math.pow((x - vhX), 2.0) + Math.pow((y - vhY), 2.0));
 			if (dist <=2*this.radius && dist > 0) {
-				this.vehicleNear.add(vh);
+				this.vehicleNear.add(vh.getID());
 			}
 		}
 		return vehicleNear;
 	}
-	public Boolean checkCollision(Vehicle vh) {
-		
+	public Boolean checkCollision(Integer v) {
+		RobotReport vh = mainTable.get(v);
 		SpatialEnvelope pose1 = TrajectoryEnvelope.createSpatialEnvelope(new PoseSteering[] { path[pathIndex] }, footprint);
 		Geometry shape1 = pose1.getPolygon();
 
@@ -492,14 +490,14 @@ public class Vehicle {
 			sm1X = TL.getSemaphore1().getX();
 			sm1Y = TL.getSemaphore1().getY();
 			dist1 = Math.sqrt(Math.pow((x - sm1X), 2.0) + Math.pow((y - sm1Y), 2.0));
-			if (dist1 <=1.5*this.radius && dist1 > 0) {
+			if (dist1 <=2*this.radius && dist1 > 0) {
 				if (!this.trafficLightsNear.contains(TL)) 
 					this.trafficLightsNear.add(TL);
 			}
 			sm2X = TL.getSemaphore2().getX();
 			sm2Y = TL.getSemaphore2().getY();
 			dist2 = Math.sqrt(Math.pow((x - sm2X), 2.0) + Math.pow((y - sm2Y), 2.0));
-			if (dist2 <=1.5*this.radius && dist2 > 0) {
+			if (dist2 <=2*this.radius && dist2 > 0) {
 				if (!this.trafficLightsNear.contains(TL)) 
 					this.trafficLightsNear.add(TL);	
 			}
@@ -513,8 +511,9 @@ public class Vehicle {
 
 	public void sendNewRr() {
 		HashMap<Integer,Double> TruTim = (HashMap<Integer,Double>) truncateTimes.clone();
-		RobotReport rr = new RobotReport(this.ID, this.priority, this.pathIndex, 
-				this.se, TruTim, this.stoppingPoint,this.isCsTooClose());
+		
+		RobotReport rr = new RobotReport(this.ID, this.priority,this.footprint, this.pathIndex, 
+				this.se, TruTim, this.stoppingPoint,this.isCsTooClose(),forward.getRobotBehavior());
 		
 		mainTable.put(ID, rr);
 		

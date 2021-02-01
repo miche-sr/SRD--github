@@ -72,7 +72,7 @@ public class TestMap {
 		vh.setMainTable(mainTable);
 		vh.setSlowingPointNew();
 		vh.setTimes();
-		vh.setSpatialEnvelope();
+		vh.setSpatialEnvelope2(true);
 		vh.getNears();
 		vh.sendNewRr();
 		vh.setVisualization(viz);

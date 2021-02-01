@@ -78,10 +78,10 @@ public class ConstantAccelerationForwardModel {
 		double deltaTime = v.getTc()*Vehicle.mill2sec;
 
 		// considero ritardi dovuti a periodo di controllo e tempo di aggiornamento del ciclo //
-		long lookaheadInMillis = 0*(this.controlPeriodInMillis);// + MAX_TX_DELAY + trackingPeriodInMillis);
+		long lookaheadInMillis = 1*(this.controlPeriodInMillis);// + MAX_TX_DELAY + trackingPeriodInMillis);
 		//avanzamento nel periodo di ritardo
 		if (lookaheadInMillis > 0 && robotBehavior == Behavior.moving) {
-			while (time*temporalResolution < lookaheadInMillis) {	
+			while (time*temporalResolution < lookaheadInMillis) {
 				integrateRK4(auxState, time, deltaTime, false, maxVel, 1.0, maxAccel);
 				time += deltaTime;
 			}
@@ -116,24 +116,36 @@ public class ConstantAccelerationForwardModel {
 		
 		State state = new State(v.getDistanceTraveled(), v.getVelocity());	// state attuale
 		double velMaxL = v.getVelMax();
-		
+		double deltaT =  v.getTc()*Vehicle.mill2sec;
 		boolean skipIntegration = false;
 		
-		if (v.getPathIndex() >= v.getCriticalPoint()-3 && state.getVelocity() <= 0.0 ) {
+		if (v.getPathIndex() >= v.getCriticalPoint() && state.getVelocity() <= 0.0 ) { //-3
 			skipIntegration = true;
 			robotBehavior = Behavior.stop; // sono fermo
 		}	
+		
 		if (!skipIntegration) {
  
 
 			//saturazioni velocità
-			if (state.getVelocity() < v.getTc()*Vehicle.mill2sec*v.getAccMAx()&& robotBehavior==Behavior.slowing){
-				state.setVelocity(0.0);
-				if (v.getPathIndex()>= v.getWholePath().length-3 ){
+			if (state.getVelocity() < deltaT*v.getAccMAx() && v.getDistanceTraveled() >= v.getSlowingPoint()){
+				
+				if (v.getPathIndex()>= v.getWholePath().length-2 ){
+					state.setVelocity(0.0);
 					robotBehavior = Behavior.reached;
 					state.setPosition(computeDistance(v.getWholePath(), 0, v.getWholePath().length-1));
 				}
+				else if (v.getPathIndex()>= v.getCriticalPoint()-1 && v.getPathIndex()<= v.getCriticalPoint()){
+					state.setVelocity(0.0);
+					robotBehavior = Behavior.stop;
+					state.setPosition(computeDistance(v.getWholePath(), 0, v.getCriticalPoint()));
+				}
+				else if ( v.getPathIndex()< v.getCriticalPoint()){
+					robotBehavior = Behavior.slowing;
+					integrateRK4(state, elapsedTrackingTime, deltaT, false, deltaT*v.getAccMAx(), 1.0, deltaT*v.getAccMAx()*0.9);
+				}
 				else{
+					state.setVelocity(0.0);
 					robotBehavior = Behavior.stop; // fermo
 					state.setPosition(v.getDistanceTraveled());
 				}
@@ -151,7 +163,7 @@ public class ConstantAccelerationForwardModel {
 					robotBehavior = Behavior.slowing; 
 					
 				}
-				integrateRK4(state, elapsedTrackingTime, v.getTc()*Vehicle.mill2sec, slowingDown, velMaxL, 1.0, v.getAccMAx());
+				integrateRK4(state, elapsedTrackingTime, deltaT, slowingDown, velMaxL, 1.0, v.getAccMAx());
 			}	
 
 		} 
@@ -185,7 +197,10 @@ public class ConstantAccelerationForwardModel {
 
 			if (state.getPosition() >= distanceToCp || state.getVelocity() <= 0) break;
 			if (state.getPosition() >= v.getSlowingPoint()) {
-				integrateRK4(state, time, deltaTime, true, maxVel, 1.0, maxAccel);
+				if (state.getVelocity() < deltaTime*v.getAccMAx())
+					integrateRK4(state, time, deltaTime, false, deltaTime*v.getAccMAx(), 1.0, deltaTime*v.getAccMAx()*0.9);
+				else
+					integrateRK4(state, time, deltaTime, true, maxVel, 1.0, maxAccel);
 			}
 			else {
 				integrateRK4(state, time, deltaTime, false, maxVel, 1.0, maxAccel);				
@@ -209,21 +224,29 @@ public class ConstantAccelerationForwardModel {
 			}
 		}
 			
-		//inserisco anche il pathIndex relativo al CP
-//		currentPathIndex  = getPathIndex(v.getWholePath(), state);
-//		if (!times.containsKey(currentPathIndex)) {
-//			times.put(currentPathIndex, time);
-//		}
-
-		//inserisco anche PathIndx tra CP e fine SC inserndo come tempo -1
-		if (v.getCs().size() != 0)
-			csEnd = v.getCs().last().getTe1End();
-		else csEnd = -1;
+		// //inserisco anche PathIndx tra CP e fine SC inserndo come tempo -1
+		// if (v.getCs().size() != 0)
+		// 	if (!v.getCs().last().isPrecedenza())
+		// 		csEnd = v.getCs().last().getTe1End();
+		// 	else csEnd = -1; //non fare il calcolo sottostante
+		// else csEnd = -1; //non fare il calcolo sottostante
 		
-		currentPathIndex += 1;
-		while ((currentPathIndex <= csEnd+1 ) && currentPathIndex <= v.getWholePath().length-1){
-			times.put(currentPathIndex, -1.0);
+		// //currentPathIndex += 1;
+		// while ((currentPathIndex <= csEnd+1 ) && currentPathIndex <= v.getWholePath().length-1 &&  isInsideRadius(v,currentPathIndex)){
+		// 	if (!times.containsKey(currentPathIndex)) {
+		// 		times.put(currentPathIndex, -1.0);
+		// 		}
+		// 	currentPathIndex += 1;
+		// }
+
+
+		double dist = computeDistance(v.getWholePath(),v.getPathIndex(), currentPathIndex);
+		while (dist <= v.getMyDistanceToSend()+1 && currentPathIndex <= v.getWholePath().length-1 ){
+			if (!times.containsKey(currentPathIndex)) {
+				times.put(currentPathIndex, -1.0);
+				}
 			currentPathIndex += 1;
+			dist = computeDistance(v.getWholePath(),v.getPathIndex(), currentPathIndex);
 		}
 
 		return times;
@@ -233,4 +256,19 @@ public class ConstantAccelerationForwardModel {
 	public Behavior getRobotBehavior(){
 		return robotBehavior;
 	}
+
+	public Boolean isInsideRadius(Vehicle v , int pathIndex) {
+
+		double x = v.getPose().getX();
+		double y = v.getPose().getY();
+
+		double px = v.getWholePath()[pathIndex].getPose().getX();
+		double py = v.getWholePath()[pathIndex].getPose().getY();
+		double dist = Math.sqrt(Math.pow((x - px), 2.0) + Math.pow((y - py), 2.0));
+
+		if (dist  < v.getRadius()) return true;
+		else return false;
+	}
+
+
 }

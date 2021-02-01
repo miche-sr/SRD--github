@@ -3,12 +3,15 @@ package se.oru.coordination.coordination_oru.ourproject.algorithms;
 
 import se.oru.coordination.coordination_oru.motionplanning.AbstractMotionPlanner;
 import se.oru.coordination.coordination_oru.motionplanning.ompl.ReedsSheppCarPlanner;
+import se.oru.coordination.coordination_oru.ourproject.algorithms.ConstantAccelerationForwardModel.Behavior;
 import se.oru.coordination.coordination_oru.ourproject.models.CriticalSection;
 import se.oru.coordination.coordination_oru.ourproject.models.RobotReport;
 import se.oru.coordination.coordination_oru.ourproject.models.TrafficLights;
 import se.oru.coordination.coordination_oru.ourproject.models.Vehicle;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+
 import org.metacsp.multi.spatioTemporal.paths.Pose;
 import org.metacsp.multi.spatioTemporal.paths.PoseSteering;
 import org.metacsp.multi.spatioTemporal.paths.TrajectoryEnvelope;
@@ -28,7 +31,6 @@ public class CriticalSectionsFounder {
 		Polygon fp = r.getSpatialEnvelope().getFootprint();
 		Pose p = r.getSpatialEnvelope().getPath()[0].getPose();
 		Geometry obstacle = TrajectoryEnvelope.getFootprint(fp, p.getX(), p.getY(), p.getTheta());
-		System.out.println("Made obstacle of Robot" + r.getID() + " in pose " + p);
 		return obstacle;
 	}
 	
@@ -44,42 +46,46 @@ public class CriticalSectionsFounder {
 		return null;
 	}
 	
-	public PoseSteering[] rePlanPath(Vehicle v, RobotReport robotToAvoid) {
+	public PoseSteering[] rePlanPath(Vehicle v, HashMap<Integer,RobotReport> mainTable, ArrayList<Integer> nears) {
 		int currentWaitingIndex = v.getPathIndex();
 		Pose currentWaitingPose = v.getPose();
 		Pose[] currentWaitingGoal = v.getGoal();
-		Geometry obstacles = makeObstacle(robotToAvoid);
 		PoseSteering[] oldPath = v.getWholePath();
-
-		System.out.println("Attempting to re-plan path of Robot" + v.getID() + " (with robot" + robotToAvoid.getID() + " as obstacle), "
-				+ "with starting point in "+currentWaitingPose+"...");
-		//ReedsSheppCarPlanner mp = new ReedsSheppCarPlanner();
+		ArrayList<Geometry> obstacles =  new ArrayList<Geometry>();;
 		AbstractMotionPlanner mp = v.getMotionPlanner();
-		// mp.setRadius(0.2);
-		// mp.setTurningRadius(4.0);
-		// mp.setDistanceBetweenPathPoints(0.5);
-		// mp.setFootprint(v.getFootprint());
-		System.out.println(v.getWholePath());
-		System.out.println(mp.getPath());
-		PoseSteering[] newPath = doReplanning(mp, currentWaitingPose, currentWaitingGoal, obstacles);
-		// System.out.println(newPath.length);
-		// PoseSteering[] newCompletePath = new PoseSteering[newPath.length+currentWaitingIndex];
-		if (newPath != null && newPath.length > 0) {
-			System.out.println(newPath.length);
-			PoseSteering[] newCompletePath = new PoseSteering[newPath.length+currentWaitingIndex];
-			for (int i = 0; i < newCompletePath.length; i++) {
-				if (i < currentWaitingIndex) newCompletePath[i] = oldPath[i];
-				else newCompletePath[i] = newPath[i-currentWaitingIndex];
+		int count = 0;
+		String List = " ";
+		//Geometry ob2 = null;
+		for (Integer vh : nears){
+			if (mainTable.get(vh).getBehavior() == Behavior.stop || mainTable.get(vh).getBehavior() == Behavior.reached){
+				obstacles.add(makeObstacle(mainTable.get(vh)));
+				//ob2 = makeObstacle(mainTable.get(vh));
+				List = (List + vh + " " );
+				count = count + 1;
 			}
-//				v.setNewWholePath(newCompletePath);
-			System.out.println("Successfully re-planned path of Robot" + v.getID());
-			return newCompletePath;
 		}
-		else {
-			System.out.println("Failed to re-plan path of Robot" + v.getID());
+		if(count != 0){
+			Geometry[] obstaclesG = obstacles.toArray(new Geometry[obstacles.size()]);		
+			PoseSteering[] newPath = doReplanning(mp, currentWaitingPose, currentWaitingGoal, obstaclesG);
+			// System.out.println(newPath.length);
+			// PoseSteering[] newCompletePath = new PoseSteering[newPath.length+currentWaitingIndex];
+			if (newPath != null && newPath.length > 0) {
+				PoseSteering[] newCompletePath = new PoseSteering[newPath.length+currentWaitingIndex];
+				for (int i = 0; i < newCompletePath.length; i++) {
+					if (i < currentWaitingIndex) newCompletePath[i] = oldPath[i];
+					else newCompletePath[i] = newPath[i-currentWaitingIndex];
+				}
+				return newCompletePath;
+			}
+			else {
+				return oldPath;
+			}
+		}
+		else{
+			System.out.println("\u001B[31m" + "no need to recalculate, wait a little longer R" + v.getID() + "\u001B[0m");
 			return oldPath;
 		}
-		//return newCompletePath;
+		
 	}
 	
 	/************************
@@ -177,7 +183,7 @@ public class CriticalSectionsFounder {
 
 	public boolean csTooClose(Vehicle v, CriticalSection csOld, CriticalSection csNew){
 		int end1 = csOld.getTe1End();
-		int start2 = csNew.getTe2Start();
+		int start2 = csNew.getTe1Start();
 		double RobotDimesion = v.getWholeSpatialEnvelope().getFootprint().getArea();
 		SpatialEnvelope SpaceBetweenCs;
 		double SpaceBetweenCsDimesion;
@@ -189,7 +195,6 @@ public class CriticalSectionsFounder {
 			PoseSteering[] pathArray = path.toArray(new PoseSteering[path.size()]);
 			SpaceBetweenCs = TrajectoryEnvelope.createSpatialEnvelope(pathArray, v.getFootprint());
 			SpaceBetweenCsDimesion = SpaceBetweenCs.getPolygon().getArea();
-
 			if(SpaceBetweenCsDimesion < RobotDimesion) 
 				return true;
 			else 
@@ -197,6 +202,7 @@ public class CriticalSectionsFounder {
 		}
 		else
 			return true;
+		
 	
 	
 	}
@@ -209,7 +215,6 @@ public class CriticalSectionsFounder {
 		Geometry g = shape1.intersection(shape2);
 		boolean started = false;
 		int te1Start = -1;
-		//int te1End;
 		for (int j = v.getPathIndex(); j < path1.length; j++) {
 			Geometry placement1 = TrajectoryEnvelope.getFootprint(se1.getFootprint(), path1[j].getPose().getX(), path1[j].getPose().getY(), path1[j].getPose().getTheta());
 			int jAbs = j ;//+v.getPathIndex();		// LO SI RIPORTA RISPETTO A INDICE ASSOLUTO
@@ -218,14 +223,6 @@ public class CriticalSectionsFounder {
 				te1Start = jAbs;
 				break;
 			}
-			// else if (started && !placement1.intersects(g)) {// NON INTERSECA XK IMPRONTA È USCITA DA SC
-			// 	te1End = (jAbs-1 > 0 ? jAbs-1 : 0);
-			// 	started = false;
-			// }
-			// if (started && j == path1.length-1) {
-			// 	te1End = jAbs;
-
-			// }
 		}
 		return te1Start;
 

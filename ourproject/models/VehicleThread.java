@@ -22,17 +22,23 @@ public class VehicleThread implements Runnable {
 	private boolean run = true;
 	private Vehicle v;
 	private double elapsedTrackingTime = 0.0;
-	private int sp = -1;
+	private int slp = -1;
 	private int oldCp = -1;
 	private TreeSet<CriticalSection> analysedCs = new TreeSet<CriticalSection>(); 
-	private ArrayList<RobotReport> analysedVehicles = new ArrayList<RobotReport>();
+	private ArrayList<Integer> analysedVehiclesI = new ArrayList<Integer>();
 	private HashMap<Integer, RobotReport> rrNears = new HashMap<Integer, RobotReport>();
-//	private ArrayList<RobotReport> rrNears = new ArrayList<RobotReport>();
 	private Boolean prec = true;
 	private CriticalSection csOld;
 	private boolean FreeAccess = true;
 	private int smStopIndex = -1;
 	private String List = " ";
+
+
+	private static String colorEnv = "#adadad"; //"#f600f6"
+	private static String colorTruEnv ="#000000"; //#efe007";
+	private static String colorStp = "#047d00"; //"#0008f6"; //"#ffffff";
+	private static String colorCrp = "#a30202"; //"#29f600";
+	//private static String colorSlp =  "#0008f6";
 
 	public VehicleThread(Vehicle v){
 		this.v = v;
@@ -47,53 +53,59 @@ public class VehicleThread implements Runnable {
 
 		try{
 			while(v.getForwardModel().getRobotBehavior() != Behavior.reached && run){
+				long start = System.currentTimeMillis();
+				
 				
 				//// UNPACK MESSAGES ////
 				rrNears.clear();
 				List = " ";
-				for (Vehicle vh : v.getNears()){
-					rrNears.put(vh.getID(),v.getMainTable().get(vh.getID()));
-					List = (List + vh.getID() + " " );
+				for (Integer vh : v.getNears()){
+					rrNears.put(vh,v.getMainTable().get(vh));
+					List = (List + vh + " " );
 					if (v.checkCollision(vh) ) {
-						System.out.println("\u001B[31m" + "ATTENZIONE COLLISIONE  R" + v.getID() +" E R" +vh.getID()+ "\u001B[0m");
+						System.out.println("\u001B[31m" + "ATTENZIONE COLLISIONE  R" + v.getID() +" E R" +vh + "\u001B[0m");
 						printLog(List, prec);
 						run = false;
 					}
 				}
+
+				v.sendNewRr();
+//				if (v.getID()==1 || v.getID() == 7) printLog(List, prec);
 				
 			/****************************
 			 * FILTER CRITICAL SECTIONS *
 			 ****************************/
 			// if a cs has already been found and no one is inside it then I don't recalculate it //
-				analysedVehicles.clear();
+
+				analysedVehiclesI.clear();
 				this.analysedCs.clear();
 				for (CriticalSection analysedCs : v.getCs()){
 					int v2Id = analysedCs.getVehicle2().getID();
 					if (rrNears.containsKey(v2Id)){
-						if (v.getPathIndex() < analysedCs.getTe1Start() 
-								&& rrNears.get(v2Id).getPathIndex() < analysedCs.getTe2Start()
-								&& rrNears.get(v2Id).getFlagCs() != true && v.isCsTooClose() !=true
-									&& !analysedCs.isCsTruncated()) {
+						if (v.getPathIndex() < analysedCs.getTe1Start() && rrNears.get(v2Id).getPathIndex() < analysedCs.getTe2Start() // Cs non intrapresa
+									&&	analysedCs.getVehicle2().getTruncateTimes().get(analysedCs.getTe2Start()) == rrNears.get(v2Id).getTruncateTimes().get(analysedCs.getTe2Start())
+									//&& rrNears.get(v2Id).getFlagCs() != true && v.isCsTooClose() !=true // no rischio deadlock
+									&& !analysedCs.isCsTruncated()) { // no cs troncata
 							this.analysedCs.add(analysedCs);
-							analysedVehicles.add(analysedCs.getVehicle2());
+							analysedVehiclesI.add( analysedCs.getVehicle2().getID());
 						}
 					}
 				}
 				
-				
+				analysedVehiclesI.clear();
 				// re-add the cs already analysed and find the cs of other vehicles
 				v.clearCs();
-				for (CriticalSection analysedCs : this.analysedCs)
+				for (CriticalSection analysedCs : this.analysedCs){
 					v.getCs().add(analysedCs);
+				}
 				
 				
 				for (RobotReport vh : rrNears.values()){
-					if (!analysedVehicles.contains(vh)) {
+					if (!analysedVehiclesI.contains(vh.getID())) {
 						v.appendCs(vh);
 					}
 				}
-				if(run == false)
-				System.out.println("\u001B[31m" + "R" + v.getID() +"Cs" +v.getCs().toString()+ "\u001B[0m");
+
 
 				/**********************************
 				 		** SEMAPHORE **
@@ -137,10 +149,10 @@ public class VehicleThread implements Runnable {
 				if (v.getCs().size() <= 1)  v.setCsTooClose(false);
 				for (CriticalSection cs : this.v.getCs()){
 					
-					prec =v.ComputePrecedences(cs);
 					
+
+					prec =v.ComputePrecedences(cs);
 					if (csOld != null) v.setCsTooClose(intersect.csTooClose(v, csOld, cs));
-		
 					if (prec == false && v.isCsTooClose() && csOld != null){		//calculate precedence as long as I have precedence
 						v.setCriticalPoint(csOld);
 						break;
@@ -149,7 +161,8 @@ public class VehicleThread implements Runnable {
 						v.setCriticalPoint(cs);
 						break;
 					}
-					csOld = cs;
+					if (v.isCsTooClose() == false || csOld == null) 
+						csOld = cs;
 				}
 
 				if(FreeAccess== false && v.getStoppingPoint() != -1 && smStopIndex >= 6)
@@ -157,37 +170,30 @@ public class VehicleThread implements Runnable {
 				
 				if (oldCp != v.getCriticalPoint()) {
 					v.setSlowingPointNew();
-					sp = v.getForwardModel().getPathIndex(v.getWholePath(), v.getSlowingPoint());
+					slp = v.getForwardModel().getPathIndex(v.getWholePath(), v.getSlowingPoint());
 					oldCp = v.getCriticalPoint();
 				}
-				
+				if (v.getForwardModel().getRobotBehavior() == Behavior.stop)
+					v.setSlowingPointNew();
 
 				//// UPDATE VALUES ///
 				v.setPathIndex(elapsedTrackingTime);
 				v.setPose(v.getWholePath()[v.getPathIndex()].getPose());
 				v.setStoppingPoint();
-				
 				v.setTimes();
-				v.setSpatialEnvelope();
+				v.setSpatialEnvelope2(FreeAccess);
+//				v.sendNewRr();
 
-				//// SEND NEW ROBOT REPORT ////
-				
-				
-				printLog(List, prec);
-				v.sendNewRr();
-
+				long finish = System.currentTimeMillis();
+				long timeElapsed = finish - start;
 				
 				/***********************************
 				 ****** VISUALIZATION AND PRINT ****
 				 ***********************************/
-
-				
-				v.getVisualization().addEnvelope(v.getWholeSpatialEnvelope().getPolygon(),v,"#f600f6");
-				v.getVisualization().addEnvelope(v.getSpatialEnvelope().getPolygon(),v,"#efe007");
-				v.getVisualization().displayPoint(v, v.getCriticalPoint(), "#29f600"); //-1 perche array parte da zero
-				v.getVisualization().displayPoint(v, sp, "#0008f6");
-				v.getVisualization().displayPoint(v, v.getStoppingPoint(), "#ffffff");
-
+				v.getVisualization().addEnvelope(v.getWholeSpatialEnvelope().getPolygon(),v,colorEnv); 
+				v.getVisualization().addEnvelope(v.getSpatialEnvelope().getPolygon(),v,colorTruEnv);
+				v.getVisualization().displayPoint(v, v.getCriticalPoint(), colorCrp); //-1 perche array parte da zero
+				v.getVisualization().displayPoint(v, v.getStoppingPoint(), colorStp);
 				String infoCs = v.getForwardModel().getRobotBehavior().toString();
 				v.getVisualization().displayRobotState(v.getSpatialEnvelope().getFootprint(), v,infoCs);
 

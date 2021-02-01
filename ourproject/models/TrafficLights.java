@@ -21,6 +21,7 @@ public class TrafficLights {
     private int ID;
     private ArrayList<Integer> robotInsideCorridor = new ArrayList<Integer>();
 
+    private String yamlFile = null; 
     ReedsSheppCarPlanner rsp = new ReedsSheppCarPlanner();
     private BrowserVisualizationDist viz;
 
@@ -41,7 +42,7 @@ public class TrafficLights {
         this.size = size;
         this.viz = viz;
 
-        Coordinate[] fp = { new Coordinate(0, 0), new Coordinate(size, 0), new Coordinate(size, size),
+        Coordinate[] fp = { new Coordinate(0, 0), new Coordinate(0.5, 0), new Coordinate(0.5, size),
 			new Coordinate(0, size) };
         this.createWholePath(fp);
         
@@ -50,9 +51,26 @@ public class TrafficLights {
         viz.displayLight(semaphore2, ID, 2, s2Access);
     }
 
+    public TrafficLights(int ID, Pose semaphore1, Pose[] semaphore2, double size, BrowserVisualizationDist viz, String yamlFile) {
+        this.ID = ID;
+        this.semaphore1 = semaphore1;
+        this.semaphore2 = semaphore2[semaphore2.length-1];
+        this.size = size;
+        this.viz = viz;
+        this.yamlFile = yamlFile;
+
+        Coordinate[] fp = { new Coordinate(0, 0), new Coordinate(1, 0), new Coordinate(1, size),
+			new Coordinate(0, size) };
+        this.createWholePath(fp);
+        
+        viz.addCorridor(corridorPath.getPolygon(), ID);
+        viz.displayLight(semaphore1, ID, 1, s1Access);
+        viz.displayLight(this.semaphore2, ID, 2, s2Access);
+    }
 
     public void createWholePath(Coordinate[] fp) {
-		rsp.setRadius(0.2);
+        if (yamlFile!= null) rsp.setMap(yamlFile);
+        rsp.setRadius(0.2);
 		rsp.setTurningRadius(4.0);
 		rsp.setDistanceBetweenPathPoints(0.5);
 		rsp.setFootprint(fp);
@@ -176,5 +194,5 @@ public class TrafficLights {
         }
         
     }
-    
 }
+    

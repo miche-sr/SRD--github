@@ -2,7 +2,11 @@ package se.oru.coordination.coordination_oru.ourproject.models;
 
 import java.util.HashMap;
 
+import com.vividsolutions.jts.geom.Coordinate;
+
 import org.metacsp.multi.spatioTemporal.paths.TrajectoryEnvelope.SpatialEnvelope;
+
+import se.oru.coordination.coordination_oru.ourproject.algorithms.ConstantAccelerationForwardModel.Behavior;
 
 public class RobotReport {
 	private int ID = -1;
@@ -12,17 +16,28 @@ public class RobotReport {
 	private HashMap<Integer, Double> truncateTimes = new HashMap<Integer, Double>();
 	private int stoppingPoint = -1;
 	private Boolean flagCs = false;
-	
-	
-	public RobotReport(int ID, int priority, int pathIndex, SpatialEnvelope se, 
-			HashMap<Integer, Double> truncateTimes,	int stoppingPoint,Boolean isTooClose) {
+	private Behavior behavior = Behavior.start;
+	private Coordinate[] footprint;
+
+	public RobotReport(int ID, int priority, Coordinate[] footprint, int pathIndex, SpatialEnvelope se,
+			HashMap<Integer, Double> truncateTimes, int stoppingPoint, Boolean isTooClose, Behavior behavior) {
 		this.ID = ID;
 		this.priority = priority;
+		this.footprint = footprint; // solo per check collisione
 		this.pathIndex = pathIndex;
 		this.se = se;
 		this.truncateTimes = truncateTimes;
 		this.stoppingPoint = stoppingPoint;
 		this.flagCs = isTooClose;
+		this.behavior = behavior;
+	}
+
+	public Coordinate[] getFootprint() {
+		return footprint;
+	}
+
+	public Behavior getBehavior() {
+		return behavior;
 	}
 
 	public int getID() {
