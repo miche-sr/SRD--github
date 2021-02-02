@@ -32,7 +32,9 @@ public class PrecedencesFounder {
         double timeAtCsStart2 = v2.getTruncateTimes().get(cs.getTe2Start());
         double timeAtCsEnd2 = v2.getTruncateTimes().get(cs.getTe2End());
     	double braking1 = timeAtCsEnd2 - timeAtCsStart1;
-    	double braking2 = timeAtCsEnd1 - timeAtCsStart2;
+        double braking2 = timeAtCsEnd1 - timeAtCsStart2;
+        if(timeAtCsEnd2 == -1) braking1 = 0;
+        if(timeAtCsEnd1 == -1) braking2 = 0;
 
         if (v1.getStoppingPoint() >= te1start && v2.getStoppingPoint() >= te2start){
             //System.out.println("\u001B[35m" + "HeadToHead " + v1.getID() + " E "+ v2.getID() + "\n" + "count" + countHead + "\u001B[0m");
@@ -51,6 +53,7 @@ public class PrecedencesFounder {
             }
         }
         
+        //if(debug == " A"){debug = " Aw"; System.out.println("i'm confused R" + v1.getID()); return false;}
         /**SE UNO DEI DUE GIÀ NON PUÒ FERMARSI PRIMA DI SC**/
         else if (v2.getStoppingPoint() >= te2start) {
             prec = false; 
@@ -105,8 +108,8 @@ public class PrecedencesFounder {
                 
                 }
             
-            else if (timeAtCsStart2 == -1 || timeAtCsEnd2 == -1) {prec = true; debug =" G";}
-            else if (timeAtCsStart1 == -1 || timeAtCsEnd1 == -1) {prec = false; debug = " H";}
+            else if (timeAtCsStart2 == -1 ) {prec = true; debug =" G";} //|| timeAtCsEnd2 == -1
+            else if (timeAtCsStart1 == -1 ) {prec = false; debug = " H";} //|| timeAtCsEnd1 == -1
             //else if (braking1 < 0 || braking2 < 0) {prec = true; debug =" I";}
             else if (v1.getPriority() > v2.getPriority()){ prec = true; debug =" L";}
             else if (v1.getPriority() < v2.getPriority()) {prec = false; debug =" M";}
@@ -136,7 +139,7 @@ public class PrecedencesFounder {
         cs.setPrecedenza(prec);
         
         //if((v1.getID()== 1 && v2.getID() == 7) || (v1.getID()== 7 && v2.getID() == 1))
-        //System.out.println("R"+v1.getID() +"-R"+v2.getID()+ " debug Prec " + prec +" "+ debug );
+        System.out.println("R"+v1.getID() +"-R"+v2.getID()+ " debug Prec " + prec +" "+ debug );
         
         // System.out.println("\u001B[35m" + "my ID: "+v1.getID()+ "  sp: " + v1.getStoppingPoint() +
         // " \nother Id: " +v2.getID()+"  sp:" + v2.getStoppingPoint() + "\n"+

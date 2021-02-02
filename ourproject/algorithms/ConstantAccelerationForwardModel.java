@@ -22,7 +22,7 @@ public class ConstantAccelerationForwardModel {
 	private static int MAX_TX_DELAY = 0;
 	
 	public static enum Behavior {
-		start,moving,slowing,stop,waiting,reached,
+		start,moving,slowing,minVel,stop,waiting,reached,
 	};
 	
 	private Behavior robotBehavior = Behavior.start;
@@ -128,8 +128,9 @@ public class ConstantAccelerationForwardModel {
 	 
 	
 				//saturazioni velocità
-				if (state.getVelocity() < deltaT*v.getAccMAx() && v.getDistanceTraveled() >= v.getSlowingPoint()
-					&& robotBehavior == Behavior.slowing){
+				if ( ((state.getVelocity() <= deltaT*v.getAccMAx() && robotBehavior == Behavior.slowing) 
+					|| robotBehavior == Behavior.minVel)
+					&& v.getDistanceTraveled() >= v.getSlowingPoint()){
 					
 					if (v.getPathIndex()>= v.getWholePath().length-2 ){
 						state.setVelocity(0.0);
@@ -142,7 +143,7 @@ public class ConstantAccelerationForwardModel {
 						state.setPosition(computeDistance(v.getWholePath(), 0, v.getCriticalPoint()));
 					}
 					else if ( v.getPathIndex()< v.getCriticalPoint()){
-						robotBehavior = Behavior.slowing;
+						robotBehavior = Behavior.minVel ;
 						integrateRK4(state, elapsedTrackingTime, deltaT, false, deltaT*v.getAccMAx(), 1.0, v.getAccMAx()*0.8); 
 					}
 					else{

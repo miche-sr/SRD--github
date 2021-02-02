@@ -29,16 +29,16 @@ public class TestHeadToHead {
 
 
 		// /*Head-To-Head*/
-		 Pose start1 = new Pose(0, 5, Math.PI); Pose[] goal1 = { new Pose(25, 5, Math.PI) };
-		 Pose start2 = new Pose(20, 5, 0); Pose[] goal2 = { new Pose(-5, 5, 0) };
+		 Pose start1 = new Pose(1, 5, Math.PI); Pose[] goal1 = { new Pose(23, 5, Math.PI) };
+		 Pose start2 = new Pose(22, 5, 0); Pose[] goal2 = { new Pose(2, 5, 0) };
 		 //Pose start2 = new Pose(20, 4, 0); Pose[] goal2 = { new Pose(15, 4, 0) };
 
 		Thread thread1 = initThread(1, c, start1, goal1);
-		Thread thread2 = initThread(2, c, start2, goal2);
+		Thread thread2 = initThread(2, a, start2, goal2);
 
 		BrowserVisualizationDist viz = new BrowserVisualizationDist();
 		if (yamlFile != null) viz.setMap(yamlFile);
-		viz.setInitialTransform(25, 0, 5);
+		viz.setInitialTransform(40, 6, 8);
 
 		try {
 			TimeUnit.SECONDS.sleep(5);

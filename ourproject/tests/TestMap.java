@@ -50,7 +50,7 @@ public class TestMap {
 
 		BrowserVisualizationDist viz = new BrowserVisualizationDist();
 		if (yamlFile != null) viz.setMap(yamlFile);
-		viz.setInitialTransform(20, -6, 0);
+		viz.setInitialTransform(20, 2, 3);
 		try {
 			TimeUnit.SECONDS.sleep(5);
 		} catch (InterruptedException e) {

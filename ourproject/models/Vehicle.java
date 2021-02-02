@@ -84,7 +84,7 @@ public class Vehicle {
 
 		switch (category) {
 			case CAR:
-				this.velMax = 3.0;
+				this.velMax = 2.0;
 				this.accMax = 1.0;
 				this.priority = 1;
 				this.Tc = 350;
@@ -105,7 +105,7 @@ public class Vehicle {
 				System.out.println("Unknown vehicle");
 		}
 		double brakingDistanceMax = Math.pow(this.velMax,2.0) / (2*this.accMax);
-		this.radius = 1*((2 * this.Tc * mill2sec ) * this.velMax + brakingDistanceMax + side);
+		this.radius = 1*((2 * this.Tc * mill2sec ) * this.velMax + brakingDistanceMax +side );
 		this.myDistanceToSend = this.radius; 
 		this.path = createWholePath(yamlFile);
 		this.forward = new ConstantAccelerationForwardModel(this, 1000); // ???
@@ -237,35 +237,6 @@ public class Vehicle {
 	}
 
 	// // CALCOLO PATH TRAIETTORIA TRONCATA //
-	// public void setSpatialEnvelope() {
-	// 	this.truncatedPath.clear();
-	// 	this.truncateTimes.clear();
-	// 	int csEnd;
-
-	// 	// from cp to Pathndex //
-	// 	if (cs.size() != 0)
-	// 		csEnd = this.cs.last().getTe1End();
-	// 	else
-	// 		csEnd = -1;
-
-	// 	int i = 0;
-	// 	// trasmetto solo traiettoria all'interno del raggio(in tempi) e comunque sempre fino alla fine della prima sezione critica //
-	// 	//System.out.print(this.getRobotID() + "SPatial " + pathIndex+ "\n"+times );
-	// 	while ( times.get(pathIndex + i) <= secForSafety || pathIndex + i <= csEnd+1 ) {
-	// 		this.truncateTimes.put(pathIndex + i, times.get(pathIndex + i));
-			
-	// 		this.truncatedPath.add(path[pathIndex + i]);
-	// 		i++;
-	// 		//System.out.print("\n "+this.getRobotID()+" path+i  " + (pathIndex+i) + "\n" + times);
-	// 		if (!times.containsKey(pathIndex + i)){
-	// 			break;// questo forse serve per l'ultimo path index?
-	// 		}
-	// 	}
-	// 	PoseSteering[] truncatedPathArray = truncatedPath.toArray(new PoseSteering[truncatedPath.size()]);
-	// 	se = TrajectoryEnvelope.createSpatialEnvelope(truncatedPathArray, footprint);
-		
-	//}
-
 
 	public void setSpatialEnvelope2(Boolean FreeAcces, int smStopIndex) {
 		this.truncatedPath.clear();

@@ -29,9 +29,9 @@ public class TestStar{
 		
 		/* deaD Lock*/
 		Pose start1 = new Pose(5, 10, -Math.PI/6); Pose[] goal1 = { new Pose(20, 0, -Math.PI/6) };
-		Pose start2 = new Pose(5, 6, Math.PI ); Pose[] goal2 = { new Pose(20, 6, Math.PI ) };
-		Pose start3 = new Pose(5, 0, Math.PI/6); Pose[] goal3 = { new Pose(20, 10, Math.PI/6) };
-		Pose start4 = new Pose(13, -3, Math.PI/2); Pose[] goal4 = { new Pose(13, 10, Math.PI/2) };
+		Pose start2 = new Pose(5, 5, Math.PI ); Pose[] goal2 = { new Pose(20, 5, Math.PI ) };
+		Pose start3 = new Pose(20, 10, -5*Math.PI/6); Pose[] goal3 = { new Pose(5, 0, -5*Math.PI/6) };
+		Pose start4 = new Pose(12.5, -3, Math.PI/2); Pose[] goal4 = { new Pose(12.5, 12, Math.PI/2) };
 
 	
 
@@ -42,7 +42,7 @@ public class TestStar{
 
 		BrowserVisualizationDist viz = new BrowserVisualizationDist();
 		if (yamlFile != null) viz.setMap(yamlFile);
-		viz.setInitialTransform(25, 12, 15);
+		viz.setInitialTransform(40, 5, 5);
 		try {
 			TimeUnit.SECONDS.sleep(5);
 		} catch (InterruptedException e) {

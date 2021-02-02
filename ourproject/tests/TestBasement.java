@@ -31,7 +31,7 @@ public class TestBasement {
 		yamlFile = "maps/basement.yaml";
 		BrowserVisualizationDist viz = new BrowserVisualizationDist();
 		if (yamlFile != null) viz.setMap(yamlFile);
-		viz.setInitialTransform(20, 1, 1);
+		viz.setInitialTransform(25, 1, 1);
 
 
 		Pose CorrStart = new Pose(1.5,29,-Math.PI/2);

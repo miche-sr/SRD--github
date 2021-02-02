@@ -51,7 +51,7 @@ public class Test8Robot {
 
 		BrowserVisualizationDist viz = new BrowserVisualizationDist();
 		if (yamlFile != null) viz.setMap(yamlFile);
-		viz.setInitialTransform(25, 12, 15);
+		viz.setInitialTransform(30, 12, 17);
 		//viz.setInitialTransform(15, -10, 5);
 		try {
 			TimeUnit.SECONDS.sleep(5);

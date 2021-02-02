@@ -21,17 +21,17 @@ public class TestDeadLock{
 		return thread;
 	}
 
-	public static void main(String args[]) {
+	public static void main(String args[]) throws InterruptedException {
 
 		Vehicle.Category a = Vehicle.Category.AMBULANCE;
 		Vehicle.Category c = Vehicle.Category.CAR;
 
 		
 		/* deaD Lock*/
-		Pose start1 = new Pose(19, 1, 0); Pose[] goal1 = { new Pose(0, 1, 0)/*, new Pose(19.5, 1, 0)*/ }; 
-		Pose start2 = new Pose(5.5, -6, -Math.PI / 1.5); Pose[] goal2 = { new Pose(15, 10, -Math.PI / 2)/*,new Pose(5.5, -6, -Math.PI / 1.5)*/ };
-		Pose start3 = new Pose(4, 7.5, Math.PI / 1.5); Pose[] goal3 = { new Pose(18, -8, Math.PI / 2)/*,new Pose(4, 7.5, Math.PI / 1.5)*/ };
-		Pose start4 = new Pose(11, -7, Math.PI / 2); Pose[] goal4 = { new Pose(11, 7, Math.PI / 2)};
+		Pose start1 = new Pose(14.05, 2.2, 0); Pose[] goal1 = { new Pose(3.5, 2.2, 0)/*, new Pose(19.5, 1, 0)*/ }; 
+		Pose start2 = new Pose(5.4, -2, -Math.PI / 1.3); Pose[] goal2 = { new Pose(11.2, 5.5, -Math.PI /1.3)/*,new Pose(5.5, -6, -Math.PI / 1.5)*/ };
+		Pose start3 = new Pose(4, 5.5, Math.PI /1.3); Pose[] goal3 = { new Pose(12, -2.5, Math.PI /1.3)/*,new Pose(4, 7.5, Math.PI / 1.5)*/ };
+		//Pose start4 = new Pose(11, -7, Math.PI / 2); Pose[] goal4 = { new Pose(11, 7, Math.PI / 2)};
 	
 
 		Thread thread1 = initThread(1, c, start1, goal1);
@@ -42,7 +42,7 @@ public class TestDeadLock{
 
 		BrowserVisualizationDist viz = new BrowserVisualizationDist();
 		if (yamlFile != null) viz.setMap(yamlFile);
-		viz.setInitialTransform(35, 12, 15);
+		viz.setInitialTransform(45, 8, 12);
 		try {
 			TimeUnit.SECONDS.sleep(5);
 		} catch (InterruptedException e) {
@@ -68,7 +68,10 @@ public class TestDeadLock{
 		vh.getNears();
 		vh.sendNewRr();
 		vh.setVisualization(viz);
+		vh.setReplan(false);
+		vh.initViz();
 	}
+	Thread.sleep(1500);
 	System.out.println("\n" + "Radius "  + rMax );
 	
 	thread1.start();
