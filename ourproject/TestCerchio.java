@@ -32,16 +32,16 @@ public class TestCerchio {
 		viz.setInitialTransform(10, 0, 0);
 
 
-		int NUMBER_ROBOTS = 100;
+		int NUMBER_ROBOTS = 66;
 		double radius = 40;
 		double theta = 0.0;
 		ArrayList<Thread> threads = new ArrayList<Thread>();
-		for (int i = 0; i < NUMBER_ROBOTS; i++) {
+		for (int i = 3; i < NUMBER_ROBOTS-3; i++) {
 			double alpha = theta + i*Math.PI/NUMBER_ROBOTS;
 			Pose startPose = new Pose(radius*Math.cos(alpha), radius*Math.sin(alpha), alpha);
 			Pose[] goalPose = { new Pose(radius*Math.cos(alpha+Math.PI), radius*Math.sin(alpha+Math.PI), alpha)};
 
-			Thread thread = initThread(NUMBER_ROBOTS-i, a, startPose, goalPose);
+			Thread thread = initThread(NUMBER_ROBOTS-i, c, startPose, goalPose);
 			threads.add(thread);
 		}
 		
@@ -70,11 +70,11 @@ public class TestCerchio {
 
 		for(Thread tr : threads){
 			tr.start();
-			try {
-				TimeUnit.MILLISECONDS.sleep(2000);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
+//			try {
+//				TimeUnit.MILLISECONDS.sleep(2000);
+//			} catch (InterruptedException e) {
+//				e.printStackTrace();
+//			}
 			
 		}
 	

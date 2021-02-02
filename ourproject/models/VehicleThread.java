@@ -53,8 +53,7 @@ public class VehicleThread implements Runnable {
 
 		try{
 			while(v.getForwardModel().getRobotBehavior() != Behavior.reached && run){
-				long start = System.currentTimeMillis();
-				
+//				long start = System.currentTimeMillis();
 				
 				//// UNPACK MESSAGES ////
 				rrNears.clear();
@@ -64,7 +63,7 @@ public class VehicleThread implements Runnable {
 					List = (List + vh + " " );
 					if (v.checkCollision(vh) ) {
 						System.out.println("\u001B[31m" + "ATTENZIONE COLLISIONE  R" + v.getID() +" E R" +vh + "\u001B[0m");
-						printLog(List, prec);
+//						printLog(List, prec);
 						run = false;
 					}
 				}
@@ -183,9 +182,6 @@ public class VehicleThread implements Runnable {
 				v.setTimes();
 				v.setSpatialEnvelope2(FreeAccess);
 //				v.sendNewRr();
-
-				long finish = System.currentTimeMillis();
-				long timeElapsed = finish - start;
 				
 				/***********************************
 				 ****** VISUALIZATION AND PRINT ****
@@ -198,10 +194,14 @@ public class VehicleThread implements Runnable {
 				v.getVisualization().displayRobotState(v.getSpatialEnvelope().getFootprint(), v,infoCs);
 
 				/// SLEEPING TIME ////
+				long start = System.currentTimeMillis();
 				Thread.sleep(v.getTc());
+				long finish = System.currentTimeMillis();
+				long timeElapsed = finish - start;
+				if(timeElapsed > (v.getTc()+5)) System.out.println("R"+v.getID()+": "+timeElapsed);
 				this.elapsedTrackingTime += v.getTc()*Vehicle.mill2sec;
 			}
-			System.out.println("\u001B[34m"+"\n R" + this.v.getID() + " : GOAL RAGGIUNTO" +"\u001B[0m");
+//			System.out.println("\u001B[34m"+"\n R" + this.v.getID() + " : GOAL RAGGIUNTO" +"\u001B[0m");
 		}	
 		catch (InterruptedException e) {
 			System.out.println("Thread interrotto");
