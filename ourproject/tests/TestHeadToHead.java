@@ -1,4 +1,4 @@
-package se.oru.coordination.coordination_oru.ourproject;
+package se.oru.coordination.coordination_oru.ourproject.tests;
 
 import se.oru.coordination.coordination_oru.ourproject.models.*;
 import se.oru.coordination.coordination_oru.util.BrowserVisualizationDist;
@@ -8,7 +8,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.metacsp.multi.spatioTemporal.paths.Pose;
 
-public class Test2 {
+public class TestHeadToHead {
 
 	private static ArrayList<Vehicle> vehicleList = new ArrayList<Vehicle>();
 	private static HashMap<Integer,RobotReport> mainTable = new HashMap<Integer,RobotReport>();
@@ -21,7 +21,7 @@ public class Test2 {
 		return thread;
 	}
 
-	public static void main(String args[]) {
+	public static void main(String args[]) throws InterruptedException {
 
 		Vehicle.Category a = Vehicle.Category.AMBULANCE;
 		Vehicle.Category c = Vehicle.Category.CAR;
@@ -29,16 +29,16 @@ public class Test2 {
 
 
 		// /*Head-To-Head*/
-		 Pose start1 = new Pose(0, 0, Math.PI); Pose[] goal1 = { new Pose(20, 0, Math.PI) };
-		 Pose start2 = new Pose(5, 7, 4*Math.PI/6); Pose[] goal2 = { new Pose(15, -7, 4*Math.PI/6) };
+		 Pose start1 = new Pose(0, 5, Math.PI); Pose[] goal1 = { new Pose(25, 5, Math.PI) };
+		 Pose start2 = new Pose(20, 5, 0); Pose[] goal2 = { new Pose(-5, 5, 0) };
 		 //Pose start2 = new Pose(20, 4, 0); Pose[] goal2 = { new Pose(15, 4, 0) };
 
-		Thread thread1 = initThread(1, a, start1, goal1);
-		Thread thread2 = initThread(2, a, start2, goal2);
+		Thread thread1 = initThread(1, c, start1, goal1);
+		Thread thread2 = initThread(2, c, start2, goal2);
 
 		BrowserVisualizationDist viz = new BrowserVisualizationDist();
 		if (yamlFile != null) viz.setMap(yamlFile);
-		viz.setInitialTransform(35, 5, 10);
+		viz.setInitialTransform(25, 0, 5);
 
 		try {
 			TimeUnit.SECONDS.sleep(5);
@@ -65,7 +65,9 @@ public class Test2 {
 		vh.getNears();
 		vh.sendNewRr();
 		vh.setVisualization(viz);
+		vh.initViz();
 	}
+	Thread.sleep(2000);
 	System.out.println("\n" + "Radius "  + rMax );
 	
 	thread1.start();

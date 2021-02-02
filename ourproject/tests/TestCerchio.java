@@ -1,4 +1,4 @@
-package se.oru.coordination.coordination_oru.ourproject;
+package se.oru.coordination.coordination_oru.ourproject.tests;
 
 import se.oru.coordination.coordination_oru.ourproject.models.*;
 import se.oru.coordination.coordination_oru.util.BrowserVisualizationDist;
@@ -28,7 +28,7 @@ public class TestCerchio {
 		Vehicle.Category a = Vehicle.Category.AMBULANCE;
 		Vehicle.Category c = Vehicle.Category.CAR;
 		
-		int NUMBER_ROBOTS = 65;
+		int NUMBER_ROBOTS = 66;
 		double radius = 40;
 
 
@@ -73,15 +73,17 @@ public class TestCerchio {
 			vh.getNears();
 			vh.sendNewRr();
 			vh.setVisualization(viz);
-			vh.setReplanStop(false);
+			vh.setReplan(false);
+			vh.initViz();
 		}
+		Thread.sleep(2000);
 		System.out.println("\n" + "Radius "  + rMax );
 
 		double start = System.currentTimeMillis();
 		for(Thread tr : threads){
 			tr.start();
 			try {
-				TimeUnit.MILLISECONDS.sleep(5);
+				TimeUnit.MILLISECONDS.sleep(2000);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}

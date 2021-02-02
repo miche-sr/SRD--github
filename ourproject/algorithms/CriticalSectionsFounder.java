@@ -31,7 +31,6 @@ public class CriticalSectionsFounder {
 		Polygon fp = r.getSpatialEnvelope().getFootprint();
 		Pose p = r.getSpatialEnvelope().getPath()[0].getPose();
 		Geometry obstacle = TrajectoryEnvelope.getFootprint(fp, p.getX(), p.getY(), p.getTheta());
-		System.out.println("Made obstacle of Robot" + r.getID() + " in pose " + p);
 		return obstacle;
 	}
 	
@@ -58,7 +57,7 @@ public class CriticalSectionsFounder {
 		String List = " ";
 		//Geometry ob2 = null;
 		for (Integer vh : nears){
-			if (mainTable.get(vh).getBehavior() == Behavior.stop || mainTable.get(vh).getBehavior() == Behavior.reached ||  mainTable.get(vh).getBehavior() == Behavior.waiting){
+			if (mainTable.get(vh).getBehavior() == Behavior.stop || mainTable.get(vh).getBehavior() == Behavior.reached){
 				obstacles.add(makeObstacle(mainTable.get(vh)));
 				//ob2 = makeObstacle(mainTable.get(vh));
 				List = (List + vh + " " );
@@ -66,27 +65,19 @@ public class CriticalSectionsFounder {
 			}
 		}
 		if(count != 0){
-			Geometry[] obstaclesG = obstacles.toArray(new Geometry[obstacles.size()]);
-			System.out.println("\u001B[35m" + "Attempting to re-plan path of Robot" + v.getID() + " (with robot" + List + " as obstacle), "
-					+ "with starting point in "+currentWaitingPose+"..." + "\u001B[0m");
-					System.out.println("\u001B[35m" + obstaclesG + "\u001B[0m");
-		
+			Geometry[] obstaclesG = obstacles.toArray(new Geometry[obstacles.size()]);		
 			PoseSteering[] newPath = doReplanning(mp, currentWaitingPose, currentWaitingGoal, obstaclesG);
 			// System.out.println(newPath.length);
 			// PoseSteering[] newCompletePath = new PoseSteering[newPath.length+currentWaitingIndex];
 			if (newPath != null && newPath.length > 0) {
-				System.out.println(newPath.length);
 				PoseSteering[] newCompletePath = new PoseSteering[newPath.length+currentWaitingIndex];
 				for (int i = 0; i < newCompletePath.length; i++) {
 					if (i < currentWaitingIndex) newCompletePath[i] = oldPath[i];
 					else newCompletePath[i] = newPath[i-currentWaitingIndex];
 				}
-	//				v.setNewWholePath(newCompletePath);
-				System.out.println("\u001B[32m" + "Successfully re-planned path of Robot" + v.getID() + "\u001B[0m" );
 				return newCompletePath;
 			}
 			else {
-				System.out.println("\u001B[31m" + "Failed to re-plan path of Robot" + v.getID() + "\u001B[0m");
 				return oldPath;
 			}
 		}
@@ -191,14 +182,12 @@ public class CriticalSectionsFounder {
 	}
 
 	public boolean csTooClose(Vehicle v, CriticalSection csOld, CriticalSection csNew){
-		int start1 = csOld.getTe1Start();
 		int end1 = csOld.getTe1End();
 		int start2 = csNew.getTe1Start();
 		double RobotDimesion = v.getWholeSpatialEnvelope().getFootprint().getArea();
 		SpatialEnvelope SpaceBetweenCs;
 		double SpaceBetweenCsDimesion;
 		ArrayList<PoseSteering> path = new ArrayList<PoseSteering>();
-		if (start1 == v.getPathIndex()) return false;
 		if (end1 < start2){
 			for (int i=end1; i < start2; i++){
 				path.add(v.getWholePath()[i]);
@@ -226,8 +215,7 @@ public class CriticalSectionsFounder {
 		Geometry g = shape1.intersection(shape2);
 		boolean started = false;
 		int te1Start = -1;
-		//int te1End;
-		for (int j = 0; j < path1.length; j++) {
+		for (int j = v.getPathIndex(); j < path1.length; j++) {
 			Geometry placement1 = TrajectoryEnvelope.getFootprint(se1.getFootprint(), path1[j].getPose().getX(), path1[j].getPose().getY(), path1[j].getPose().getTheta());
 			int jAbs = j ;//+v.getPathIndex();		// LO SI RIPORTA RISPETTO A INDICE ASSOLUTO
 			if (!started && placement1.intersects(g)) {		// CALCOLO INIZIO S.C.
@@ -235,14 +223,6 @@ public class CriticalSectionsFounder {
 				te1Start = jAbs;
 				break;
 			}
-			// else if (started && !placement1.intersects(g)) {// NON INTERSECA XK IMPRONTA È USCITA DA SC
-			// 	te1End = (jAbs-1 > 0 ? jAbs-1 : 0);
-			// 	started = false;
-			// }
-			// if (started && j == path1.length-1) {
-			// 	te1End = jAbs;
-
-			// }
 		}
 		return te1Start;
 

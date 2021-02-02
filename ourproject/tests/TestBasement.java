@@ -1,4 +1,4 @@
-package se.oru.coordination.coordination_oru.ourproject;
+package se.oru.coordination.coordination_oru.ourproject.tests;
 
 import se.oru.coordination.coordination_oru.ourproject.models.*;
 import se.oru.coordination.coordination_oru.util.BrowserVisualizationDist;
@@ -89,10 +89,9 @@ public class TestBasement {
 		vh.getNears();
 		vh.sendNewRr();
 		vh.setVisualization(viz);
-		vh.InitVisualization();
 	}
 	System.out.println("\n" + "Radius "  + rMax );
-	Thread.sleep(3000);
+	
 	double start = System.currentTimeMillis();
 	thread1.start();
 	TimeUnit.MILLISECONDS.sleep(35);

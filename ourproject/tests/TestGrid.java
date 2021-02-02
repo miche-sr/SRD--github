@@ -1,4 +1,4 @@
-package se.oru.coordination.coordination_oru.ourproject;
+package se.oru.coordination.coordination_oru.ourproject.tests;
 
 import se.oru.coordination.coordination_oru.ourproject.models.*;
 import se.oru.coordination.coordination_oru.util.BrowserVisualizationDist;
@@ -21,7 +21,7 @@ public class TestGrid {
 		return thread;
 	}
 
-	public static void main(String args[]) {
+	public static void main(String args[]) throws InterruptedException {
 
 		Vehicle.Category a = Vehicle.Category.AMBULANCE;
 		Vehicle.Category c = Vehicle.Category.CAR;
@@ -31,23 +31,23 @@ public class TestGrid {
 		viz.setInitialTransform(35, 12, 5);
 
 		/* pose libere */
-		Pose start1 = new Pose(1, 12.5, Math.PI); 	Pose[] goal1 = { new Pose(16, 12.5, Math.PI) };	
-		Pose start2 = new Pose(1, 2.5, Math.PI); 	Pose[] goal2 = { new Pose(16, 2.5, Math.PI) };
-		Pose start3 = new Pose(1, 5, Math.PI); 		Pose[] goal3 = { new Pose(16, 5, Math.PI) };
-		Pose start4 = new Pose(1, 7.5, Math.PI); 	Pose[] goal4 = { new Pose(16, 7.5, Math.PI) };
-		Pose start5 = new Pose(1, 10, Math.PI); 	Pose[] goal5 = { new Pose(16, 10, Math.PI) };	
+		Pose start1 = new Pose(1, 11.2, Math.PI); 	Pose[] goal1 = { new Pose(16, 11.2, Math.PI) };	
+		Pose start2 = new Pose(1, 1.2, Math.PI); 	Pose[] goal2 = { new Pose(16, 1.2, Math.PI) };
+		Pose start3 = new Pose(1, 3.7, Math.PI); 		Pose[] goal3 = { new Pose(16, 3.7, Math.PI) };
+		Pose start4 = new Pose(1, 6.2, Math.PI); 	Pose[] goal4 = { new Pose(16, 6.2, Math.PI) };
+		Pose start5 = new Pose(1, 8.7, Math.PI); 	Pose[] goal5 = { new Pose(16, 8.7, Math.PI) };	
 
-		Pose start6 = new Pose(15, 0.2, 0); 		Pose[] goal6 = { new Pose(0, 0.2, 0) };
-		Pose start7 = new Pose(15, 2.7,0) ; 		Pose[] goal7 = { new Pose(0, 2.7, 0) };
-		Pose start8 = new Pose(15, 5.2, 0); 		Pose[] goal8 = { new Pose(0, 5.2, 0) };
-		Pose start9 = new Pose(15, 7.7, 0); 		Pose[] goal9 = { new Pose(0, 7.7, 0) };
-		Pose start10 = new Pose(15, 10.2, 0); 		Pose[] goal10 = { new Pose(0, 10.2, 0) };
+		Pose start6 = new Pose(15, 12.5, 0); 		Pose[] goal6 = { new Pose(0, 12.5, 0) };
+		Pose start7 = new Pose(15, 2.5,0) ; 		Pose[] goal7 = { new Pose(0, 2.5, 0) };
+		Pose start8 = new Pose(15, 5, 0); 		Pose[] goal8 = { new Pose(0, 5, 0) };
+		Pose start9 = new Pose(15, 7.5, 0); 		Pose[] goal9 = { new Pose(0, 7.5, 0) };
+		Pose start10 = new Pose(15, 10, 0); 		Pose[] goal10 = { new Pose(0, 10, 0) };
 
-		Pose start11 = new Pose(12.7,0, -Math.PI/2); 	Pose[] goal11 = { new Pose(12.7,15, -Math.PI/2) };
-		Pose start12 = new Pose(2.7,0,-Math.PI/2) ; 	Pose[] goal12 = { new Pose(2.7,15, -Math.PI/2) };
-		Pose start13 = new Pose(5.2, 0, -Math.PI/2); 	Pose[] goal13 = { new Pose(5.2,15, -Math.PI/2) };
-		Pose start14 = new Pose(7.7, 0, -Math.PI/2); 	Pose[] goal14 = { new Pose(7.7,15, -Math.PI/2) };
-		Pose start15 = new Pose(10.2,0, -Math.PI/2); 	Pose[] goal15 = { new Pose(10.2,15, -Math.PI/2) };
+		Pose start11 = new Pose(11.2,0, -Math.PI/2); 	Pose[] goal11 = { new Pose(11.2,15, -Math.PI/2) };
+		Pose start12 = new Pose(13.7,0,-Math.PI/2) ; 	Pose[] goal12 = { new Pose(13.7,15, -Math.PI/2) };
+		Pose start13 = new Pose(3.7, 0, -Math.PI/2); 	Pose[] goal13 = { new Pose(3.7,15, -Math.PI/2) };
+		Pose start14 = new Pose(6.2, 0, -Math.PI/2); 	Pose[] goal14 = { new Pose(6.2,15, -Math.PI/2) };
+		Pose start15 = new Pose(8.7,0, -Math.PI/2); 	Pose[] goal15 = { new Pose(8.7,15, -Math.PI/2) };
 		
 		Pose start16 = new Pose(12.5,14, Math.PI/2); 	Pose[] goal16 = { new Pose(12.5,-1, Math.PI/2) };
 		Pose start17 = new Pose(2.5, 14, Math.PI/2) ; 	Pose[] goal17 = { new Pose(2.5,-1,  Math.PI/2) };
@@ -104,9 +104,11 @@ public class TestGrid {
 		vh.getNears();
 		vh.sendNewRr();
 		vh.setVisualization(viz);
+		vh.setReplan(false);
+		vh.initViz();
 	}
 	//System.out.println("\n" + "Radius "  + rMax );
-	
+	Thread.sleep(2000);
 	thread1.start();
 	thread2.start();
 	thread3.start();

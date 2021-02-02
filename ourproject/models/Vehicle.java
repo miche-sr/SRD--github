@@ -26,8 +26,6 @@ public class Vehicle {
 												new Coordinate(sideCar,-sideCar), new Coordinate(-sideCar,-sideCar)};
 	private static final Coordinate[] fpAmb = { new Coordinate(-2*sideAmb,sideAmb), new Coordinate(2*sideAmb,sideAmb), 
 												new Coordinate(2*sideAmb,-sideAmb), new Coordinate(-2*sideAmb,-sideAmb)};
-
-
 	// CONSTANT
 	public static double mill2sec = 0.001;
 
@@ -59,10 +57,10 @@ public class Vehicle {
 	private HashMap<Integer, Double> truncateTimes = new HashMap<Integer, Double>();
 
 	// VARIABILI PER LE SEZIONI CRITICHE
-	private int criticalPoint = 0; // -1 if no critical point
+	private int criticalPoint = -1; // -1 if no critical point
 	private boolean csTooClose = false;
-	private int stoppingPoint = 0; // punto di fermata, a ogni ciclo: al quale mi fermo da dove sono
-	private double slowingPoint = 0; // punto di frenata, unico: per fermarsi prima del p. critico
+	private int stoppingPoint = -1; // punto di fermata, a ogni ciclo: al quale mi fermo da dove sono
+	private double slowingPoint = -1; // punto di frenata, unico: per fermarsi prima del p. critico
 	private TreeSet<CriticalSection> cs = new TreeSet<CriticalSection>();
 	private CriticalSectionsFounder intersect = new CriticalSectionsFounder();
 
@@ -106,16 +104,12 @@ public class Vehicle {
 			default:
 				System.out.println("Unknown vehicle");
 		}
-		double brakingDistanceMax = Math.pow(this.velMax,2.0) / (2*this.accMax );
-		this.radius= ((2*this.Tc* mill2sec ) * this.velMax + brakingDistanceMax + side) ; //+(2 * this.Tc* mill2sec ) * this.velMax + ;
-		this.myDistanceToSend = this.radius ; 
+		double brakingDistanceMax = Math.pow(this.velMax,2.0) / (2*this.accMax);
+		this.radius = 1*((2 * this.Tc * mill2sec ) * this.velMax + brakingDistanceMax + side);
+		this.myDistanceToSend = this.radius; 
 		this.path = createWholePath(yamlFile);
 		this.forward = new ConstantAccelerationForwardModel(this, 1000); // ???
-		setCriticalPoint(path.length-1);
 
-		// String infoCs = forward.getRobotBehavior().toString();
-		// viz.displayRobotState(path, this,infoCs);
-		// viz.addEnvelope(path.getPolygon(),this,"#adadad");
 	}
 
 
@@ -308,7 +302,7 @@ public class Vehicle {
 		return forward;
 	}
 	// AGGIORNAMENTO POSIZIONE //
-	public void setPathIndex(double elapsedTrackingTime,boolean FreeAccess) {
+	public void setPathIndex(double elapsedTrackingTime,boolean FreeAccess ) {
 		State next_state = forward.updateState(this, elapsedTrackingTime,FreeAccess);  //calcolo nuova velocità e posizione
 		setDistanceTraveled(next_state.getPosition());
 		setVelocity(next_state.getVelocity());
@@ -379,45 +373,6 @@ public class Vehicle {
 
 
 
-	public void setSlowingPoint() {
-	        int cp = this.criticalPoint;
-        if (cp == -1) cp = path.length-1;
-        
-		double distanceToCpAbsolute = forward.computeDistance(path, 0, cp);
-		double distanceToCpRelative = forward.computeDistance(path, pathIndex,cp);
-        // We compute the distance traveled:
-        // - accelerating up to vel max from current vel (distToVelMax)
-        // - decelerating up to zero vel from vel max (brakingVelMax)
-
-		double v0 = velocity;
-		double decMax = this.accMax*0.9;//new
-        double timeToVelMax = (velMax - v0)/accMax;
-        double distToVelMax = v0*timeToVelMax + accMax*Math.pow(timeToVelMax,2.0)/2;
-        double brakingFromVelMax = Math.pow(velMax,2.0)/(decMax*2);
-
-        // If sum of the two is lower than distanceToCp, than the move profile is trapezoidal.
-        // If higher, than the profile is triangular, but not reaching maximum speed.
-        // For triangular: accelerating distance == decelerating distance
-        double braking;
-        double traveledInTc = 0;
-        if (distToVelMax + brakingFromVelMax > distanceToCpRelative){	// triangular profile
-            // braking = brak1 (from NowVel to zero) + brak2 (from velReached to NowVel)
-            double brak1 = Math.pow(v0,2.0)/(accMax*2);
-            double brak2 = (distanceToCpRelative - brak1)/2;
-            braking = brak1 + brak2;
-            
-            double timeToTopVel = -v0/accMax + Math.sqrt(Math.pow(v0/accMax, 2)+2*brak2/accMax);
-            double topVel = v0 + accMax*timeToTopVel;
-            traveledInTc = 2*topVel*Tc*mill2sec; //- Math.pow(Tc*mill2sec,2.0)*accMax/2;
-		}
-        else {
-        	braking = brakingFromVelMax;
-        	traveledInTc = 2*velMax*Tc*mill2sec;
-        }
-        this.slowingPoint =Math.max(0, (distanceToCpAbsolute-(braking+traveledInTc)));
-
-	}
-
 	public void setSlowingPointNew(){
 
         int cp = this.criticalPoint;
@@ -425,54 +380,23 @@ public class Vehicle {
         
 		double distanceToCpAbsolute = forward.computeDistance(path, 0, cp);
 		double distanceToCpRelative = forward.computeDistance(path, pathIndex,cp);
-        // We compute the distance traveled:
-        // - accelerating up to vel max from current vel (distToVelMax)
-        // - decelerating up to zero vel from vel max (brakingVelMax)
 
 		double v0 = velocity;
-		double decMax = this.accMax*0.9;//new
-        //double timeToVelMax = (velMax - v0)/accMax;
-        //double distToVelMax = v0*timeToVelMax + accMax*Math.pow(timeToVelMax,2.0)/2;
+		double decMax = this.accMax*0.9;
         double brakingFromVelMax = Math.pow(velMax,2.0)/(decMax*2);
-
-        // If sum of the two is lower than distanceToCp, than the move profile is trapezoidal.
-        // If higher, than the profile is triangular, but not reaching maximum speed.
-        // For triangular: accelerating distance == decelerating distance
         double braking;
-        double traveledInTc = 0;
-        // if (distToVelMax + brakingFromVelMax > distanceToCpRelative){	// triangular profile
-        //     // braking = brak1 (from NowVel to zero) + brak2 (from velReached to NowVel)
-        //     double brak1 = Math.pow(v0,2.0)/(accMax*2);
-        //     double brak2 = (distanceToCpRelative - brak1)/2;
-        //     braking = brak1 + brak2;
-            
-        //     double timeToTopVel = -v0/accMax + Math.sqrt(Math.pow(v0/accMax, 2)+2*brak2/accMax);
-        //     double topVel = v0 + accMax*timeToTopVel;
-        //     traveledInTc = topVel*Tc*mill2sec; //- Math.pow(Tc*mill2sec,2.0)*accMax/2;
-		// }
-        // else {
-        	braking = brakingFromVelMax;
-        	traveledInTc = velMax*Tc*mill2sec;
-        //}
+        double traveledInTc = velMax*Tc;
+    	braking = brakingFromVelMax;
+    	traveledInTc = velMax*Tc*mill2sec;
         this.slowingPoint = distanceToCpAbsolute-(braking+traveledInTc);
-//        System.out.println("braking"+braking);
-        /*
-		//System.out.println("SP NEW: "+(distanceToCp - braking));
-        State slowpoint = new State(distanceToCpAbsolute-(braking+traveledInTc), 0.0); //arbitrary vel, not used
-        //System.out.println("SP NEW: "+forward.getPathIndex(path, slowpoint));
-		this.slowingPoint = forward.getPathIndex(path, slowpoint);
-		double distanceToSlow = forward.computeDistance(path, 0, this.slowingPoint);
-		//System.out.println("distToSlowNew: "+distanceToSlow);
-		 * 
-		 */
 	}
 
 	public int getStoppingPoint() {
 		return stoppingPoint;
 	}
 
-	public void setStoppingPoint(boolean look) {
-		this.stoppingPoint = forward.getEarliestStoppingPathIndex(this, look);
+	public void setStoppingPoint() {
+		this.stoppingPoint = forward.getEarliestStoppingPathIndex(this);
 	}
 
 		/********************************
@@ -570,9 +494,8 @@ public class Vehicle {
 	public void sendNewRr() {
 		HashMap<Integer,Double> TruTim = (HashMap<Integer,Double>) truncateTimes.clone();
 		
-
 		RobotReport rr = new RobotReport(this.ID, this.priority,this.footprint, this.pathIndex, 
-				this.se, TruTim, this.stoppingPoint,forward.getRobotBehavior());
+				this.se, TruTim, this.stoppingPoint,this.isCsTooClose(),forward.getRobotBehavior());
 		
 		mainTable.put(ID, rr);
 		
@@ -591,14 +514,13 @@ public class Vehicle {
 		return this.viz;
 	}
 
-	public  void InitVisualization(){
+	public void setReplan(boolean replan){
+		prec.setReplan(replan);
+	}
+
+	public void initViz(){
 		String infoCs = forward.getRobotBehavior().toString();
 		viz.displayRobotState(wholeSe.getFootprint(), this,infoCs);
-		viz.addEnvelope(wholeSe.getPolygon(),this,"#adadad");
-	}
-
-	public void setReplanStop(boolean replanStop){
-		prec.setReplanStop(replanStop);
+		viz.addEnvelope(wholeSe.getPolygon(),this,"#adadad"); 
 	}
 }
-

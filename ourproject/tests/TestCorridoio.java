@@ -1,4 +1,4 @@
-package se.oru.coordination.coordination_oru.ourproject;
+package se.oru.coordination.coordination_oru.ourproject.tests;
 
 import se.oru.coordination.coordination_oru.ourproject.models.*;
 import se.oru.coordination.coordination_oru.util.BrowserVisualizationDist;
@@ -15,7 +15,7 @@ public class TestCorridoio {
 	private static ArrayList<TrafficLights> trafficLightsList = new ArrayList<TrafficLights>();
 	private static HashMap<Integer,RobotReport> mainTable = new HashMap<Integer,RobotReport>();
 	private static String yamlFile = null;
-
+	
 	public static Thread initThread(int id, Vehicle.Category ctg, Pose start, Pose[] goal) {
 		Vehicle vehicle = new Vehicle(id, ctg, start, goal,yamlFile);
 		Thread thread = new Thread(new VehicleThread(vehicle));
@@ -32,14 +32,14 @@ public class TestCorridoio {
 		viz.setInitialTransform(25, 5, 5);
 		
 		
-		Thread.sleep(3000);
+		Thread.sleep(2000);
 
 		Pose CorrStart = new Pose(9.0,5.0,0);
 		Pose CorrEnd  = new Pose(25.5,5.0,0);
 		TrafficLights corridoio = new TrafficLights(1, CorrStart, CorrEnd, 2, viz);
 		trafficLightsList.add(corridoio);
 
-		Thread.sleep(1000);
+		Thread.sleep(3000);
 
 		/* corridioio */
 		Pose start1 = new Pose(2.0,4.0,Math.PI);
@@ -87,7 +87,7 @@ public class TestCorridoio {
 		vh.getNears();
 		vh.sendNewRr();
 		vh.setVisualization(viz);
-		vh.InitVisualization();
+		vh.initViz();
 	}
 	System.out.println("\n" + "Radius "  + rMax );
 	
