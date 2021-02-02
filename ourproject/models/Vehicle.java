@@ -371,6 +371,44 @@ public class Vehicle {
 	}
 
 
+	public void setSlowingPoint() {
+		int cp = this.criticalPoint;
+	if (cp == -1) cp = path.length-1;
+	
+	double distanceToCpAbsolute = forward.computeDistance(path, 0, cp);
+	double distanceToCpRelative = forward.computeDistance(path, pathIndex,cp);
+	// We compute the distance traveled:
+	// - accelerating up to vel max from current vel (distToVelMax)
+	// - decelerating up to zero vel from vel max (brakingVelMax)
+
+	double v0 = velocity;
+	double decMax = this.accMax*0.9;//new
+	double timeToVelMax = (velMax - v0)/accMax;
+	double distToVelMax = v0*timeToVelMax + accMax*Math.pow(timeToVelMax,2.0)/2;
+	double brakingFromVelMax = Math.pow(velMax,2.0)/(decMax*2);
+
+	// If sum of the two is lower than distanceToCp, than the move profile is trapezoidal.
+	// If higher, than the profile is triangular, but not reaching maximum speed.
+	// For triangular: accelerating distance == decelerating distance
+	double braking;
+	double traveledInTc = 0;
+	if (distToVelMax + brakingFromVelMax > distanceToCpRelative){	// triangular profile
+		// braking = brak1 (from NowVel to zero) + brak2 (from velReached to NowVel)
+		double brak1 = Math.pow(v0,2.0)/(accMax*2);
+		double brak2 = (distanceToCpRelative - brak1)/2;
+		braking = brak1 + brak2;
+		
+		double timeToTopVel = -v0/accMax + Math.sqrt(Math.pow(v0/accMax, 2)+2*brak2/accMax);
+		double topVel = v0 + accMax*timeToTopVel;
+		traveledInTc = 2*topVel*Tc*mill2sec; //- Math.pow(Tc*mill2sec,2.0)*accMax/2;
+	}
+	else {
+		braking = brakingFromVelMax;
+		traveledInTc = 2*velMax*Tc*mill2sec;
+	}
+	this.slowingPoint =Math.max(0, (distanceToCpAbsolute-(braking+traveledInTc)));
+
+}
 
 
 	public void setSlowingPointNew(){
@@ -388,7 +426,7 @@ public class Vehicle {
         double traveledInTc = velMax*Tc;
     	braking = brakingFromVelMax;
     	traveledInTc = velMax*Tc*mill2sec;
-        this.slowingPoint = distanceToCpAbsolute-(braking+traveledInTc);
+        this.slowingPoint =Math.max(0, (distanceToCpAbsolute-(braking+traveledInTc)));
 	}
 
 	public int getStoppingPoint() {

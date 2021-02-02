@@ -57,7 +57,8 @@ public class CriticalSectionsFounder {
 		String List = " ";
 		//Geometry ob2 = null;
 		for (Integer vh : nears){
-			if (mainTable.get(vh).getBehavior() == Behavior.stop || mainTable.get(vh).getBehavior() == Behavior.reached){
+			if (mainTable.get(vh).getBehavior() == Behavior.stop || mainTable.get(vh).getBehavior() == Behavior.reached
+				||mainTable.get(vh).getBehavior() == Behavior.waiting){
 				obstacles.add(makeObstacle(mainTable.get(vh)));
 				//ob2 = makeObstacle(mainTable.get(vh));
 				List = (List + vh + " " );
@@ -66,6 +67,10 @@ public class CriticalSectionsFounder {
 		}
 		if(count != 0){
 			Geometry[] obstaclesG = obstacles.toArray(new Geometry[obstacles.size()]);		
+			System.out.println("\u001B[35m" + "Attempting to re-plan path of Robot" + v.getID() + " (with robot" + List + " as obstacle), "
+					+ "with starting point in "+currentWaitingPose+"..." + "\u001B[0m");
+					System.out.println("\u001B[35m" + obstaclesG + "\u001B[0m");
+			
 			PoseSteering[] newPath = doReplanning(mp, currentWaitingPose, currentWaitingGoal, obstaclesG);
 			// System.out.println(newPath.length);
 			// PoseSteering[] newCompletePath = new PoseSteering[newPath.length+currentWaitingIndex];
@@ -78,6 +83,7 @@ public class CriticalSectionsFounder {
 				return newCompletePath;
 			}
 			else {
+				System.out.println("\u001B[31m" + "Failed to re-plan path of Robot" + v.getID() + "\u001B[0m");
 				return oldPath;
 			}
 		}
@@ -182,12 +188,14 @@ public class CriticalSectionsFounder {
 	}
 
 	public boolean csTooClose(Vehicle v, CriticalSection csOld, CriticalSection csNew){
+		int start1 = csOld.getTe1Start();
 		int end1 = csOld.getTe1End();
 		int start2 = csNew.getTe1Start();
 		double RobotDimesion = v.getWholeSpatialEnvelope().getFootprint().getArea();
 		SpatialEnvelope SpaceBetweenCs;
 		double SpaceBetweenCsDimesion;
 		ArrayList<PoseSteering> path = new ArrayList<PoseSteering>();
+		if (start1 == v.getPathIndex()) return false;
 		if (end1 < start2){
 			for (int i=end1; i < start2; i++){
 				path.add(v.getWholePath()[i]);

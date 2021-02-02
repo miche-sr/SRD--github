@@ -110,72 +110,75 @@ public class ConstantAccelerationForwardModel {
 		state.setPosition(state.getPosition()+dxdt*deltaTime);
 		state.setVelocity(state.getVelocity()+dvdt*deltaTime);
 	}
+
+		//from run in TrajectoryEnvelopeTrackerRK4: line 548
+		public State updateState(Vehicle v, double elapsedTrackingTime,boolean FreeAccess) {
+		
+			State state = new State(v.getDistanceTraveled(), v.getVelocity());	// state attuale
+			double velMaxL = v.getVelMax();
+			double deltaT =  v.getTc()*Vehicle.mill2sec;
+			boolean skipIntegration = false;
+			
+			if (v.getPathIndex() >= v.getCriticalPoint() && state.getVelocity() <= 0.0 ) { //-3
+				skipIntegration = true;
+				robotBehavior = Behavior.stop; // sono fermo
+			}	
+			
+			if (!skipIntegration) {
+	 
 	
-	//from run in TrajectoryEnvelopeTrackerRK4: line 548
-	public State updateState(Vehicle v, double elapsedTrackingTime,boolean FreeAccess) {
-		
-		State state = new State(v.getDistanceTraveled(), v.getVelocity());	// state attuale
-		double velMaxL = v.getVelMax();
-		double deltaT =  v.getTc()*Vehicle.mill2sec;
-		boolean skipIntegration = false;
-		
-		if (v.getPathIndex() >= v.getCriticalPoint() && state.getVelocity() <= 0.0 ) { //-3
-			skipIntegration = true;
-			robotBehavior = Behavior.stop; // sono fermo
-		}	
-		
-		if (!skipIntegration) {
- 
-
-			//saturazioni velocità
-			if (state.getVelocity() < deltaT*v.getAccMAx() && v.getDistanceTraveled() >= v.getSlowingPoint()
-				&& robotBehavior == Behavior.slowing){
-				
-				if (v.getPathIndex()>= v.getWholePath().length-2 ){
-					state.setVelocity(0.0);
-					robotBehavior = Behavior.reached;
-					state.setPosition(computeDistance(v.getWholePath(), 0, v.getWholePath().length-1));
-				}
-				else if (v.getPathIndex()>= v.getCriticalPoint()-1 && v.getPathIndex()<= v.getCriticalPoint()){
-					state.setVelocity(0.0);
-					robotBehavior = Behavior.stop;
-					state.setPosition(computeDistance(v.getWholePath(), 0, v.getCriticalPoint()));
-				}
-				else if ( v.getPathIndex()< v.getCriticalPoint()){
-					robotBehavior = Behavior.slowing;
-					integrateRK4(state, elapsedTrackingTime, deltaT, false, deltaT*v.getAccMAx(), 1.0, deltaT*v.getAccMAx()*0.9);
-				}
-				else{
-					state.setVelocity(0.0);
-					robotBehavior = Behavior.stop; // fermo
-					state.setPosition(v.getDistanceTraveled());
-				}
-			} 
-
-			
-			else{
-				// caso accelerazione - vMax
-				boolean slowingDown = false;
-				robotBehavior = Behavior.moving;
-			
-				// caso Frenata
-				if(v.getDistanceTraveled() >= v.getSlowingPoint()) {
-					slowingDown = true; 
-					robotBehavior = Behavior.slowing; 
+				//saturazioni velocità
+				if (state.getVelocity() < deltaT*v.getAccMAx() && v.getDistanceTraveled() >= v.getSlowingPoint()
+					&& robotBehavior == Behavior.slowing){
 					
-				}
-				integrateRK4(state, elapsedTrackingTime, deltaT, slowingDown, velMaxL, 1.0, v.getAccMAx());
-			}
+					if (v.getPathIndex()>= v.getWholePath().length-2 ){
+						state.setVelocity(0.0);
+						robotBehavior = Behavior.reached;
+						state.setPosition(computeDistance(v.getWholePath(), 0, v.getWholePath().length-1));
+					}
+					else if (v.getPathIndex()>= v.getCriticalPoint()-1 && v.getPathIndex()<= v.getCriticalPoint()){
+						state.setVelocity(0.0);
+						robotBehavior = Behavior.stop;
+						state.setPosition(computeDistance(v.getWholePath(), 0, v.getCriticalPoint()));
+					}
+					else if ( v.getPathIndex()< v.getCriticalPoint()){
+						robotBehavior = Behavior.slowing;
+						integrateRK4(state, elapsedTrackingTime, deltaT, false, deltaT*v.getAccMAx(), 1.0, v.getAccMAx()*0.8); 
+					}
+					else{
+						state.setVelocity(0.0);
+						robotBehavior = Behavior.stop; // fermo
+						state.setPosition(v.getDistanceTraveled());
+					}
+					
+	
+				} 
+	
+				
+				else{
+					// caso accelerazione - vMax
+					boolean slowingDown = false;
+					robotBehavior = Behavior.moving;
+				
+					// caso Frenata
+					if(v.getDistanceTraveled() >= v.getSlowingPoint()) {
+						slowingDown = true; 
+						robotBehavior = Behavior.slowing; 
+						
+					}
+					integrateRK4(state, elapsedTrackingTime, deltaT, slowingDown, velMaxL, 1.0, v.getAccMAx());
+				}	
+	
+			} 
 			if(state.getVelocity()< 0.0){
 				state.setVelocity(0.0);
 				state.setPosition(v.getDistanceTraveled());
 			}
-			
 			if (robotBehavior == Behavior.stop && !FreeAccess)robotBehavior = Behavior.waiting;
-				return state;
-		} 
-		return state;
-	}
+			return state;
+		}
+
+
 		
 
 	public double computeDistance(PoseSteering[] path, int startIndex, int endIndex) {
@@ -231,20 +234,7 @@ public class ConstantAccelerationForwardModel {
 			}
 		}
 			
-		// //inserisco anche PathIndx tra CP e fine SC inserndo come tempo -1
-		// if (v.getCs().size() != 0)
-		// 	if (!v.getCs().last().isPrecedenza())
-		// 		csEnd = v.getCs().last().getTe1End();
-		// 	else csEnd = -1; //non fare il calcolo sottostante
-		// else csEnd = -1; //non fare il calcolo sottostante
-		
-		// //currentPathIndex += 1;
-		// while ((currentPathIndex <= csEnd+1 ) && currentPathIndex <= v.getWholePath().length-1 &&  isInsideRadius(v,currentPathIndex)){
-		// 	if (!times.containsKey(currentPathIndex)) {
-		// 		times.put(currentPathIndex, -1.0);
-		// 		}
-		// 	currentPathIndex += 1;
-		// }
+
 
 
 		double dist = computeDistance(v.getWholePath(),v.getPathIndex(), currentPathIndex);

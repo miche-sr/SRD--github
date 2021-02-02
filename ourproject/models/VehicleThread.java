@@ -116,25 +116,28 @@ public class VehicleThread implements Runnable {
 				 		** SEMAPHORE **
 				 ++++++++++++++++++++++++++++++++*/
 
-				 for (TrafficLights TL : v.getTrafficLightsNears()){
+				for (TrafficLights TL : v.getTrafficLightsNears()){
 					synchronized(TL){
 						if (v.getWholeSpatialEnvelope().getPolygon().intersects(TL.getCorridorPath().getPolygon())){
 	
-							if (!TL.getRobotInsideCorridor().contains(v.getID())){
-								if (TL.checkSemophore(v)){ // entro nel corridioi
-										TL.addVehicleInside(v);
+							if (!TL.getRobotInsideCorridor().contains(v.getID()) ){
+								if (TL.checkSemophore(v) ){ // entro nel corridioi
 										FreeAccess = true;
+										if(v.getSpatialEnvelope().getPolygon().intersects(TL.getCorridorPath().getPolygon()))
+											TL.addVehicleInside(v);
 								}
-								else{ // semaforo rosso
-									if (FreeAccess == true) smStopIndex = intersect.SmStopIndex(v, TL);
+								else { // semaforo rosso
+									if (FreeAccess == true) smStopIndex = intersect.SmStopIndex(v, TL)-6;
 									FreeAccess = false;
 								}
 							}
 						}
 						if (!v.getSpatialEnvelope().getPolygon().intersects(TL.getCorridorPath().getPolygon())) {
 						 	if (FreeAccess == true) {//lo stavo attraversando e sono uscito
-								if (TL.getRobotInsideCorridor().contains(v.getID()))	TL.removeVehicleInside(v);
+								if (TL.getRobotInsideCorridor().contains(v.getID()))
+									TL.removeVehicleInside(v);
 							}
+							else if (v.getPathIndex() >= intersect.SmStopIndex(v, TL)) FreeAccess = true; // sono oltre
 					
 						}
 						
@@ -176,11 +179,12 @@ public class VehicleThread implements Runnable {
 				if(v.getCs().size() != 0) timesPrec.add(elapsePrec);
 
 
-				if(FreeAccess== false && v.getStoppingPoint() != -1 && smStopIndex >= 6)
-					v.setCriticalPoint( Math.min(v.getCriticalPoint(),smStopIndex-6) );
+				if(FreeAccess== false && v.getStoppingPoint() != -1 && smStopIndex >= 0)
+					v.setCriticalPoint( Math.min(v.getCriticalPoint(),smStopIndex) );
 				
 				if (oldCp != v.getCriticalPoint()) {
-					v.setSlowingPointNew();
+					//v.setSlowingPointNew();
+					v.setSlowingPoint();
 					slp = v.getForwardModel().getPathIndex(v.getWholePath(), v.getSlowingPoint());
 					oldCp = v.getCriticalPoint();
 				}
