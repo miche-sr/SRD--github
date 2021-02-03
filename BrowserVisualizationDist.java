@@ -413,11 +413,11 @@ public void displayRobotState(Polygon fp, Vehicle v,String... extraStatusInfo) {
 	Geometry geom = TrajectoryEnvelope.getFootprint(fp, x, y, theta);
 	this.updateRobotFootprintArea(geom);
 	double scale = Math.sqrt(robotFootprintArea)*0.2;
-	Geometry arrowGeom = createArrow(v.getSpatialEnvelope().getPath()[0].getPose(), robotFootprintXDim/scale, scale);
-	String jsonString = "{ \"operation\" : \"addGeometry\", \"data\" : " + this.geometryToJSONString(name, geom, "#ff0000", -1, true, extraData) + "}";
-	String jsonStringArrow = "{ \"operation\" : \"addGeometry\", \"data\" : " + this.geometryToJSONString("_"+name, arrowGeom, "#ffffff", -1, true, null) + "}";
+	//Geometry arrowGeom = createArrow(v.getSpatialEnvelope().getPath()[0].getPose(), robotFootprintXDim/scale, scale);
+	String jsonString = "{ \"operation\" : \"addGeometry\", \"data\" : " + this.geometryToJSONString(name, geom, "#ff0000d2", -1, true, extraData) + "}";
+	//String jsonStringArrow = "{ \"operation\" : \"addGeometry\", \"data\" : " + this.geometryToJSONString("_"+name, arrowGeom, "#ffffff", -1, true, null) + "}";
 	enqueueMessage(jsonString);
-	enqueueMessage(jsonStringArrow);
+	//enqueueMessage(jsonStringArrow);
 }
 
 public void addEnvelope(Geometry geom, Vehicle v, String color) {
@@ -437,11 +437,11 @@ private Geometry createPoint(Vehicle v, int pathIndex) {
 	double size = Math.sqrt(v.getWholeSpatialEnvelope().getFootprint().getArea());
 
 	Coordinate[] coords = new Coordinate[5];
-	coords[0] = new Coordinate(0.0,0.0);
-	coords[1] = new Coordinate(0.1,0.0);
-	coords[2] = new Coordinate(0.1,1.0);
-	coords[3] = new Coordinate(0.0,1.0);
-	coords[4] = new Coordinate(0.0,0.0);
+	coords[0] = new Coordinate(-size/2,-0.5);
+	coords[1] = new Coordinate(-size/2+0.1,-0.5);
+	coords[2] = new Coordinate(-size/2+0.1,0.5);
+	coords[3] = new Coordinate(-size/2,0.5);
+	coords[4] = new Coordinate(-size/2,-0.5);
 
 	Polygon point = gf.createPolygon(coords);
 	AffineTransformation at = new AffineTransformation();
@@ -459,7 +459,7 @@ public void displayPoint(Vehicle v, int pathIndex, String color) {
 }
 
 public void addCorridor(Geometry geom, int ID) {
-	String color = "#ffffff";
+	String color = "#0008f6"; //"#ffffff";
 	String jsonString = "{ \"operation\" : \"addGeometry\", \"data\" : " + this.geometryToJSONString("_S"+ID, geom, color, -1, false, null) + "}";
 	enqueueMessage(jsonString);
 }
@@ -480,10 +480,10 @@ private Geometry createLight(Pose semaphore,int ID, int semaphoreNumber) {
 	Polygon point = gf.createPolygon(coords);
 	AffineTransformation at = new AffineTransformation();
 	if (semaphoreNumber == 1) x=x-0.5;
-	else if (semaphoreNumber == 2) x=x+2;
+	else if (semaphoreNumber == 2) x=x+0.5;
 
 	at.translate(x, y-0.6);
-	at.rotate(theta);
+	//at.rotate(theta);
 	Geometry ret = at.transform(point);
 	return ret;
 }

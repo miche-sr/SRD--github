@@ -139,7 +139,7 @@ public class PrecedencesFounder {
         cs.setPrecedenza(prec);
         
         //if((v1.getID()== 1 && v2.getID() == 7) || (v1.getID()== 7 && v2.getID() == 1))
-        System.out.println("R"+v1.getID() +"-R"+v2.getID()+ " debug Prec " + prec +" "+ debug );
+        //System.out.println("R"+v1.getID() +"-R"+v2.getID()+ " debug Prec " + prec +" "+ debug );
         
         // System.out.println("\u001B[35m" + "my ID: "+v1.getID()+ "  sp: " + v1.getStoppingPoint() +
         // " \nother Id: " +v2.getID()+"  sp:" + v2.getStoppingPoint() + "\n"+

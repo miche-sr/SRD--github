@@ -33,12 +33,12 @@ public class Test2 {
 		 Pose start2 = new Pose(15, 3, Math.PI/6); Pose[] goal2 = { new Pose(3.5, -2.5, Math.PI/6) };
 		 //Pose start2 = new Pose(20, 4, 0); Pose[] goal2 = { new Pose(15, 4, 0) };
 
-		Thread thread1 = initThread(1, a, start1, goal1);
+		Thread thread1 = initThread(1, c, start1, goal1);
 		Thread thread2 = initThread(2, c, start2, goal2);
 
 		BrowserVisualizationDist viz = new BrowserVisualizationDist();
 		if (yamlFile != null) viz.setMap(yamlFile);
-		viz.setInitialTransform(45, 5, 10);
+		viz.setInitialTransform(65, 2, 5);
 
 		try {
 			TimeUnit.SECONDS.sleep(5);

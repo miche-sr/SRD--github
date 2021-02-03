@@ -209,7 +209,7 @@ public class ConstantAccelerationForwardModel {
 			if (state.getPosition() >= distanceToCp || state.getVelocity() <= 0) break;
 			if (state.getPosition() >= v.getSlowingPoint()) {
 				if (state.getVelocity() < deltaTime*v.getAccMAx())
-					integrateRK4(state, time, deltaTime, false, deltaTime*v.getAccMAx(), 1.0, deltaTime*v.getAccMAx()*0.9);
+					integrateRK4(state, time, deltaTime, false, deltaTime*v.getAccMAx(), 1.0, v.getAccMAx()*0.8);
 				else
 					integrateRK4(state, time, deltaTime, true, maxVel, 1.0, maxAccel);
 			}

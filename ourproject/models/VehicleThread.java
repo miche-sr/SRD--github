@@ -211,6 +211,7 @@ public class VehicleThread implements Runnable {
 				v.getVisualization().displayPoint(v, v.getStoppingPoint(), colorStp);
 				String infoCs = v.getForwardModel().getRobotBehavior().toString();
 				v.getVisualization().displayRobotState(v.getSpatialEnvelope().getFootprint(), v,infoCs);
+				//v.getVisualization().displayRobotState(v.getSpatialEnvelope().getFootprint(), v);
 
 				/// SLEEPING TIME ////
 				double finishTc = System.currentTimeMillis();
@@ -220,9 +221,9 @@ public class VehicleThread implements Runnable {
 				
 				Thread.sleep(v.getTc());
 				this.elapsedTrackingTime += v.getTc()*Vehicle.mill2sec;
-			}
+			} // fine while
 
-			// FINE THREAD
+			// CHIUSURA THREAD
 			v.sendNewRr();
 			double finish = System.currentTimeMillis();
 			double timeElapsed = (finish - start)/1000;

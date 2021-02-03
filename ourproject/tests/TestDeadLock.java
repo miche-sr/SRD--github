@@ -42,7 +42,7 @@ public class TestDeadLock{
 
 		BrowserVisualizationDist viz = new BrowserVisualizationDist();
 		if (yamlFile != null) viz.setMap(yamlFile);
-		viz.setInitialTransform(45, 8, 12);
+		viz.setInitialTransform(60, 3, 5);
 		try {
 			TimeUnit.SECONDS.sleep(5);
 		} catch (InterruptedException e) {

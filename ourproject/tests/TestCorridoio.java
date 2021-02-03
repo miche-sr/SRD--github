@@ -29,7 +29,7 @@ public class TestCorridoio {
 		Vehicle.Category c = Vehicle.Category.CAR;
 
 		BrowserVisualizationDist viz = new BrowserVisualizationDist();
-		viz.setInitialTransform(30, 5, 10);
+		viz.setInitialTransform(40, 5, 10);
 		
 		
 		Thread.sleep(2000);

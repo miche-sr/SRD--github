@@ -21,7 +21,7 @@ public class Test4Grid {
 		return thread;
 	}
 
-	public static void main(String args[]) {
+	public static void main(String args[]) throws InterruptedException {
 
 		Vehicle.Category a = Vehicle.Category.AMBULANCE;
 		Vehicle.Category c = Vehicle.Category.CAR;
@@ -32,23 +32,23 @@ public class Test4Grid {
 
 
 		/* pose libere */
-		Pose start1 = new Pose(1, 12.5, Math.PI); 	Pose[] goal1 = { new Pose(16, 12.5, Math.PI) };	
-		Pose start2 = new Pose(1, 2.5, Math.PI); 	Pose[] goal2 = { new Pose(16, 2.5, Math.PI) };
-		Pose start3 = new Pose(1, 5, Math.PI); 		Pose[] goal3 = { new Pose(16, 5, Math.PI) };
-		Pose start4 = new Pose(1, 7.5, Math.PI); 	Pose[] goal4 = { new Pose(16, 7.5, Math.PI) };
-		Pose start5 = new Pose(1, 10, Math.PI); 	Pose[] goal5 = { new Pose(16, 10, Math.PI) };	
+		Pose start1 = new Pose(1, 11.2, Math.PI); 	Pose[] goal1 = { new Pose(16, 11.2, Math.PI) };	
+		Pose start2 = new Pose(1, 1.2, Math.PI); 	Pose[] goal2 = { new Pose(16, 1.2, Math.PI) };
+		Pose start3 = new Pose(1, 3.7, Math.PI); 		Pose[] goal3 = { new Pose(16, 3.7, Math.PI) };
+		Pose start4 = new Pose(1, 6.2, Math.PI); 	Pose[] goal4 = { new Pose(16, 6.2, Math.PI) };
+		Pose start5 = new Pose(1, 8.7, Math.PI); 	Pose[] goal5 = { new Pose(16, 8.7, Math.PI) };	
 
-		Pose start6 = new Pose(15, 0.2, 0); 		Pose[] goal6 = { new Pose(0, 0.2, 0) };
-		Pose start7 = new Pose(15, 2.7,0) ; 		Pose[] goal7 = { new Pose(0, 2.7, 0) };
-		Pose start8 = new Pose(15, 5.2, 0); 		Pose[] goal8 = { new Pose(0, 5.2, 0) };
-		Pose start9 = new Pose(15, 7.7, 0); 		Pose[] goal9 = { new Pose(0, 7.7, 0) };
-		Pose start10 = new Pose(15, 10.2, 0); 		Pose[] goal10 = { new Pose(0, 10.2, 0) };
+		Pose start6 = new Pose(15, 12.5, 0); 		Pose[] goal6 = { new Pose(0, 12.5, 0) };
+		Pose start7 = new Pose(15, 2.5,0) ; 		Pose[] goal7 = { new Pose(0, 2.5, 0) };
+		Pose start8 = new Pose(15, 5, 0); 		Pose[] goal8 = { new Pose(0, 5, 0) };
+		Pose start9 = new Pose(15, 7.5, 0); 		Pose[] goal9 = { new Pose(0, 7.5, 0) };
+		Pose start10 = new Pose(15, 10, 0); 		Pose[] goal10 = { new Pose(0, 10, 0) };
 
-		Pose start11 = new Pose(12.7,0, -Math.PI/2); 	Pose[] goal11 = { new Pose(12.7,15, -Math.PI/2) };
-		Pose start12 = new Pose(2.7,0,-Math.PI/2) ; 	Pose[] goal12 = { new Pose(2.7,15, -Math.PI/2) };
-		Pose start13 = new Pose(5.2, 0, -Math.PI/2); 	Pose[] goal13 = { new Pose(5.2,15, -Math.PI/2) };
-		Pose start14 = new Pose(7.7, 0, -Math.PI/2); 	Pose[] goal14 = { new Pose(7.7,15, -Math.PI/2) };
-		Pose start15 = new Pose(10.2,0, -Math.PI/2); 	Pose[] goal15 = { new Pose(10.2,15, -Math.PI/2) };
+		Pose start11 = new Pose(11.2,0, -Math.PI/2); 	Pose[] goal11 = { new Pose(11.2,15, -Math.PI/2) };
+		Pose start12 = new Pose(13.7,0,-Math.PI/2) ; 	Pose[] goal12 = { new Pose(13.7,15, -Math.PI/2) };
+		Pose start13 = new Pose(3.7, 0, -Math.PI/2); 	Pose[] goal13 = { new Pose(3.7,15, -Math.PI/2) };
+		Pose start14 = new Pose(6.2, 0, -Math.PI/2); 	Pose[] goal14 = { new Pose(6.2,15, -Math.PI/2) };
+		Pose start15 = new Pose(8.7,0, -Math.PI/2); 	Pose[] goal15 = { new Pose(8.7,15, -Math.PI/2) };
 		
 		Pose start16 = new Pose(12.5,14, Math.PI/2); 	Pose[] goal16 = { new Pose(12.5,-1, Math.PI/2) };
 		Pose start17 = new Pose(2.5, 14, Math.PI/2) ; 	Pose[] goal17 = { new Pose(2.5,-1,  Math.PI/2) };
@@ -56,23 +56,23 @@ public class Test4Grid {
 		Pose start19 = new Pose(7.5, 14, Math.PI/2); 	Pose[] goal19 = { new Pose(7.5,-1,   Math.PI/2) };
 		Pose start20 = new Pose(10,14, Math.PI/2); 		Pose[] goal20 = { new Pose(10,-1, Math.PI/2) };
 
-		Pose start21 = new Pose(21, 12.5, Math.PI); 	Pose[] goal21 = { new Pose(36, 12.5, Math.PI) };	
-		Pose start22 = new Pose(21, 2.5, Math.PI); 		Pose[] goal22 = { new Pose(36, 2.5, Math.PI) };
-		Pose start23 = new Pose(21, 5, Math.PI); 		Pose[] goal23 = { new Pose(36, 5, Math.PI) };
-		Pose start24 = new Pose(21, 7.5, Math.PI); 		Pose[] goal24 = { new Pose(36, 7.5, Math.PI) };
-		Pose start25 = new Pose(21, 10, Math.PI); 		Pose[] goal25 = { new Pose(36, 10, Math.PI) };	
+		Pose start21 = new Pose(21, 11.2, Math.PI); 	Pose[] goal21 = { new Pose(36, 11.2, Math.PI) };	
+		Pose start22 = new Pose(21, 1.2, Math.PI); 	Pose[] goal22 = { new Pose(36, 1.2, Math.PI) };
+		Pose start23 = new Pose(21, 3.7, Math.PI); 		Pose[] goal23 = { new Pose(36, 3.7, Math.PI) };
+		Pose start24 = new Pose(21, 6.2, Math.PI); 	Pose[] goal24 = { new Pose(36, 6.2, Math.PI) };
+		Pose start25 = new Pose(21, 8.7, Math.PI); 	Pose[] goal25 = { new Pose(36, 8.7, Math.PI) };	
 
-		Pose start26 = new Pose(35, 0.2, 0); 		Pose[] goal26 = { new Pose(20, 0.2, 0) };
-		Pose start27 = new Pose(35, 2.7,0) ; 		Pose[] goal27 = { new Pose(20, 2.7, 0) };
-		Pose start28 = new Pose(35, 5.2, 0); 		Pose[] goal28 = { new Pose(20, 5.2, 0) };
-		Pose start29 = new Pose(35, 7.7, 0); 		Pose[] goal29 = { new Pose(20, 7.7, 0) };
-		Pose start30 = new Pose(35, 10.2, 0); 		Pose[] goal30 = { new Pose(20, 10.2, 0) };
+		Pose start26 = new Pose(35, 12.5, 0); 		Pose[] goal26 = { new Pose(20, 12.5, 0) };
+		Pose start27 = new Pose(35, 2.5,0) ; 		Pose[] goal27 = { new Pose(20, 2.5, 0) };
+		Pose start28 = new Pose(35, 5, 0); 		Pose[] goal28 = { new Pose(20, 5, 0) };
+		Pose start29 = new Pose(35, 7.5, 0); 		Pose[] goal29 = { new Pose(20, 7.5, 0) };
+		Pose start30 = new Pose(35, 10, 0); 		Pose[] goal30 = { new Pose(20, 10, 0) };
 
-		Pose start31 = new Pose(32.7,0, -Math.PI/2); 	Pose[] goal31 = { new Pose(32.7,15, -Math.PI/2) };
-		Pose start32 = new Pose(22.7,0,-Math.PI/2) ; 	Pose[] goal32 = { new Pose(22.7,15, -Math.PI/2) };
-		Pose start33 = new Pose(25.2, 0, -Math.PI/2); 	Pose[] goal33 = { new Pose(25.2,15, -Math.PI/2) };
-		Pose start34 = new Pose(27.7, 0, -Math.PI/2); 	Pose[] goal34 = { new Pose(27.7,15, -Math.PI/2) };
-		Pose start35 = new Pose(30.2,0, -Math.PI/2); 	Pose[] goal35 = { new Pose(30.2,15, -Math.PI/2) };
+		Pose start31 = new Pose(31.2,0, -Math.PI/2); 	Pose[] goal31 = { new Pose(31.2,15, -Math.PI/2) };
+		Pose start32 = new Pose(33.7,0,-Math.PI/2) ; 	Pose[] goal32 = { new Pose(33.7,15, -Math.PI/2) };
+		Pose start33 = new Pose(23.7, 0, -Math.PI/2); 	Pose[] goal33 = { new Pose(23.7,15, -Math.PI/2) };
+		Pose start34 = new Pose(26.2, 0, -Math.PI/2); 	Pose[] goal34 = { new Pose(26.2,15, -Math.PI/2) };
+		Pose start35 = new Pose(28.7,0, -Math.PI/2); 	Pose[] goal35 = { new Pose(28.7,15, -Math.PI/2) };
 		
 		Pose start36 = new Pose(32.5,14, Math.PI/2); 	Pose[] goal36 = { new Pose(32.5,-1, Math.PI/2) };
 		Pose start37 = new Pose(22.5, 14, Math.PI/2) ; 	Pose[] goal37 = { new Pose(22.5,-1,  Math.PI/2) };
@@ -123,50 +123,54 @@ public class Test4Grid {
 		Thread thread40 = initThread(40, c, start40, goal40);
 
 
-		Pose start41 = new Pose(1, 32.5, Math.PI); 	Pose[] goal41 = { new Pose(16, 32.5, Math.PI) };	
-		Pose start42 = new Pose(1, 22.5, Math.PI); 	Pose[] goal42 = { new Pose(16, 22.5, Math.PI) };
-		Pose start43 = new Pose(1, 25, Math.PI); 	Pose[] goal43 = { new Pose(16, 25, Math.PI) };
-		Pose start44 = new Pose(1, 27.5, Math.PI); 	Pose[] goal44 = { new Pose(16, 27.5, Math.PI) };
-		Pose start45 = new Pose(1, 30, Math.PI); 	Pose[] goal45 = { new Pose(16, 30, Math.PI) };	
-		Pose start46 = new Pose(15, 20.2, 0); 		Pose[] goal46 = { new Pose(0, 20.2, 0) };
-		Pose start47 = new Pose(15, 22.7,0) ; 		Pose[] goal47 = { new Pose(0, 22.7, 0) };
-		Pose start48 = new Pose(15, 25.2, 0); 		Pose[] goal48 = { new Pose(0, 25.2, 0) };
-		Pose start49 = new Pose(15, 27.7, 0); 		Pose[] goal49 = { new Pose(0, 27.7, 0) };
-		Pose start50 = new Pose(15, 30.2, 0); 		Pose[] goal50 = { new Pose(0, 30.2, 0) };
+		Pose start41 = new Pose(1, 31.2, Math.PI); 	Pose[] goal41 = { new Pose(16, 31.2, Math.PI) };	
+		Pose start42 = new Pose(1, 21.2, Math.PI); 	Pose[] goal42 = { new Pose(16, 21.2, Math.PI) };
+		Pose start43 = new Pose(1, 23.7, Math.PI); 	Pose[] goal43 = { new Pose(16, 23.7, Math.PI) };
+		Pose start44 = new Pose(1, 26.2, Math.PI); 	Pose[] goal44 = { new Pose(16, 26.2, Math.PI) };
+		Pose start45 = new Pose(1, 28.7, Math.PI); 	Pose[] goal45 = { new Pose(16, 28.7, Math.PI) };	
 
-		Pose start51 = new Pose(12.7,20, -Math.PI/2); 	Pose[] goal51 = { new Pose(12.7,35, -Math.PI/2) };
-		Pose start52 = new Pose(2.7,20,-Math.PI/2) ; 	Pose[] goal52 = { new Pose(2.7,35, -Math.PI/2) };
-		Pose start53 = new Pose(5.2, 20, -Math.PI/2); 	Pose[] goal53 = { new Pose(5.2,35, -Math.PI/2) };
-		Pose start54 = new Pose(7.7, 20, -Math.PI/2); 	Pose[] goal54 = { new Pose(7.7,35, -Math.PI/2) };
-		Pose start55 = new Pose(10.2,20, -Math.PI/2); 	Pose[] goal55 = { new Pose(10.2,35, -Math.PI/2) };
+		Pose start46 = new Pose(15, 32.5, 0); 		Pose[] goal46 = { new Pose(0, 32.5, 0) };
+		Pose start47 = new Pose(15, 22.5,0) ; 		Pose[] goal47 = { new Pose(0, 22.5, 0) };
+		Pose start48 = new Pose(15, 25, 0); 		Pose[] goal48 = { new Pose(0, 25, 0) };
+		Pose start49 = new Pose(15, 27.5, 0); 		Pose[] goal49 = { new Pose(0, 27.5, 0) };
+		Pose start50 = new Pose(15, 30, 0); 		Pose[] goal50 = { new Pose(0, 30, 0) };
+
+		Pose start51 = new Pose(11.2,20, -Math.PI/2); 	Pose[] goal51 = { new Pose(11.2,35, -Math.PI/2) };
+		Pose start52 = new Pose(13.7,20,-Math.PI/2) ; 	Pose[] goal52 = { new Pose(13.7,35, -Math.PI/2) };
+		Pose start53 = new Pose(3.7, 20, -Math.PI/2); 	Pose[] goal53 = { new Pose(3.7,35, -Math.PI/2) };
+		Pose start54 = new Pose(6.2, 20, -Math.PI/2); 	Pose[] goal54 = { new Pose(6.2,35, -Math.PI/2) };
+		Pose start55 = new Pose(8.7,20, -Math.PI/2); 	Pose[] goal55 = { new Pose(8.7,35, -Math.PI/2) };
+		
 		Pose start56 = new Pose(12.5,34, Math.PI/2); 	Pose[] goal56 = { new Pose(12.5,19, Math.PI/2) };
 		Pose start57 = new Pose(2.5, 34, Math.PI/2) ; 	Pose[] goal57 = { new Pose(2.5,19,  Math.PI/2) };
 		Pose start58 = new Pose(5, 34, Math.PI/2); 		Pose[] goal58 = { new Pose(5,19,  Math.PI/2) };
 		Pose start59 = new Pose(7.5, 34, Math.PI/2); 	Pose[] goal59 = { new Pose(7.5,19,   Math.PI/2) };
 		Pose start60 = new Pose(10,34, Math.PI/2); 		Pose[] goal60 = { new Pose(10,19, Math.PI/2) };
 
+		Pose start61 = new Pose(21, 31.2, Math.PI); 	Pose[] goal61 = { new Pose(36, 31.2, Math.PI) };	
+		Pose start62 = new Pose(21, 21.2, Math.PI); 	Pose[] goal62 = { new Pose(36, 21.2, Math.PI) };
+		Pose start63 = new Pose(21, 23.7, Math.PI); 	Pose[] goal63 = { new Pose(36, 23.7, Math.PI) };
+		Pose start64 = new Pose(21, 26.2, Math.PI); 	Pose[] goal64 = { new Pose(36, 26.2, Math.PI) };
+		Pose start65 = new Pose(21, 28.7, Math.PI); 	Pose[] goal65 = { new Pose(36, 28.7, Math.PI) };	
 
-		Pose start61 = new Pose(21, 32.5, Math.PI); 	Pose[] goal61 = { new Pose(36, 32.5, Math.PI) };	
-		Pose start62 = new Pose(21, 22.5, Math.PI); 	Pose[] goal62 = { new Pose(36, 22.5, Math.PI) };
-		Pose start63 = new Pose(21, 25, Math.PI); 		Pose[] goal63 = { new Pose(36, 25, Math.PI) };
-		Pose start64 = new Pose(21, 27.5, Math.PI); 	Pose[] goal64 = { new Pose(36, 27.5, Math.PI) };
-		Pose start65 = new Pose(21, 30, Math.PI); 		Pose[] goal65 = { new Pose(36, 30, Math.PI) };	
-		Pose start66 = new Pose(35, 20.2, 0); 			Pose[] goal66 = { new Pose(20, 20.2, 0) };
-		Pose start67 = new Pose(35, 22.7,0) ; 			Pose[] goal67 = { new Pose(20, 22.7, 0) };
-		Pose start68 = new Pose(35, 25.2, 0); 			Pose[] goal68= { new Pose(20, 25.2, 0) };
-		Pose start69 = new Pose(35, 27.7, 0); 			Pose[] goal69 = { new Pose(20, 27.7, 0) };
-		Pose start70 = new Pose(35, 30.2, 0); 			Pose[] goal70 = { new Pose(20, 30.2, 0) };
+		Pose start66 = new Pose(35, 32.5, 0); 		Pose[] goal66 = { new Pose(20, 32.5, 0) };
+		Pose start67 = new Pose(35, 22.5,0) ; 		Pose[] goal67 = { new Pose(20, 22.5, 0) };
+		Pose start68 = new Pose(35, 25, 0); 		Pose[] goal68 = { new Pose(20, 25, 0) };
+		Pose start69 = new Pose(35, 27.5, 0); 		Pose[] goal69 = { new Pose(20, 27.5, 0) };
+		Pose start70 = new Pose(35, 30, 0); 		Pose[] goal70 = { new Pose(20, 30, 0) };
 
-		Pose start71 = new Pose(32.7,20, -Math.PI/2); 	Pose[] goal71 = { new Pose(32.7,35, -Math.PI/2) };
-		Pose start72 = new Pose(22.7,20,-Math.PI/2) ; 	Pose[] goal72 = { new Pose(22.7,35, -Math.PI/2) };
-		Pose start73 = new Pose(25.2,20, -Math.PI/2); 	Pose[] goal73 = { new Pose(25.2,35, -Math.PI/2) };
-		Pose start74 = new Pose(27.7, 20, -Math.PI/2); 	Pose[] goal74 = { new Pose(27.7,35, -Math.PI/2) };
-		Pose start75 = new Pose(30.2,20, -Math.PI/2); 	Pose[] goal75 = { new Pose(30.2,35, -Math.PI/2) };
+		Pose start71 = new Pose(31.2,20, -Math.PI/2); 	Pose[] goal71 = { new Pose(31.2,35, -Math.PI/2) };
+		Pose start72 = new Pose(33.7,20,-Math.PI/2) ; 	Pose[] goal72 = { new Pose(33.7,35, -Math.PI/2) };
+		Pose start73 = new Pose(23.7, 20, -Math.PI/2); 	Pose[] goal73 = { new Pose(23.7,35, -Math.PI/2) };
+		Pose start74 = new Pose(26.2, 20, -Math.PI/2); 	Pose[] goal74 = { new Pose(26.2,35, -Math.PI/2) };
+		Pose start75 = new Pose(28.7,20, -Math.PI/2); 	Pose[] goal75 = { new Pose(28.7,35, -Math.PI/2) };
+		
 		Pose start76 = new Pose(32.5,34, Math.PI/2); 	Pose[] goal76 = { new Pose(32.5,19, Math.PI/2) };
 		Pose start77 = new Pose(22.5, 34, Math.PI/2) ; 	Pose[] goal77 = { new Pose(22.5,19,  Math.PI/2) };
 		Pose start78 = new Pose(25, 34, Math.PI/2); 	Pose[] goal78 = { new Pose(25,19,  Math.PI/2) };
 		Pose start79 = new Pose(27.5, 34, Math.PI/2); 	Pose[] goal79 = { new Pose(27.5,19,   Math.PI/2) };
 		Pose start80 = new Pose(30,34, Math.PI/2); 		Pose[] goal80 = { new Pose(30,19, Math.PI/2) };
+
 
 		Thread thread41 = initThread(41, c, start41, goal41);
 		Thread thread42 = initThread(42, c, start42, goal42);
@@ -241,9 +245,11 @@ public class Test4Grid {
 		vh.getNears();
 		vh.sendNewRr();
 		vh.setVisualization(viz);
+		vh.setReplan(false);
+		vh.initViz();
 	}
 	//System.out.println("\n" + "Radius "  + rMax );
-	
+	Thread.sleep(1500);
 	thread1.start();
 	thread2.start();
 	thread3.start();
