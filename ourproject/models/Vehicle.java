@@ -20,12 +20,13 @@ public class Vehicle {
 		CAR, AMBULANCE
 	};
 
-	private static final double sideCar = 0.5;
-	private static final double sideAmb = 0.5;
-	private static final Coordinate[] fpCar = { new Coordinate(-sideCar,sideCar), new Coordinate(sideCar,sideCar), 
-												new Coordinate(sideCar,-sideCar), new Coordinate(-sideCar,-sideCar)};
-	private static final Coordinate[] fpAmb = { new Coordinate(-2*sideAmb,sideAmb), new Coordinate(2*sideAmb,sideAmb), 
-												new Coordinate(2*sideAmb,-sideAmb), new Coordinate(-2*sideAmb,-sideAmb)};
+	private static final double front = 0.5;
+	private static final double sideCar = front;
+	private static final double sideAmb = 2*front;
+	private static final Coordinate[] fpCar = { new Coordinate(-sideCar,front), new Coordinate(sideCar,front), 
+												new Coordinate(sideCar,-front), new Coordinate(-sideCar,-front)};
+	private static final Coordinate[] fpAmb = { new Coordinate(-sideAmb,front), new Coordinate(sideAmb,front), 
+												new Coordinate(sideAmb,-front), new Coordinate(-sideAmb,-front)};
 	// CONSTANT
 	public static double mill2sec = 0.001;
 
@@ -74,6 +75,7 @@ public class Vehicle {
 	private ConstantAccelerationForwardModel forward;
 	private BrowserVisualizationDist viz;
 	private PrecedencesFounder prec = new PrecedencesFounder();
+	ArrayList<Integer> ListAllCS = new ArrayList<Integer>();
 
 	// COSTRUTTORE
 	public Vehicle(int ID, Category category, Pose start, Pose[] goal, String yamlFile) {
@@ -84,7 +86,7 @@ public class Vehicle {
 
 		switch (category) {
 			case CAR:
-				this.velMax = 2.0;
+				this.velMax = 3.0;
 				this.accMax = 1.0;
 				this.priority = 1;
 				this.Tc = 350;
@@ -93,7 +95,7 @@ public class Vehicle {
 				break;
 
 			case AMBULANCE:
-				this.velMax = 4.0;
+				this.velMax = 4;
 				this.accMax = 2.0;
 				this.priority = 2;
 				this.Tc = 150;
@@ -105,7 +107,7 @@ public class Vehicle {
 				System.out.println("Unknown vehicle");
 		}
 		double brakingDistanceMax = Math.pow(this.velMax,2.0) / (2*this.accMax);
-		this.radius = 1*((2 * this.Tc * mill2sec ) * this.velMax + brakingDistanceMax +side );
+		this.radius = 1*((2 * this.Tc * mill2sec ) * this.velMax + brakingDistanceMax +3*side);
 		this.myDistanceToSend = this.radius; 
 		this.path = createWholePath(yamlFile);
 		this.forward = new ConstantAccelerationForwardModel(this, 1000); // ???
@@ -214,6 +216,12 @@ public class Vehicle {
 	public void setNewWholePath() {
 		this.path = intersect.rePlanPath(this, mainTable , getNears());
 		wholeSe = TrajectoryEnvelope.createSpatialEnvelope(this.path, this.footprint);
+		viz.addEnvelope(wholeSe.getPolygon(),this,"#adadad"); 
+		double allCs = 0;
+		for (Vehicle vh : vehicleList){
+			allCs = allCs + vh.countAllcsReplan();
+		}
+		System.out.println("/n NUOVECS TOTALI : " + allCs/2);
 	}
 
 	public PoseSteering[] getWholePath() {
@@ -358,7 +366,7 @@ public class Vehicle {
 	double distToVelMax = v0*timeToVelMax + accMax*Math.pow(timeToVelMax,2.0)/2;
 	double brakingFromVelMax = Math.pow(velMax,2.0)/(decMax*2);
 
-	// If sum of the two is lower than distanceToCp, than the move profile is trapezoidal.
+	// If sum of the two is lower than https://meet.google.com/ixh-qqst-gohdistanceToCp, than the move profile is trapezoidal.
 	// If higher, than the profile is triangular, but not reaching maximum speed.
 	// For triangular: accelerating distance == decelerating distance
 	double braking;
@@ -390,13 +398,13 @@ public class Vehicle {
 		double distanceToCpAbsolute = forward.computeDistance(path, 0, cp);
 		double distanceToCpRelative = forward.computeDistance(path, pathIndex,cp);
 
-		double v0 = velocity;
-		double decMax = this.accMax*0.9;
+		//double v0 = velocity;
+		double decMax = 0.9*this.accMax;
         double brakingFromVelMax = Math.pow(velMax,2.0)/(decMax*2);
         double braking;
-        double traveledInTc = velMax*Tc;
+        double traveledInTc;// = velMax*Tc;
     	braking = brakingFromVelMax;
-    	traveledInTc = velMax*Tc*mill2sec;
+    	traveledInTc = 2*velMax*Tc*mill2sec;
         this.slowingPoint =Math.max(0, (distanceToCpAbsolute-(braking+traveledInTc)));
 	}
 
@@ -438,7 +446,7 @@ public class Vehicle {
 	}
 	public HashMap<Integer, RobotReport> getMainTable() {
 		return mainTable;
-	}Pose start3 = new Pose(75, 35, Math.PI); Pose[] goal3 = { new Pose(5, 8, Math.PI) };
+	}
 
 
 	// CALCOLO QUALI SONO I ROBOT VICINI //
@@ -531,5 +539,37 @@ public class Vehicle {
 		String infoCs = forward.getRobotBehavior().toString();
 		viz.displayRobotState(wholeSe.getFootprint(), this,infoCs);
 		viz.addEnvelope(wholeSe.getPolygon(),this,"#adadad"); 
+	}
+
+	public int countAllcs(){
+		
+		ListAllCS  = intersect.findCriticalSectionsAll(this, vehicleList);
+		System.out.println("ROBOT R"+ID+" - 1° ListCS start: " + ListAllCS.size());
+		return ListAllCS.size();
+	}
+	public int countAllcsReplan(){
+		ArrayList<Integer> List = new ArrayList<Integer>();
+		ArrayList<Integer> ListNew = new ArrayList<Integer>();
+		for(Integer i : ListAllCS){
+			if(i<pathIndex){
+				List.add(i);
+			}
+		}
+		ListNew = intersect.findCriticalSectionsAll(this, vehicleList);
+		for(Integer i : ListNew){
+			if(i>pathIndex){
+				List.add(i);
+			}
+		}
+		//System.out.println("ROBOT R"+ID+" - ListCS start: " + ListAllCS.size());
+		ListAllCS.clear();
+		ListAllCS=List;
+		//System.out.println("ROBOT R"+ID+" - ListCS start: " + ListAllCS.size() +" "+List.size());
+		return List.size();
+	}
+
+	public int AllCs(){
+		System.out.println("ROBOT R"+ID+" - ListCS End: " + ListAllCS.size());
+		return ListAllCS.size();
 	}
 }

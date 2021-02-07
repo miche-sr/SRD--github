@@ -109,6 +109,13 @@ public class TestGrid {
 	}
 	//System.out.println("\n" + "Radius "  + rMax );
 	Thread.sleep(2000);
+
+	System.out.println("\n" + "Radius "  + rMax );
+	int all = 0;
+	for (Vehicle vh : vehicleList){
+		all = all + vh.countAllcs();
+	}
+	System.out.println("\n" + "All CS "  + all/2 );
 	thread1.start();
 	thread2.start();
 	thread3.start();

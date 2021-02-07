@@ -14,12 +14,13 @@ public class TestCerchio {
 	private static HashMap<Integer,RobotReport> mainTable = new HashMap<Integer,RobotReport>();
 	private static String yamlFile = null;
 	private static ArrayList<TrafficLights> trafficLightsList = new ArrayList<TrafficLights>();
-
+	private static ArrayList<Thread> threads = new ArrayList<Thread>();
 
 	public static Thread initThread(int id, Vehicle.Category ctg, Pose start, Pose[] goal) {
 		Vehicle vehicle = new Vehicle(id, ctg, start, goal,yamlFile);
 		Thread thread = new Thread(new VehicleThread(vehicle));
 		vehicleList.add(vehicle);
+		threads.add(thread);
 		return thread;
 	}
 
@@ -28,17 +29,17 @@ public class TestCerchio {
 		Vehicle.Category a = Vehicle.Category.AMBULANCE;
 		Vehicle.Category c = Vehicle.Category.CAR;
 		
-		int NUMBER_ROBOTS = 30;
-		double radius = 20;
+		int NUMBER_ROBOTS = 90;
+		double radius = 40 ;
 
 
 		BrowserVisualizationDist viz = new BrowserVisualizationDist();
 		if (yamlFile != null) viz.setMap(yamlFile);
-		viz.setInitialTransform(20,radius+3, radius+3);
+		viz.setInitialTransform(12,radius+3, radius+1);
 
 		double theta = 0.0;
-		ArrayList<Thread> threads = new ArrayList<Thread>();
-		for (int i = 0; i < NUMBER_ROBOTS; i++) {
+		
+		for (int i = 10; i < NUMBER_ROBOTS; i++) {
 			//In case deadlocks occur, we make the coordinator capable of re-planning on the fly (experimental, not working properly yet)
 			
 			//Place robots.
@@ -47,7 +48,7 @@ public class TestCerchio {
 			Pose[] goalPose ={ new Pose(radius*Math.cos(alpha+Math.PI), radius*Math.sin(alpha+Math.PI), alpha)};
 
 			Thread thread = initThread(NUMBER_ROBOTS-i, c, startPose, goalPose);
-			threads.add(thread);
+			
 		}
 		
 		
@@ -76,9 +77,15 @@ public class TestCerchio {
 			vh.setReplan(false);
 			vh.initViz();
 		}
-		Thread.sleep(2000);
+		Thread.sleep(1200);
 		System.out.println("\n" + "Radius "  + rMax );
-
+		System.out.println("\n" + "Radius "  + rMax );
+		int all = 0;
+		for (Vehicle vh : vehicleList){
+			all = all + vh.countAllcs();
+		}
+		System.out.println("\n" + "All CS "  + all/2 );
+		
 		double start = System.currentTimeMillis();
 		for(Thread tr : threads){
 			tr.start();

@@ -89,9 +89,18 @@ public class TestBasement {
 		vh.getNears();
 		vh.sendNewRr();
 		vh.setVisualization(viz);
+		vh.initViz();
 	}
 	System.out.println("\n" + "Radius "  + rMax );
-	
+	Thread.sleep(2000);
+
+	System.out.println("\n" + "Radius "  + rMax );
+	int all = 0;
+	for (Vehicle vh : vehicleList){
+		all = all + vh.countAllcs();
+	}
+	System.out.println("\n" + "All CS "  + all/2 );
+
 	double start = System.currentTimeMillis();
 	thread1.start();
 	TimeUnit.MILLISECONDS.sleep(35);
@@ -119,8 +128,15 @@ public class TestBasement {
 	thread8.join();
 	thread9.join();
 
+	System.out.println("\n" + "Radius "  + rMax );
+	double all2 = 0;
+	for (Vehicle vh : vehicleList){
+		all2 = all2 + vh.countAllcs();
+	}
+	System.out.println("\n" + "All CS end "  + all2/2 );
 	double finish = System.currentTimeMillis();
 	double timeElapsed = (finish - start)/1000;
 	System.out.println("Time Elapsed Complessivo - " + timeElapsed);
+
 	}
 }

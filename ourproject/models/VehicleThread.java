@@ -2,16 +2,10 @@ package se.oru.coordination.coordination_oru.ourproject.models;
 
 import static org.junit.Assert.fail;
 
-//import java.lang.reflect.Array;
-//import java.sql.Time;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.TreeSet;
-
-import javax.lang.model.util.ElementScanner6;
-
-//import org.graalvm.compiler.phases.verify.VerifyDebugUsage;
-
 import se.oru.coordination.coordination_oru.ourproject.algorithms.CriticalSectionsFounder;
 import se.oru.coordination.coordination_oru.ourproject.algorithms.ConstantAccelerationForwardModel.Behavior;
 
@@ -42,6 +36,7 @@ public class VehicleThread implements Runnable {
 	//private static String colorSlp =  "#0008f6";
 	private ArrayList<Double> timesCs = new ArrayList<Double>();
 	private ArrayList<Double> timesPrec = new ArrayList<Double>();
+	private ArrayList<Double> timesTc = new ArrayList<Double>();
 
 
 	public VehicleThread(Vehicle v){
@@ -57,7 +52,7 @@ public class VehicleThread implements Runnable {
 
 		try{
 			while(v.getForwardModel().getRobotBehavior() != Behavior.reached && run){
-				double startTc = System.currentTimeMillis();
+				long startTc = System.currentTimeMillis();
 				
 				//// UNPACK MESSAGES ////
 				rrNears.clear();
@@ -170,7 +165,7 @@ public class VehicleThread implements Runnable {
 					if (v.isCsTooClose() == false || csOld == null) 
 						csOld = cs;
 				}
-
+				
 				double endPrec = System.currentTimeMillis();
 				double elapsePrec = endPrec  - startPrec;
 				if(v.getCs().size() != 0) timesPrec.add(elapsePrec);
@@ -180,14 +175,15 @@ public class VehicleThread implements Runnable {
 					v.setCriticalPoint( Math.min(v.getCriticalPoint(),smStopIndex) );
 				
 				if (oldCp != v.getCriticalPoint()) {
-					//v.setSlowingPointNew();
-					v.setSlowingPoint();
+					v.setSlowingPointNew();
+					//v.setSlowingPoint();
 					slp = v.getForwardModel().getPathIndex(v.getWholePath(), v.getSlowingPoint());
 					oldCp = v.getCriticalPoint();
+					v.setSlowingPoint();
 				}
 				if (v.getForwardModel().getRobotBehavior() == Behavior.stop)
 					v.setSlowingPointNew();
-
+					//v.setSlowingPoint();
 				//// UPDATE VALUES ///
 				v.setPathIndex(elapsedTrackingTime,FreeAccess);
 				v.setPose(v.getWholePath()[v.getPathIndex()].getPose());
@@ -205,7 +201,7 @@ public class VehicleThread implements Runnable {
 					cp = (v.getPathIndex() + v.getSpatialEnvelope().getPath().length-1 ) ;
 				else cp = v.getCriticalPoint();
 
-				v.getVisualization().addEnvelope(v.getWholeSpatialEnvelope().getPolygon(),v,colorEnv); 
+				//v.getVisualization().addEnvelope(v.getWholeSpatialEnvelope().getPolygon(),v,colorEnv); 
 				v.getVisualization().addEnvelope(v.getSpatialEnvelope().getPolygon(),v,colorTruEnv);
 				v.getVisualization().displayPoint(v, cp, colorCrp); //-1 perche array parte da zero
 				v.getVisualization().displayPoint(v, v.getStoppingPoint(), colorStp);
@@ -216,10 +212,12 @@ public class VehicleThread implements Runnable {
 				/// SLEEPING TIME ////
 				double finishTc = System.currentTimeMillis();
 				double timeElapsedTc = (finishTc - startTc);
-				if (timeElapsedTc > v.getTc())
-				System.out.println("\u001B[31m"+"R" + this.v.getID() + " - ATTENZIONE Time Elapsed Tc " + "\t" + timeElapsedTc + " > Tc " +v.getTc() + "\u001B[0m");
-				
-				Thread.sleep(v.getTc());
+				timesTc.add(timeElapsedTc);
+				// long sleep = v.getTc() - timeElapsedTc;
+				// if (sleep <= 0){
+				// //System.out.println("\u001B[31m"+"R" + this.v.getID() + " - ATTENZIONE Time Elapsed Tc " + "\t" + timeElapsedTc + " > Tc " +v.getTc() + "\u001B[0m");
+				// sleep = 1;}
+				Thread.sleep(v.getTc() ); //sleep
 				this.elapsedTrackingTime += v.getTc()*Vehicle.mill2sec;
 			} // fine while
 
@@ -252,9 +250,23 @@ public class VehicleThread implements Runnable {
 			}
 			double mediaPrec = sumPrec/ countPrec ;
 
+			double sumTc = 0;
+			double tmaxTc = 0;
+			int countTc = 0;
+			int countTCexc = 0;
+			for(double tc : timesTc){
+				if ( tc != 0.0 ){
+				sumTc = sumTc + tc;
+				countTc = countTc +1;}
+				if(tc > v.getTc()) countTCexc = countTCexc +1;
+				if(tc > tmaxTc) tmaxTc = tc;
+			}
+			double mediaTc = sumTc/ countTc ;
 
 			System.out.println("\u001B[34m"+"R" + this.v.getID() + " " +  String.format("%.3f", timeElapsed)+ 
-			" " + String.format("%.2f", media)+ " " + String.format("%.2f", tmax) + " " + String.format("%.2f", mediaPrec)+ " " + String.format("%.2f", tmaxPrec) + "\u001B[0m");
+			" " + String.format("%.2f", media)+ " " + String.format("%.2f", tmax) + 
+			" " + String.format("%.2f", mediaPrec)+ " " + String.format("%.2f", tmaxPrec) + 
+			" " + String.format("%.2f", mediaTc)+ " " + String.format("%.2f", tmaxTc) + " " +countTCexc +"\u001B[0m");
 		
 
 		}	

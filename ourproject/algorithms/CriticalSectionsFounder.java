@@ -235,4 +235,76 @@ public class CriticalSectionsFounder {
 		return te1Start;
 
 	}
+
+	public ArrayList<Integer> findCriticalSectionsAll(Vehicle v1,  ArrayList<Vehicle> vehicleList) {
+		ArrayList<Integer> totalTe1Ends = new ArrayList<Integer>();
+		ArrayList<Integer> totalTe1start = new ArrayList<Integer>();
+		for (Vehicle v2 : vehicleList){
+			if (v1.getID() != v2.getID()){
+
+				
+				SpatialEnvelope se1 = v1.getWholeSpatialEnvelope();
+				SpatialEnvelope se2 = v2.getWholeSpatialEnvelope();
+
+				double smallestRobotDimension = Math.min(se1.getFootprint().getArea(), se2.getFootprint().getArea());
+				Geometry shape1 = se1.getPolygon();
+				Geometry shape2 = se2.getPolygon();
+
+				if (shape1.intersects(shape2)) {
+					PoseSteering[] path1 = se1.getPath();
+
+					Geometry gc = shape1.intersection(shape2);
+					ArrayList<Geometry> allIntersections = new ArrayList<Geometry>();
+					if (gc.getNumGeometries() == 1) {
+						allIntersections.add(gc);
+					}
+					else {
+						for (int i = 1; i < gc.getNumGeometries(); i++) {
+							Geometry prev = gc.getGeometryN(i-1);
+							Geometry next = gc.getGeometryN(i);					
+							if (prev.distance(next) < smallestRobotDimension) {
+								allIntersections.add(prev.union(next).convexHull());
+							}
+							else {
+								allIntersections.add(prev);
+								if (i == gc.getNumGeometries()-1) allIntersections.add(next);
+							}
+						}
+					}
+
+					
+					for (int i = 0; i < allIntersections.size(); i++) {
+						ArrayList<Integer> te1Starts = new ArrayList<Integer>();
+						ArrayList<Integer> te1Ends = new ArrayList<Integer>();
+
+						Geometry g = allIntersections.get(i);
+						boolean started = false;
+						for (int j = 0; j < path1.length; j++) {
+							Geometry placement1 = TrajectoryEnvelope.getFootprint(se1.getFootprint(), path1[j].getPose().getX(), path1[j].getPose().getY(), path1[j].getPose().getTheta());
+							int jAbs = j;//+v1.getPathIndex();		// LO SI RIPORTA RISPETTO A INDICE ASSOLUTO
+							if (!started && placement1.intersects(g)) {		// CALCOLO INIZIO S.C.
+								started = true;
+								te1Starts.add(jAbs);
+								totalTe1start.add(jAbs);
+							}
+							else if (started && !placement1.intersects(g)) {// NON INTERSECA XK IMPRONTA È USCITA DA SC
+								te1Ends.add(jAbs-1 > 0 ? jAbs-1 : 0);
+								totalTe1Ends.add(jAbs-1 > 0 ? jAbs-1 : 0);
+								started = false;
+							}
+							if (started && j == path1.length-1) {
+								te1Ends.add(jAbs);
+								totalTe1Ends.add(jAbs);
+								
+							}
+						}
+						
+						
+					}
+				}
+			}
+			
+		}
+		return totalTe1start;
+	}
 }
