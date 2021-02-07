@@ -76,6 +76,7 @@ public class TestMap {
 		vh.getNears();
 		vh.sendNewRr();
 		vh.setVisualization(viz);
+		vh.setFilterCs(false);
 	}
 	System.out.println("\n" + "Radius "  + rMax );
 	

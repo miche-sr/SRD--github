@@ -74,8 +74,10 @@ public class Vehicle {
 
 	private ConstantAccelerationForwardModel forward;
 	private BrowserVisualizationDist viz;
-	private PrecedencesFounder prec = new PrecedencesFounder();
-	ArrayList<Integer> ListAllCS = new ArrayList<Integer>();
+	//private PrecedencesFounder prec = new PrecedencesFounder();
+	private Prec2 prec = new Prec2();
+	private ArrayList<Integer> ListAllCS = new ArrayList<Integer>();
+	private boolean filterCs = true;
 
 	// COSTRUTTORE
 	public Vehicle(int ID, Category category, Pose start, Pose[] goal, String yamlFile) {
@@ -286,6 +288,8 @@ public class Vehicle {
 		setDistanceTraveled(next_state.getPosition());
 		setVelocity(next_state.getVelocity());
 		this.pathIndex = forward.getPathIndex(this.path, next_state);
+
+		setPose(path[pathIndex].getPose());
 
 	}
 
@@ -534,6 +538,14 @@ public class Vehicle {
 	public void setReplan(boolean replan){
 		prec.setReplan(replan);
 	}
+
+	public void setFilterCs(boolean filterCS){
+		this.filterCs = filterCS;
+	}
+	public boolean IsFilterCS(){
+		return filterCs;
+	}
+
 
 	public void initViz(){
 		String infoCs = forward.getRobotBehavior().toString();

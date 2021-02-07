@@ -33,7 +33,7 @@ public class TestHeadToHead {
 		 Pose start2 = new Pose(25 , 5, 0); Pose[] goal2 = { new Pose(2, 5, 0) };
 		 //Pose start3 = new Pose(5, -10, Math.PI/2); Pose[] goal3 = { new Pose(5, 10, Math.PI/2) };
 
-		Thread thread1 = initThread(1, a, start1, goal1);
+		Thread thread1 = initThread(1, c, start1, goal1);
 		Thread thread2 = initThread(2, a, start2, goal2);
 		//Thread thread3 = initThread(3, a, start3, goal3);
 

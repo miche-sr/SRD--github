@@ -29,7 +29,7 @@ public class TestCerchio {
 		Vehicle.Category a = Vehicle.Category.AMBULANCE;
 		Vehicle.Category c = Vehicle.Category.CAR;
 		
-		int NUMBER_ROBOTS = 90;
+		int NUMBER_ROBOTS = 80;
 		double radius = 40 ;
 
 
@@ -90,7 +90,7 @@ public class TestCerchio {
 		for(Thread tr : threads){
 			tr.start();
 			try {
-				TimeUnit.MILLISECONDS.sleep(2000);
+				TimeUnit.MILLISECONDS.sleep(5);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}

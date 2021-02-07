@@ -34,10 +34,10 @@ public class TestBasement {
 		viz.setInitialTransform(25, 1, 1);
 
 
-		Pose CorrStart = new Pose(1.5,29,-Math.PI/2);
-		Pose[] CorrEnd  = {new Pose(1.5,34,-2*Math.PI/3), new Pose(29,33,-Math.PI)};
-		TrafficLights corridoio = new TrafficLights(1, CorrStart, CorrEnd, 1.4, viz,yamlFile);
-		trafficLightsList.add(corridoio);
+		// Pose CorrStart = new Pose(1.5,29,-Math.PI/2);
+		// Pose[] CorrEnd  = {new Pose(1.5,34,-2*Math.PI/3), new Pose(29,33,-Math.PI)};
+		// TrafficLights corridoio = new TrafficLights(1, CorrStart, CorrEnd, 1.4, viz,yamlFile);
+		// trafficLightsList.add(corridoio);
 		
 		/* Mappa */
 		
@@ -55,16 +55,16 @@ public class TestBasement {
 		Thread thread1 = initThread(1, a, start1, goal1);
 		Thread thread2 = initThread(2, c, start2, goal2);
 		Thread thread3 = initThread(3, c, start3, goal3);
-		Thread thread4 = initThread(4, c, start4, goal4);
-		Thread thread5 = initThread(5, c, start5, goal5);
-		Thread thread6 = initThread(6, c, start6, goal6);
-		Thread thread7 = initThread(7, a, start7, goal7);
-		Thread thread8 = initThread(8, c, start8, goal8);
-		Thread thread9 = initThread(9, a, start9, goal9);
+		// Thread thread4 = initThread(4, c, start4, goal4);
+		// Thread thread5 = initThread(5, c, start5, goal5);
+		// Thread thread6 = initThread(6, c, start6, goal6);
+		// Thread thread7 = initThread(7, a, start7, goal7);
+		// Thread thread8 = initThread(8, c, start8, goal8);
+		// Thread thread9 = initThread(9, a, start9, goal9);
 		//Thread thread10 = initThread(10, c, start10, goal10);
 
 		try {
-			TimeUnit.SECONDS.sleep(5);
+			TimeUnit.SECONDS.sleep(1);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
@@ -90,6 +90,7 @@ public class TestBasement {
 		vh.sendNewRr();
 		vh.setVisualization(viz);
 		vh.initViz();
+		vh.setFilterCs(false);
 	}
 	System.out.println("\n" + "Radius "  + rMax );
 	Thread.sleep(2000);
@@ -107,26 +108,26 @@ public class TestBasement {
 	thread2.start();
 	thread3.start();
 	TimeUnit.MILLISECONDS.sleep(35);
-	thread4.start();
-	thread5.start();
-	thread6.start();
-	TimeUnit.MILLISECONDS.sleep(35);
-	thread7.start();
-	thread8.start();
-	TimeUnit.MILLISECONDS.sleep(35);
-	thread9.start();
-	//thread10.start();	
+	// thread4.start();
+	// thread5.start();
+	// thread6.start();
+	// TimeUnit.MILLISECONDS.sleep(35);
+	// thread7.start();
+	// thread8.start();
+	// TimeUnit.MILLISECONDS.sleep(35);
+	// thread9.start();
+	// //thread10.start();	
 
 
 	thread1.join();
 	thread2.join();
 	thread3.join();
-	thread4.join();
-	thread5.join();
-	thread6.join();
-	thread7.join();
-	thread8.join();
-	thread9.join();
+	// thread4.join();
+	// thread5.join();
+	// thread6.join();
+	// thread7.join();
+	// thread8.join();
+	// thread9.join();
 
 	System.out.println("\n" + "Radius "  + rMax );
 	double all2 = 0;

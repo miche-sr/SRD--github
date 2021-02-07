@@ -58,9 +58,6 @@ public class PrecedencesFounder {
         else if (v1.getStoppingPoint() >= te1start) {prec = true; debug =" B";}
 
 
-        else if (v1.getPriority() > v2.getPriority()){ prec = true; debug =" L";}
-        else if (v1.getPriority() < v2.getPriority()) {prec = false; debug =" M";}
-
         else{
             if (v1.isCsTooClose()   
                 && timeAtCsStart2 == -1 && timeAtCsStart1 == -1 ){
@@ -86,9 +83,7 @@ public class PrecedencesFounder {
                     }
                 }
 
-                
-            
-            
+        
             else if (timeAtCsStart2 == -1 && timeAtCsStart1 == -1 ){
                     if(v1.getPriority() > v2.getPriority()){prec = true; debug = "E1";}
                     else if (v1.getPriority() < v2.getPriority()){prec = false; debug = "E2";}
@@ -116,8 +111,8 @@ public class PrecedencesFounder {
             else if (timeAtCsStart2 == -1 ) {prec = true; debug =" G";} //|| timeAtCsEnd2 == -1
             else if (timeAtCsStart1 == -1 ) {prec = false; debug = " H";} //|| timeAtCsEnd1 == -1
             //else if (braking1 < 0 || braking2 < 0) {prec = true; debug =" I";}
-            // else if (v1.getPriority() > v2.getPriority()){ prec = true; debug =" L";}
-            // else if (v1.getPriority() < v2.getPriority()) {prec = false; debug =" M";}
+            else if (v1.getPriority() > v2.getPriority()){ prec = true; debug =" L";}
+            else if (v1.getPriority() < v2.getPriority()) {prec = false; debug =" M";}
             else{	// A PARITÀ DI PRIORITÀ, SI PROCEDE PER DISTANZA TEMPORALE
                 if (braking1 > braking2) {prec = true; debug = " N";}
                 else if (braking1 < braking2){ prec = false;  debug =" O";}
