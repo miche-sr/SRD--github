@@ -58,7 +58,7 @@ public class Vehicle {
 	private HashMap<Integer, Double> truncateTimes = new HashMap<Integer, Double>();
 
 	// VARIABILI PER LE SEZIONI CRITICHE
-	private int criticalPoint = -1; // -1 if no critical point
+	private int criticalPoint = 0; //-1; 
 	private boolean csTooClose = false;
 	private int stoppingPoint = -1; // punto di fermata, a ogni ciclo: al quale mi fermo da dove sono
 	private double slowingPoint = -1; // punto di frenata, unico: per fermarsi prima del p. critico
@@ -90,7 +90,7 @@ public class Vehicle {
 				this.velMax = 3.0;
 				this.accMax = 1.0;
 				this.priority = 1;
-				this.Tc = 350;
+				this.Tc = 150;
 				this.side = sideCar;
 				this.footprint = fpCar;
 				break;
@@ -108,8 +108,8 @@ public class Vehicle {
 				System.out.println("Unknown vehicle");
 		}
 		double brakingDistanceMax = Math.pow(this.velMax,2.0) / (2*this.accMax);
-		this.radius = 1*((2 * this.Tc * mill2sec ) * this.velMax + brakingDistanceMax +3*side);
-		this.myDistanceToSend = this.radius; 
+		this.radius = 1*((2 * this.Tc * mill2sec ) * this.velMax + brakingDistanceMax + 3*side);
+		this.myDistanceToSend = this.radius  ; 
 		this.path = createWholePath(yamlFile);
 		this.forward = new ConstantAccelerationForwardModel(this, 1000); // ???
 
@@ -204,7 +204,7 @@ public class Vehicle {
 		if (yamlFile != null) rsp.setMap(yamlFile);
 		rsp.setRadius(0.2);
 		rsp.setTurningRadius(4.0);
-		rsp.setDistanceBetweenPathPoints(0.5);
+		rsp.setDistanceBetweenPathPoints(0.2);
 		rsp.setFootprint(this.footprint);
 		rsp.setStart(this.start);
 		rsp.setGoals(this.goal);
@@ -250,6 +250,7 @@ public class Vehicle {
 	public void setSpatialEnvelope2(Boolean FreeAcces, int smStopIndex) {
 		this.truncatedPath.clear();
 		this.truncateTimes.clear();
+		
 
 		this.truncateTimes.put(pathIndex , times.get(pathIndex));
 		this.truncatedPath.add(path[pathIndex]);
@@ -260,9 +261,10 @@ public class Vehicle {
 		while (dist < this.myDistanceToSend && (pathIndex+i)<= Maxdist){
 			if (!times.containsKey(pathIndex + i)) break;
 			
-			dist = forward.computeDistance(path, pathIndex, pathIndex+i);
+			
 			this.truncateTimes.put(pathIndex + i, times.get(pathIndex + i));
 			this.truncatedPath.add(path[pathIndex + i]);
+			dist = path[pathIndex].getPose().distanceTo(path[pathIndex+i].getPose());
 			i++;
 		}
 		
@@ -402,7 +404,7 @@ public class Vehicle {
 		double distanceToCpRelative = forward.computeDistance(path, pathIndex,cp);
 
 		//double v0 = velocity;
-		double decMax = 0.9*this.accMax;
+		double decMax = this.accMax;
         double brakingFromVelMax = Math.pow(velMax,2.0)/(decMax*2);
         double braking;
         double traveledInTc;// = velMax*Tc;
@@ -416,7 +418,10 @@ public class Vehicle {
 	}
 
 	public void setStoppingPoint() {
-		this.stoppingPoint = forward.getEarliestStoppingPathIndex(this);
+		this.stoppingPoint = forward.getEarliestStoppingPathIndex(this,true);
+	}
+	public int getCurrentStoppingPoint() {
+		return forward.getEarliestStoppingPathIndex(this,false);
 	}
 
 		/********************************
@@ -513,7 +518,8 @@ public class Vehicle {
 
 	public void sendNewRr() {
 		HashMap<Integer,Double> TruTim = (HashMap<Integer,Double>) truncateTimes.clone();
-		
+		double clock = Calendar.getInstance().getTimeInMillis();
+		TruTim.put(-1,clock);
 		RobotReport rr = new RobotReport(this.ID, this.priority,this.footprint, this.pathIndex, 
 				this.se, TruTim, this.stoppingPoint,this.isCsTooClose(),forward.getRobotBehavior());
 		
@@ -550,6 +556,7 @@ public class Vehicle {
 		String infoCs = forward.getRobotBehavior().toString();
 		viz.displayRobotState(wholeSe.getFootprint(), this,infoCs);
 		viz.addEnvelope(wholeSe.getPolygon(),this,"#adadad"); 
+		viz.addEnvelope(se.getPolygon(), this, "#000000");
 	}
 
 	public int countAllcs(){

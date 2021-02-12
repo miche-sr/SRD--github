@@ -72,7 +72,7 @@ public class ConstantAccelerationForwardModel {
 	}
 	
 	// fornisce il path index sul quale ci si fermerà date le condizioni attuali
-	public int getEarliestStoppingPathIndex(Vehicle v) {
+	public int getEarliestStoppingPathIndex(Vehicle v,boolean lookForward) {
 		State auxState = new State(v.getDistanceTraveled(), v.getVelocity());
 		double time = 0.0;
 		double deltaTime = v.getTc()*Vehicle.mill2sec;

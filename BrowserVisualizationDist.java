@@ -1,6 +1,5 @@
 package se.oru.coordination.coordination_oru.util;
 
-
 import java.awt.Desktop;
 import java.awt.Dimension;
 import java.io.BufferedReader;
@@ -27,9 +26,10 @@ import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.Polygon;
 import com.vividsolutions.jts.geom.util.AffineTransformation;
+import com.vividsolutions.jts.util.GeometricShapeFactory;
 
 import se.oru.coordination.coordination_oru.RobotReport;
-import se.oru.coordination.coordination_oru.ourproject.models.Vehicle;
+import se.oru.coordination.coordination_oru.distributed.models.Vehicle;
 
 public class BrowserVisualizationDist implements FleetVisualization {
 	
@@ -365,7 +365,7 @@ public class BrowserVisualizationDist implements FleetVisualization {
 		BufferedReader br = new BufferedReader(new FileReader(file));
 		String imageFileName = null;
 		String st;
-		//FIXME Handle map origin
+		
 		//Coordinate bottomLeftOrigin = null;
 		while((st=br.readLine()) != null){ 
 			if (!st.trim().startsWith("#") && !st.trim().isEmpty()) {
@@ -402,7 +402,7 @@ public void displayRobotState(Polygon fp, Vehicle v,String... extraStatusInfo) {
 	double theta = v.getSpatialEnvelope().getPath()[0].getPose().getTheta();
 	
 	String name = "R"+v.getRobotID();
-	String extraData = " : " + v.getPathIndex();
+	String extraData = " " ; //"" : " + v.getPathIndex();
 	if (extraStatusInfo != null) {
 		for (String st : extraStatusInfo) {
 			extraData += (" | " + st);
@@ -418,6 +418,13 @@ public void displayRobotState(Polygon fp, Vehicle v,String... extraStatusInfo) {
 	//String jsonStringArrow = "{ \"operation\" : \"addGeometry\", \"data\" : " + this.geometryToJSONString("_"+name, arrowGeom, "#ffffff", -1, true, null) + "}";
 	enqueueMessage(jsonString);
 	//enqueueMessage(jsonStringArrow);
+	String color;
+	if(v.getNears().size()==0) color = "#047d00";
+	else color = "#9b0ec9";
+
+	// Geometry circleGeom = createCircle(x, y, 2*v.getRadius());
+	// String jsonStringCircle = "{ \"operation\" : \"addGeometry\", \"data\" : " + this.geometryToJSONString("_"+name, circleGeom, color, -1, false, extraData) + "}";
+	// enqueueMessage(jsonStringCircle);
 }
 
 public void addEnvelope(Geometry geom, Vehicle v, String color) {
@@ -496,5 +503,14 @@ public void displayLight(Pose semaphore,int ID, int semaphoreNumber,Boolean sAcc
 	String jsonString = "{ \"operation\" : \"addGeometry\", \"data\" : " + this.geometryToJSONString("_Sl"+ID+semaphoreNumber, point,color , -1, true, null) + "}";
 	enqueueMessage(jsonString);
 }
+
+public static Geometry createCircle(double x, double y, double RADIUS) {
+	GeometricShapeFactory shapeFactory = new GeometricShapeFactory();
+	shapeFactory.setNumPoints(64);
+	shapeFactory.setCentre(new Coordinate(x, y));
+	shapeFactory.setSize(RADIUS * 2);
+	return shapeFactory.createCircle();
+	}
+	
 
 }

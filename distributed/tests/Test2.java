@@ -28,7 +28,7 @@ public class Test2 {
 
 
 
-		// /*Head-To-Head*/
+		
 		 Pose start1 = new Pose(3, 0, Math.PI); Pose[] goal1 = { new Pose(15, 0, Math.PI) };
 		 Pose start2 = new Pose(15, 3, Math.PI/6); Pose[] goal2 = { new Pose(3.5, -2.5, Math.PI/6) };
 		 //Pose start2 = new Pose(20, 4, 0); Pose[] goal2 = { new Pose(15, 4, 0) };
@@ -55,6 +55,7 @@ public class Test2 {
 		}
 	}
 	for (Vehicle vh : vehicleList){
+
 		vh.setRadius(rMax);
 		vh.setSecForSafety(tMax);
 		vh.setVehicleList(vehicleList);

@@ -21,7 +21,7 @@ public class TestStar{
 		return thread;
 	}
 
-	public static void main(String args[]) {
+	public static void main(String args[]) throws InterruptedException {
 
 		Vehicle.Category a = Vehicle.Category.AMBULANCE;
 		Vehicle.Category c = Vehicle.Category.CAR;
@@ -68,7 +68,9 @@ public class TestStar{
 		vh.getNears();
 		vh.sendNewRr();
 		vh.setVisualization(viz);
+		vh.initViz();
 	}
+	Thread.sleep(1200);
 	System.out.println("\n" + "Radius "  + rMax );
 	
 	thread1.start();

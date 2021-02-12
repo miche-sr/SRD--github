@@ -32,14 +32,14 @@ public class TestCorridoio {
 		viz.setInitialTransform(40, 5, 10);
 		
 		
-		Thread.sleep(2000);
+		Thread.sleep(3000);
 
 		Pose CorrStart = new Pose(9.0,5.0,0);
 		Pose CorrEnd  = new Pose(25.5,5.0,0);
 		TrafficLights corridoio = new TrafficLights(1, CorrStart, CorrEnd, 2, viz);
 		trafficLightsList.add(corridoio);
 
-		Thread.sleep(3000);
+		Thread.sleep(4000);
 
 		/* corridioio */
 		Pose start1 = new Pose(2.0,4.0,Math.PI);
@@ -64,7 +64,20 @@ public class TestCorridoio {
 		Thread thread2 = initThread(2, a, start2, goal2);
 		Thread thread3 = initThread(3, c, start3, goal3);
 
+		Pose goal43 = new Pose(2.0,4.0,0);
+		Pose goal42 = new Pose(10.0,6.0,0);
+		Pose goal41 = new Pose(25.0,6.0,0);
+		Pose start4 = new Pose(35.0,4.0,0);
+		Pose[] goal4 = { goal41, goal42, goal43};
 
+		Pose goal53 = new Pose(2.0,6.0,0);
+		Pose goal52 = new Pose(10.0,6.0,0);
+		Pose goal51 = new Pose(25.0,6.0,0);
+		Pose start5 = new Pose(35.0,6.0,0);
+		Pose[] goal5 = { goal51, goal52, goal53};
+		
+		Thread thread4 = initThread(4, c, start4, goal4);
+		Thread thread5 = initThread(5, c, start5, goal5);
 	
 	
 	double rMax = -1; double tMax = -1;
@@ -88,6 +101,7 @@ public class TestCorridoio {
 		vh.sendNewRr();
 		vh.setVisualization(viz);
 		vh.initViz();
+		vh.setReplan(false);
 	}
 	System.out.println("\n" + "Radius "  + rMax );
 	
@@ -99,6 +113,8 @@ public class TestCorridoio {
 	thread1.start();
 	thread2.start();
 	thread3.start();
+	thread4.start();
+	thread5.start();
 
 	}
 }

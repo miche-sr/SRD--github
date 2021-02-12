@@ -8,7 +8,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.metacsp.multi.spatioTemporal.paths.Pose;
 
-public class TestHeadToHead {
+public class TestLockCircle{
 
 	private static ArrayList<Vehicle> vehicleList = new ArrayList<Vehicle>();
 	private static HashMap<Integer,RobotReport> mainTable = new HashMap<Integer,RobotReport>();
@@ -26,22 +26,23 @@ public class TestHeadToHead {
 		Vehicle.Category a = Vehicle.Category.AMBULANCE;
 		Vehicle.Category c = Vehicle.Category.CAR;
 
+		
+		/* deaD Lock*/
+		Pose start1 = new Pose(5, 10, -Math.PI/6); Pose[] goal1 = { new Pose(20, 0, -Math.PI/6) };
+		Pose start2 = new Pose(5, 0, Math.PI ); Pose[] goal2 = { new Pose(20, 0, Math.PI ) };
+		Pose start3 = new Pose(20, 10, -5*Math.PI/6); Pose[] goal3 = { new Pose(5, 0, -5*Math.PI/6) };
+		//Pose start4 = new Pose(12.5, -3, Math.PI/2); Pose[] goal4 = { new Pose(12.5, 12, Math.PI/2) };
 
+	
 
-		// /*Head-To-Head*/
-		 Pose start1 = new Pose(1, 5, Math.PI); Pose[] goal1 = { new Pose(46, 5, Math.PI) };
-		 Pose start2 = new Pose(45 , 5, 0); Pose[] goal2 = { new Pose(2, 5, 0) };
-		 //Pose start3 = new Pose(5, -10, Math.PI/2); Pose[] goal3 = { new Pose(5, 10, Math.PI/2) };
-		 Pose start3 = new Pose(0, 10, 0); Pose[] goal3 = { new Pose(14.2, 10,0) };
-
-		Thread thread1 = initThread(1, c, start1, goal1);
-		Thread thread2 = initThread(2, a, start2, goal2);
-		//Thread thread3 = initThread(3, c, start3, goal3);
+		Thread thread1 = initThread(3, c, start1, goal1);
+		Thread thread2 = initThread(2, c, start2, goal2);
+		Thread thread3 = initThread(1, c, start3, goal3);
+		//Thread thread4 = initThread(4, c, start4, goal4);
 
 		BrowserVisualizationDist viz = new BrowserVisualizationDist();
 		if (yamlFile != null) viz.setMap(yamlFile);
-		viz.setInitialTransform(25, 10, 15);
-
+		viz.setInitialTransform(40, 5, 5);
 		try {
 			TimeUnit.SECONDS.sleep(5);
 		} catch (InterruptedException e) {
@@ -67,34 +68,15 @@ public class TestHeadToHead {
 		vh.getNears();
 		vh.sendNewRr();
 		vh.setVisualization(viz);
-		//vh.initViz();
+		vh.initViz();
 	}
+	Thread.sleep(1200);
 	System.out.println("\n" + "Radius "  + rMax );
-	Thread.sleep(2000);
 	
-	
-	int all = 0;
-	for (Vehicle vh : vehicleList){
-		all = all + vh.countAllcs();
-	}
-	System.out.println("\n" + "All CS start "  + all/2 );
 	thread1.start();
-	Thread.sleep(66);
 	thread2.start();
-	//thread3.start();
-
-	
-		
-	// thread1.join();
-	// thread2.join();
-	//thread3.join();
-	
-	
-	// double all2 = 0;
-	// for (Vehicle vh : vehicleList){
-	// 	all2 = all2 + vh.AllCs();
-	// }
-	// System.out.println("\n" + "All CS end "  + all2/2 );
+	thread3.start();
+	//thread4.start();
 
 	}
 }

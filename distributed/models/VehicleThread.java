@@ -4,6 +4,7 @@ import static org.junit.Assert.fail;
 
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.TreeSet;
 import se.oru.coordination.coordination_oru.distributed.algorithms.CriticalSectionsFounder;
@@ -16,7 +17,6 @@ public class VehicleThread implements Runnable {
 	private boolean run = true;
 	private Vehicle v;
 	private double elapsedTrackingTime = 0.0;
-	//private int slp = -1;
 	private int oldCp = -1;
 	private int cp = 0;
 	private TreeSet<CriticalSection> analysedCs = new TreeSet<CriticalSection>(); 
@@ -29,11 +29,11 @@ public class VehicleThread implements Runnable {
 	private String List = " ";
 
 
-	//private static String colorEnv = "#adadad"; //"#f600f6"
+
 	private static String colorTruEnv ="#000000"; //#efe007";
 	private static String colorStp = "#047d00"; //"#0008f6"; //"#ffffff";
 	private static String colorCrp = "#a30202"; //"#29f600";
-	//private static String colorSlp =  "#0008f6";
+
 	private ArrayList<Double> timesCs = new ArrayList<Double>();
 	private ArrayList<Double> timesPrec = new ArrayList<Double>();
 	private ArrayList<Double> timesTc = new ArrayList<Double>();
@@ -49,11 +49,25 @@ public class VehicleThread implements Runnable {
 
 	public void run() {
 		double start = System.currentTimeMillis();
-
+		
+		
 		try{
 			while(v.getForwardModel().getRobotBehavior() != Behavior.reached && run){
 				long startTc = System.currentTimeMillis();
+				/**************************
+				 ** 	UPDATE STATE	  ** 
+				 ***************************/
 				
+				v.setStoppingPoint();
+				v.setTimes();
+				v.setSpatialEnvelope2(FreeAccess,smStopIndex);
+				
+				/***********************************
+				 ****** VISUALIZATION AND PRINT ****
+				 ***********************************/
+				printLog(List, prec);
+				visualization();
+
 				/****************************
 				 * RECIVE AND SEND MESSAGES *
 				 ****************************/
@@ -166,21 +180,7 @@ public class VehicleThread implements Runnable {
 					v.setSlowingPointNew();
 					
 				
-				/**************************
-				 ** 	UPDATE STATE	  ** 
-				 ***************************/
 				v.setPathIndex(elapsedTrackingTime,FreeAccess);
-				v.setStoppingPoint();
-				v.setTimes();
-				v.setSpatialEnvelope2(FreeAccess,smStopIndex);
-				
-				
-				/***********************************
-				 ****** VISUALIZATION AND PRINT ****
-				 ***********************************/
-				//printLog(List, prec);
-				visualization();
-
 
 				/********************************
 				 ****** SLEEPING TIME****
@@ -199,6 +199,10 @@ public class VehicleThread implements Runnable {
 			/********************************
 			 ****** THREAD CLOSURE ****
 			********************************/
+			v.setStoppingPoint();
+			v.setTimes();
+			v.setSpatialEnvelope2(FreeAccess,smStopIndex);
+			visualization();
 			v.sendNewRr();
 			double finish = System.currentTimeMillis();
 			double timeElapsed = (finish - start)/1000;
@@ -256,7 +260,7 @@ public class VehicleThread implements Runnable {
 
 
 	public void visualization(){
-		if(v.getCriticalPoint() >= v.getWholePath().length-1)
+		if(v.getCriticalPoint() >= v.getWholePath().length-1 || v.getCriticalPoint()==-1)
 			cp = (v.getPathIndex() + v.getSpatialEnvelope().getPath().length-1 ) ;
 		else cp = v.getCriticalPoint();
 

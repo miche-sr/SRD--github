@@ -1,5 +1,7 @@
 package se.oru.coordination.coordination_oru.distributed.algorithms;
 
+import java.util.Calendar;
+
 import se.oru.coordination.coordination_oru.distributed.algorithms.ConstantAccelerationForwardModel.Behavior;
 import se.oru.coordination.coordination_oru.distributed.models.CriticalSection;
 import se.oru.coordination.coordination_oru.distributed.models.RobotReport;
@@ -20,12 +22,15 @@ public class PrecedencesFounder{
         Boolean prec;
         Vehicle v1 = cs.getVehicle1();
         RobotReport v2 = cs.getVehicle2();
+
+        double delay = 0.001*( Calendar.getInstance().getTimeInMillis() - v2.getTruncateTimes().get(-1));
+        //System.out.println(delay);
         int te1start = cs.getTe1Start();
         int te2start = cs.getTe2Start();
         double timeAtCsStart1 = v1.getTruncateTimes().get(cs.getTe1Start());
         double timeAtCsEnd1 = v1.getTruncateTimes().get(cs.getTe1End());
-        double timeAtCsStart2 = v2.getTruncateTimes().get(cs.getTe2Start());
-        double timeAtCsEnd2 = v2.getTruncateTimes().get(cs.getTe2End());
+        double timeAtCsStart2 = (v2.getTruncateTimes().get(cs.getTe2Start())>0? (v2.getTruncateTimes().get(cs.getTe2Start())-delay):v2.getTruncateTimes().get(cs.getTe2Start()));
+        double timeAtCsEnd2 = (v2.getTruncateTimes().get(cs.getTe2End())>0? (v2.getTruncateTimes().get(cs.getTe2End()) - delay) :v2.getTruncateTimes().get(cs.getTe2End()));
     	double braking1 = timeAtCsEnd2 - timeAtCsStart1;
         double braking2 = timeAtCsEnd1 - timeAtCsStart2;
         
@@ -56,7 +61,8 @@ public class PrecedencesFounder{
         
         else { 
             if(v1.getID() > v2.getID()) {prec = true; debug =" H - heuristic ID";} 
-            else {prec = false; debug =" H - heurustic NOT ID";}
+            else 
+            {prec = false; debug =" H - heurustic NOT ID";}
 
             
             if (braking1== 0 && braking2 == 0) {

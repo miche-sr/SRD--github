@@ -29,17 +29,17 @@ public class TestCerchio {
 		Vehicle.Category a = Vehicle.Category.AMBULANCE;
 		Vehicle.Category c = Vehicle.Category.CAR;
 		
-		int NUMBER_ROBOTS = 90;
+		int NUMBER_ROBOTS = 80;
 		double radius = 40 ;
 
 
 		BrowserVisualizationDist viz = new BrowserVisualizationDist();
 		if (yamlFile != null) viz.setMap(yamlFile);
-		viz.setInitialTransform(12,radius+3, radius+1);
+		viz.setInitialTransform(12,radius+1, radius+1);
 
 		double theta = 0.0;
 		
-		for (int i = 10; i < NUMBER_ROBOTS; i++) {
+		for (int i = 0; i < NUMBER_ROBOTS; i++) {
 			//In case deadlocks occur, we make the coordinator capable of re-planning on the fly (experimental, not working properly yet)
 			
 			//Place robots.
@@ -78,7 +78,7 @@ public class TestCerchio {
 			vh.initViz();
 			vh.setFilterCs(true);
 		}
-		Thread.sleep(1200);
+		Thread.sleep(5000);
 		System.out.println("\n" + "Radius "  + rMax );
 		System.out.println("\n" + "Radius "  + rMax );
 		int all = 0;
@@ -91,7 +91,7 @@ public class TestCerchio {
 		for(Thread tr : threads){
 			tr.start();
 			try {
-				TimeUnit.MILLISECONDS.sleep(5);
+				TimeUnit.MILLISECONDS.sleep(2000);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
