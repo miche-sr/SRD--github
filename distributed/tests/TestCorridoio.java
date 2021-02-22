@@ -29,7 +29,7 @@ public class TestCorridoio {
 		Vehicle.Category c = Vehicle.Category.CAR;
 
 		BrowserVisualizationDist viz = new BrowserVisualizationDist();
-		viz.setInitialTransform(40, 5, 10);
+		viz.setInitialTransform(35, 2, 5);
 		
 		
 		Thread.sleep(3000);
@@ -60,8 +60,8 @@ public class TestCorridoio {
 		Pose goal33 = new Pose(35.0,6.0,Math.PI);
 		Pose[] goal3 = { goal31, goal32, goal33};		
 
-		Thread thread1 = initThread(1, c, start1, goal1);
-		Thread thread2 = initThread(2, a, start2, goal2);
+		Thread thread1 = initThread(1, a, start1, goal1);
+		Thread thread2 = initThread(2, c, start2, goal2);
 		Thread thread3 = initThread(3, c, start3, goal3);
 
 		Pose goal43 = new Pose(2.0,4.0,0);
@@ -76,8 +76,8 @@ public class TestCorridoio {
 		Pose start5 = new Pose(35.0,6.0,0);
 		Pose[] goal5 = { goal51, goal52, goal53};
 		
-		Thread thread4 = initThread(4, c, start4, goal4);
-		Thread thread5 = initThread(5, c, start5, goal5);
+		//Thread thread4 = initThread(4, c, start4, goal4);
+		//Thread thread5 = initThread(5, c, start5, goal5);
 	
 	
 	double rMax = -1; double tMax = -1;
@@ -89,19 +89,9 @@ public class TestCorridoio {
 		}
 	}
 	for (Vehicle vh : vehicleList){
-		vh.setRadius(rMax);
-		vh.setSecForSafety(tMax);
-		vh.setVehicleList(vehicleList);
-		vh.setTrafficLightsList(trafficLightsList);
-		vh.setMainTable(mainTable);
-		vh.setSlowingPointNew();
-		vh.setTimes();
-		vh.setSpatialEnvelope2(true,0);
-		vh.getNears();
-		vh.sendNewRr();
-		vh.setVisualization(viz);
-		vh.initViz();
+		vh.Init(rMax, tMax, vehicleList, mainTable, viz);
 		vh.setReplan(false);
+		vh.setTrafficLightsList(trafficLightsList);
 	}
 	System.out.println("\n" + "Radius "  + rMax );
 	
@@ -113,8 +103,8 @@ public class TestCorridoio {
 	thread1.start();
 	thread2.start();
 	thread3.start();
-	thread4.start();
-	thread5.start();
+	//thread4.start();
+	//thread5.start();
 
 	}
 }

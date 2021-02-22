@@ -29,10 +29,10 @@ public class TestHeadToHead {
 
 
 		// /*Head-To-Head*/
-		 Pose start1 = new Pose(1, 5, Math.PI); Pose[] goal1 = { new Pose(46, 5, Math.PI) };
-		 Pose start2 = new Pose(45 , 5, 0); Pose[] goal2 = { new Pose(2, 5, 0) };
+		 Pose start1 = new Pose(1, 5, Math.PI); Pose[] goal1 = { new Pose(26, 5, Math.PI) };
+		 Pose start2 = new Pose(25 , 5, 0); Pose[] goal2 = { new Pose(2, 5, 0) };
 		 //Pose start3 = new Pose(5, -10, Math.PI/2); Pose[] goal3 = { new Pose(5, 10, Math.PI/2) };
-		 Pose start3 = new Pose(0, 10, 0); Pose[] goal3 = { new Pose(14.2, 10,0) };
+		 //Pose start3 = new Pose(0, 10, 0); Pose[] goal3 = { new Pose(14.2, 10,0) };
 
 		Thread thread1 = initThread(1, c, start1, goal1);
 		Thread thread2 = initThread(2, a, start2, goal2);
@@ -40,7 +40,7 @@ public class TestHeadToHead {
 
 		BrowserVisualizationDist viz = new BrowserVisualizationDist();
 		if (yamlFile != null) viz.setMap(yamlFile);
-		viz.setInitialTransform(25, 10, 15);
+		viz.setInitialTransform(32, 6, 10);
 
 		try {
 			TimeUnit.SECONDS.sleep(5);
@@ -57,17 +57,7 @@ public class TestHeadToHead {
 		}
 	}
 	for (Vehicle vh : vehicleList){
-		vh.setRadius(rMax);
-		vh.setSecForSafety(tMax);
-		vh.setVehicleList(vehicleList);
-		vh.setMainTable(mainTable);
-		vh.setSlowingPointNew();
-		vh.setTimes();
-		vh.setSpatialEnvelope2(true,0);
-		vh.getNears();
-		vh.sendNewRr();
-		vh.setVisualization(viz);
-		//vh.initViz();
+		vh.Init(rMax, tMax, vehicleList, mainTable, viz);
 	}
 	System.out.println("\n" + "Radius "  + rMax );
 	Thread.sleep(2000);

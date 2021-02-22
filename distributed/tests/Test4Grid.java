@@ -28,7 +28,7 @@ public class Test4Grid {
 
         BrowserVisualizationDist viz = new BrowserVisualizationDist();
 		if (yamlFile != null) viz.setMap(yamlFile);
-		viz.setInitialTransform(25, 10, 2);
+		viz.setInitialTransform(20, 10, 2);
 
 
 		/* pose libere */
@@ -235,18 +235,9 @@ public class Test4Grid {
 		}
 	}
 	for (Vehicle vh : vehicleList){
-		vh.setRadius(rMax);
-		vh.setSecForSafety(tMax);
-		vh.setVehicleList(vehicleList);
-		vh.setMainTable(mainTable);
-		vh.setSlowingPointNew();
-		vh.setTimes();
-		vh.setSpatialEnvelope2(true,0);
-		vh.getNears();
-		vh.sendNewRr();
-		vh.setVisualization(viz);
+		vh.Init(rMax, tMax, vehicleList, mainTable, viz);
 		vh.setReplan(false);
-		vh.initViz();
+		
 	}
 	//System.out.println("\n" + "Radius "  + rMax );
 	Thread.sleep(1500);

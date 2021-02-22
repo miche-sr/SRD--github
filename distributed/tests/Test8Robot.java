@@ -69,18 +69,7 @@ public class Test8Robot {
 	}
 	//vehicleList.clear();
 	for (Vehicle vh : vehicleList){
-		vh.setRadius(rMax);
-		//vh.setSecForSafety(tMax);
-		
-		vh.setVehicleList(vehicleList);
-		vh.setMainTable(mainTable);
-		vh.setSlowingPointNew();
-		vh.setTimes();
-		vh.setSpatialEnvelope2(true,0);
-		//vh.getNears();
-		vh.sendNewRr();
-		vh.setVisualization(viz);
-		vh.initViz();
+		vh.Init(rMax, tMax, vehicleList, mainTable, viz);
 	}
 	System.out.println("\n" + "Radius "  + rMax );
 	Thread.sleep(1000);

@@ -94,18 +94,9 @@ public class TestGrid {
 		}
 	}
 	for (Vehicle vh : vehicleList){
-		vh.setRadius(rMax);
-		vh.setSecForSafety(tMax);
-		vh.setVehicleList(vehicleList);
-		vh.setMainTable(mainTable);
-		vh.setSlowingPointNew();
-		vh.setTimes();
-		vh.setSpatialEnvelope2(true,0);
-		vh.getNears();
-		vh.sendNewRr();
-		vh.setVisualization(viz);
+		vh.Init(rMax, tMax, vehicleList, mainTable, viz);
 		vh.setReplan(false);
-		vh.initViz();
+		
 	}
 	//System.out.println("\n" + "Radius "  + rMax );
 	Thread.sleep(2000);

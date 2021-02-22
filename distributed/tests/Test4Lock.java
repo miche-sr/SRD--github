@@ -32,7 +32,7 @@ public class Test4Lock{
 		Pose start2 = new Pose(20, 10.9, 0); Pose[] goal2 = { new Pose(5, 10.9, 0)/*,new Pose(5.5, -6, -Math.PI / 1.5)*/ };
 		Pose start3 = new Pose(10.9, 0, -Math.PI /2); Pose[] goal3 = { new Pose(10.9, 15, -Math.PI /2)/*,new Pose(4, 7.5, Math.PI / 1.5)*/ };
 		Pose start4 = new Pose(9.1, 20, Math.PI / 2); Pose[] goal4 = { new Pose(9.1, 5, Math.PI / 2)};
-	
+		
 
 		Thread thread1 = initThread(1, c, start1, goal1);
 		Thread thread2 = initThread(2, c, start2, goal2);
@@ -42,7 +42,7 @@ public class Test4Lock{
 
 		BrowserVisualizationDist viz = new BrowserVisualizationDist();
 		if (yamlFile != null) viz.setMap(yamlFile);
-		viz.setInitialTransform(40, 3, 2);
+		viz.setInitialTransform(33, 5, 1);
 		try {
 			TimeUnit.SECONDS.sleep(5);
 		} catch (InterruptedException e) {
@@ -58,18 +58,9 @@ public class Test4Lock{
 		}
 	}
 	for (Vehicle vh : vehicleList){
-		vh.setRadius(rMax);
-		vh.setSecForSafety(tMax);
-		vh.setVehicleList(vehicleList);
-		vh.setMainTable(mainTable);
-		vh.setSlowingPointNew();
-		vh.setTimes();
-		vh.setSpatialEnvelope2(true,0);
-		vh.getNears();
-		vh.sendNewRr();
-		vh.setVisualization(viz);
+		vh.Init(rMax, tMax, vehicleList, mainTable, viz);
 		vh.setReplan(false);
-		vh.initViz();
+		
 	}
 	Thread.sleep(1500);
 	System.out.println("\n" + "Radius "  + rMax );

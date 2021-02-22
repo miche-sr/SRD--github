@@ -58,17 +58,7 @@ public class TestStar{
 		}
 	}
 	for (Vehicle vh : vehicleList){
-		vh.setRadius(rMax);
-		vh.setSecForSafety(tMax);
-		vh.setVehicleList(vehicleList);
-		vh.setMainTable(mainTable);
-		vh.setSlowingPointNew();
-		vh.setTimes();
-		vh.setSpatialEnvelope2(true,0);
-		vh.getNears();
-		vh.sendNewRr();
-		vh.setVisualization(viz);
-		vh.initViz();
+		vh.Init(rMax, tMax, vehicleList, mainTable, viz);
 	}
 	Thread.sleep(1200);
 	System.out.println("\n" + "Radius "  + rMax );

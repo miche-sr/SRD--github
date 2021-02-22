@@ -58,7 +58,7 @@ public class Vehicle {
 	private HashMap<Integer, Double> truncateTimes = new HashMap<Integer, Double>();
 
 	// VARIABILI PER LE SEZIONI CRITICHE
-	private int criticalPoint = 0; //-1; 
+	private int criticalPoint = 0; 
 	private boolean csTooClose = false;
 	private int stoppingPoint = -1; // punto di fermata, a ogni ciclo: al quale mi fermo da dove sono
 	private double slowingPoint = -1; // punto di frenata, unico: per fermarsi prima del p. critico
@@ -87,17 +87,17 @@ public class Vehicle {
 
 		switch (category) {
 			case CAR:
-				this.velMax = 3.0;
-				this.accMax = 1.0;
+				this.velMax = 1;
+				this.accMax = 0.4;
 				this.priority = 1;
-				this.Tc = 150;
+				this.Tc = 250;
 				this.side = sideCar;
 				this.footprint = fpCar;
 				break;
 
 			case AMBULANCE:
-				this.velMax = 4;
-				this.accMax = 2.0;
+				this.velMax = 2;
+				this.accMax = 1.0;
 				this.priority = 2;
 				this.Tc = 150;
 				this.side = sideAmb;
@@ -108,13 +108,29 @@ public class Vehicle {
 				System.out.println("Unknown vehicle");
 		}
 		double brakingDistanceMax = Math.pow(this.velMax,2.0) / (2*this.accMax);
-		this.radius = 1*((2 * this.Tc * mill2sec ) * this.velMax + brakingDistanceMax + 3*side);
-		this.myDistanceToSend = this.radius  ; 
+		this.radius = 1*((2 * this.Tc * mill2sec ) * this.velMax + brakingDistanceMax + 3*side+front);
+		this.myDistanceToSend = this.radius; 
 		this.path = createWholePath(yamlFile);
 		this.forward = new ConstantAccelerationForwardModel(this, 1000); // ???
 
 	}
 
+	public void Init(double rMax, double tMax,ArrayList<Vehicle> vehicleList,HashMap<Integer,
+					 RobotReport> mainTable,BrowserVisualizationDist viz){
+		setRadius(rMax);
+		setSecForSafety(tMax);
+		setVehicleList(vehicleList);
+		setMainTable(mainTable);
+		setCriticalPoint(path.length-1);
+		setSlowingPointNew();
+		setTimes();
+		setSpatialEnvelope2(true,0);
+		
+		getNears();
+		sendNewRr();
+		setVisualization(viz);
+		initViz();
+	}
 
 	/**********************************************
 	 ** SET & GET PER VARIABILI FISICHE E PROPRIE **
@@ -175,7 +191,9 @@ public class Vehicle {
 		return myDistanceToSend;
 	}
 
-
+	public double getSide(){
+		return this.side;
+	}
 
 	/*****************************************
 	 ** SET & GET PER PERCORSO E TRAIETTORIA **
@@ -204,7 +222,7 @@ public class Vehicle {
 		if (yamlFile != null) rsp.setMap(yamlFile);
 		rsp.setRadius(0.2);
 		rsp.setTurningRadius(4.0);
-		rsp.setDistanceBetweenPathPoints(0.2);
+		rsp.setDistanceBetweenPathPoints(side/3);
 		rsp.setFootprint(this.footprint);
 		rsp.setStart(this.start);
 		rsp.setGoals(this.goal);
@@ -222,7 +240,7 @@ public class Vehicle {
 		for (Vehicle vh : vehicleList){
 			allCs = allCs + vh.countAllcsReplan();
 		}
-		System.out.println("/n NUOVECS TOTALI : " + allCs/2);
+		System.out.println("\n New number of all Cs : " + allCs/2);
 	}
 
 	public PoseSteering[] getWholePath() {
@@ -354,13 +372,10 @@ public class Vehicle {
 		this.csTooClose = csTooClose;
 	}
 
-
 	public void setSlowingPoint() {
-		int cp = this.criticalPoint;
-	if (cp == -1) cp = path.length-1;
-	
-	double distanceToCpAbsolute = forward.computeDistance(path, 0, cp);
-	double distanceToCpRelative = forward.computeDistance(path, pathIndex,cp);
+
+	double distanceToCpAbsolute = forward.computeDistance(path, 0, criticalPoint);
+	double distanceToCpRelative = forward.computeDistance(path, pathIndex,criticalPoint);
 	// We compute the distance traveled:
 	// - accelerating up to vel max from current vel (distToVelMax)
 	// - decelerating up to zero vel from vel max (brakingVelMax)
@@ -394,23 +409,18 @@ public class Vehicle {
 
 }
 
-
 	public void setSlowingPointNew(){
 
-        int cp = this.criticalPoint;
-        if (cp == -1) cp = path.length-1;
-        
-		double distanceToCpAbsolute = forward.computeDistance(path, 0, cp);
-		double distanceToCpRelative = forward.computeDistance(path, pathIndex,cp);
-
-		//double v0 = velocity;
+		double distanceToCpAbsolute = forward.computeDistance(path, 0, criticalPoint);
 		double decMax = this.accMax;
         double brakingFromVelMax = Math.pow(velMax,2.0)/(decMax*2);
         double braking;
-        double traveledInTc;// = velMax*Tc;
-    	braking = brakingFromVelMax;
+        double traveledInTc;
+    	
+		braking = brakingFromVelMax;
     	traveledInTc = 2*velMax*Tc*mill2sec;
-        this.slowingPoint =Math.max(0, (distanceToCpAbsolute-(braking+traveledInTc)));
+        
+		this.slowingPoint =Math.max(0, (distanceToCpAbsolute-(braking+traveledInTc)));
 	}
 
 	public int getStoppingPoint() {
@@ -431,7 +441,6 @@ public class Vehicle {
 		return prec.ComputePrecedences(cs);
 	}
 	
-
 	/*******************************
 	 ** SET & GET PER LISTA VICINI **
 	 ********************************/
@@ -446,9 +455,6 @@ public class Vehicle {
 		return trafficLightsList;
 	}
 
-
-
-	
 	public void setMainTable(HashMap<Integer, RobotReport> mainTable) {
 		this.mainTable = mainTable;
 	}
@@ -488,7 +494,7 @@ public class Vehicle {
 	}
 
 	public ArrayList<TrafficLights> getTrafficLightsNears() {
-		//this.trafficLightsNear.clear();
+
 		double sm1X, sm1Y, dist1;
 		double sm2X, sm2Y, dist2;
 		double x = this.getPose().getX();
@@ -518,15 +524,15 @@ public class Vehicle {
 
 	public void sendNewRr() {
 		HashMap<Integer,Double> TruTim = (HashMap<Integer,Double>) truncateTimes.clone();
+		
 		double clock = Calendar.getInstance().getTimeInMillis();
 		TruTim.put(-1,clock);
+		
 		RobotReport rr = new RobotReport(this.ID, this.priority,this.footprint, this.pathIndex, 
 				this.se, TruTim, this.stoppingPoint,this.isCsTooClose(),forward.getRobotBehavior());
 		
 		mainTable.put(ID, rr);
-		
 	}
-	
 
 	/**************************************
 	 ** SET & GET PER LA VISUALIZZAZIONE **
@@ -551,12 +557,11 @@ public class Vehicle {
 		return filterCs;
 	}
 
-
 	public void initViz(){
 		String infoCs = forward.getRobotBehavior().toString();
 		viz.displayRobotState(wholeSe.getFootprint(), this,infoCs);
 		viz.addEnvelope(wholeSe.getPolygon(),this,"#adadad"); 
-		viz.addEnvelope(se.getPolygon(), this, "#000000");
+		//viz.addEnvelope(se.getPolygon(), this, "#000000");
 	}
 
 	public int countAllcs(){

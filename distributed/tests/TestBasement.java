@@ -78,19 +78,9 @@ public class TestBasement {
 		}
 	}
 	for (Vehicle vh : vehicleList){
-		vh.setRadius(rMax);
-		vh.setSecForSafety(tMax);
-		vh.setTrafficLightsList(trafficLightsList);
-		vh.setVehicleList(vehicleList);
-		vh.setMainTable(mainTable);
-		vh.setSlowingPointNew();
-		vh.setTimes();
-		vh.setSpatialEnvelope2(true,0);
-		vh.getNears();
-		vh.sendNewRr();
-		vh.setVisualization(viz);
-		vh.initViz();
+		vh.Init(rMax, tMax, vehicleList, mainTable, viz);
 		vh.setFilterCs(false);
+		vh.setTrafficLightsList(trafficLightsList);
 	}
 	System.out.println("\n" + "Radius "  + rMax );
 	Thread.sleep(2000);

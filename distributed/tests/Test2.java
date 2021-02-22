@@ -33,7 +33,12 @@ public class Test2 {
 		 Pose start2 = new Pose(15, 3, Math.PI/6); Pose[] goal2 = { new Pose(3.5, -2.5, Math.PI/6) };
 		 //Pose start2 = new Pose(20, 4, 0); Pose[] goal2 = { new Pose(15, 4, 0) };
 
-		Thread thread1 = initThread(1, a, start1, goal1);
+		
+		//  Pose start1 = new Pose(2, 0, Math.PI); Pose[] goal1 = { new Pose(15, 0, Math.PI) };
+		//  Pose start2 = new Pose(6, 3, Math.PI/6); Pose[] goal2 = { new Pose(3.5, -2.5, Math.PI/6) };
+		 
+
+		Thread thread1 = initThread(1, c, start1, goal1);
 		Thread thread2 = initThread(2, c, start2, goal2);
 
 		BrowserVisualizationDist viz = new BrowserVisualizationDist();
@@ -55,18 +60,7 @@ public class Test2 {
 		}
 	}
 	for (Vehicle vh : vehicleList){
-
-		vh.setRadius(rMax);
-		vh.setSecForSafety(tMax);
-		vh.setVehicleList(vehicleList);
-		vh.setMainTable(mainTable);
-		vh.setSlowingPointNew();
-		vh.setTimes();
-		vh.setSpatialEnvelope2(true,0);
-		vh.getNears();
-		vh.sendNewRr();
-		vh.setVisualization(viz);
-		vh.initViz();
+		vh.Init(rMax, tMax, vehicleList, mainTable, viz);
 	}
 	Thread.sleep(1000);
 	System.out.println("\n" + "Radius "  + rMax );

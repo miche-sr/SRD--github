@@ -65,7 +65,7 @@ public class VehicleThread implements Runnable {
 				/***********************************
 				 ****** VISUALIZATION AND PRINT ****
 				 ***********************************/
-				printLog(List, prec);
+				//printLog(List, prec);
 				visualization();
 
 				/****************************
@@ -116,7 +116,8 @@ public class VehicleThread implements Runnable {
 											TL.addVehicleInside(v);
 								}
 								else { // semaforo rosso
-									if (FreeAccess == true) smStopIndex = intersect.SmStopIndex(v, TL)-6;
+									
+									if (FreeAccess == true) smStopIndex = intersect.SmStopIndex(v, TL) - 18; //30pathIndex = 3 footPrint
 									FreeAccess = false;
 								}
 							}

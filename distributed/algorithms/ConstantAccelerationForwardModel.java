@@ -80,7 +80,7 @@ public class ConstantAccelerationForwardModel {
 		// considero ritardi dovuti a periodo di controllo e tempo di aggiornamento del ciclo //
 		long lookaheadInMillis = 1*(this.controlPeriodInMillis);// + MAX_TX_DELAY + trackingPeriodInMillis);
 		//avanzamento nel periodo di ritardo
-		if (lookaheadInMillis > 0 && robotBehavior == Behavior.moving) {
+		if (lookaheadInMillis > 0 && robotBehavior == Behavior.moving ) {
 			while (time*temporalResolution < lookaheadInMillis) {
 				integrateRK4(auxState, time, deltaTime, false, maxVel, 1.0, maxAccel);
 				time += deltaTime;
@@ -111,8 +111,8 @@ public class ConstantAccelerationForwardModel {
 		state.setVelocity(state.getVelocity()+dvdt*deltaTime);
 	}
 
-		//from run in TrajectoryEnvelopeTrackerRK4: line 548
-		public State updateState(Vehicle v, double elapsedTrackingTime,boolean FreeAccess) {
+	//from run in TrajectoryEnvelopeTrackerRK4: line 548
+	public State updateState(Vehicle v, double elapsedTrackingTime,boolean FreeAccess) {
 		
 			State state = new State(v.getDistanceTraveled(), v.getVelocity());	// state attuale
 			double velMaxL = v.getVelMax();
@@ -127,8 +127,8 @@ public class ConstantAccelerationForwardModel {
 			if (!skipIntegration) {
 	 
 	
-				//saturazioni velocità
-				if ( ((state.getVelocity() <= deltaT*v.getAccMAx() && robotBehavior == Behavior.slowing) 
+				//saturazioni velocità+
+				if ( ((state.getVelocity() <= 1.1*deltaT*v.getAccMAx() && robotBehavior == Behavior.slowing) 
 					|| robotBehavior == Behavior.minVel)
 					&& v.getDistanceTraveled() >= v.getSlowingPoint()){
 					
@@ -143,8 +143,10 @@ public class ConstantAccelerationForwardModel {
 						state.setPosition(computeDistance(v.getWholePath(), 0, v.getCriticalPoint()));
 					}
 					else if ( v.getPathIndex()< v.getCriticalPoint()){
+						double d = v.getCriticalPoint()- v.getPathIndex() - 3; //3 = footprint/2
+						d = Math.max(d,0.9);
 						robotBehavior = Behavior.minVel ;
-						integrateRK4(state, elapsedTrackingTime, deltaT, false, deltaT*v.getAccMAx(), 1.0, v.getAccMAx()*0.8); 
+						integrateRK4(state, elapsedTrackingTime, deltaT, false, d*deltaT*v.getAccMAx(), 1.0, v.getAccMAx()*0.8); 
 					}
 					else{
 						state.setVelocity(0.0);
@@ -154,8 +156,7 @@ public class ConstantAccelerationForwardModel {
 					
 	
 				} 
-	
-				
+
 				else{
 					// caso accelerazione - vMax
 					boolean slowingDown = false;

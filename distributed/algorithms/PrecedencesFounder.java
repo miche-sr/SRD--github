@@ -8,7 +8,7 @@ import se.oru.coordination.coordination_oru.distributed.models.RobotReport;
 import se.oru.coordination.coordination_oru.distributed.models.Vehicle;
 
 public class PrecedencesFounder{
-    private int countHead = 0;
+    
     private int countLock = 0;
     private int countPark = 0;
     private String debug = "";
@@ -23,8 +23,9 @@ public class PrecedencesFounder{
         Vehicle v1 = cs.getVehicle1();
         RobotReport v2 = cs.getVehicle2();
 
-        double delay = 0.001*( Calendar.getInstance().getTimeInMillis() - v2.getTruncateTimes().get(-1));
-        //System.out.println(delay);
+        //double delay = 0.001*( Calendar.getInstance().getTimeInMillis() - v2.getTruncateTimes().get(-1));
+        double delay = 0;
+        
         int te1start = cs.getTe1Start();
         int te2start = cs.getTe2Start();
         double timeAtCsStart1 = v1.getTruncateTimes().get(cs.getTe1Start());
@@ -44,7 +45,7 @@ public class PrecedencesFounder{
             if(v1.getForwardModel().getRobotBehavior()==ConstantAccelerationForwardModel.Behavior.stop){
                 if (v1.getPriority()<v2.getPriority() && replan){v1.setNewWholePath(); debug = "\u001B[32m" + " A - priority Replan" +"\u001B[0m";}
                 else if( v1.getPriority()== v2.getPriority() && v1.getID() < v2.getID() && replan) {v1.setNewWholePath();debug = "\u001B[32m" + " A - ID Replan" + "\u001B[0m";}
-                else countHead = countHead + 1;
+                
             }
         }
 
@@ -84,17 +85,17 @@ public class PrecedencesFounder{
 
 
         if(v1.getForwardModel().getRobotBehavior()== Behavior.stop && replan) countPark = countPark+1;
-        else {countHead = 0;countPark=0;}
-        if (countHead == 35  ||  countPark == 25  || v2.getBehavior()== Behavior.reached){
+        else {countPark=0;}
+        if (countPark == 45 || v2.getBehavior()== Behavior.reached){
             System.out.println("\u001B[35m" + "Provo a ricalcolare Percorso di R" + v1.getID() +"\u001B[0m");
             v1.setNewWholePath();
             debug = " Forced - Replan";
-            countHead = 0;countLock = 0;countPark = 0;
+            countLock = 0;countPark = 0;
         }
 
     
            // if((v1.getID()== 10))
-           //System.out.println("R"+v1.getID() +"-R"+v2.getID()+ "\tdebug Prec " + prec +" \t"+ debug );
+           System.out.println("R"+v1.getID() +"-R"+v2.getID()+ "\tdebug Prec " + prec +" \t"+ debug );
 
 
         return prec;
