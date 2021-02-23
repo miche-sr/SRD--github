@@ -81,7 +81,7 @@ public class TestCerchio {
 		for(Thread tr : threads){
 			tr.start();
 			try {
-				TimeUnit.MILLISECONDS.sleep(5);
+				TimeUnit.MILLISECONDS.sleep(2);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}

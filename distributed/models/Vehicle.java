@@ -145,7 +145,7 @@ public class Vehicle {
 		sendNewRr(0);
 		setVisualization(viz);
 		initViz();
-		this.traker = new Traker(this, velMax, accMax, Tc,150, wholeSe);
+		this.traker = new Traker(this, velMax, accMax, Tc,350, wholeSe);
 		
 	}
 
@@ -250,7 +250,7 @@ public class Vehicle {
 		if (yamlFile != null) rsp.setMap(yamlFile);
 		rsp.setRadius(0.2);
 		rsp.setTurningRadius(4.0);
-		rsp.setDistanceBetweenPathPoints(side/3);
+		rsp.setDistanceBetweenPathPoints(side/1); //3 (modifica anche set critical -3)
 		rsp.setFootprint(this.footprint);
 		rsp.setStart(this.start);
 		rsp.setGoals(this.goal);
@@ -383,7 +383,7 @@ public class Vehicle {
 
 	public void setCriticalPoint(CriticalSection cs) {
 		if (cs.getTe1Start()== 0) this.criticalPoint = 0;
-		else this.criticalPoint = cs.getTe1Start()-3;
+		else this.criticalPoint = cs.getTe1Start()-1; //3 (modifica in relazione alla distanza pose)
 	}
 
 	public double getSlowingPoint() {

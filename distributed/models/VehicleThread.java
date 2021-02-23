@@ -2,10 +2,15 @@ package se.oru.coordination.coordination_oru.distributed.models;
 
 import static org.junit.Assert.fail;
 
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.HashMap;
-import java.util.TreeSet;
+// import java.util.ArrayList;
+// import java.util.Calendar;
+// import java.util.HashMap;
+// import java.util.TreeSet;
+import java.util.*;
+import java.nio.*;
+
+
+import cern.colt.buffer.IntBuffer;
 import se.oru.coordination.coordination_oru.distributed.algorithms.CriticalSectionsFounder;
 import se.oru.coordination.coordination_oru.distributed.models.Vehicle.Behavior;
 
@@ -28,7 +33,8 @@ public class VehicleThread implements Runnable {
 	private int smStopIndex = -1;
 	private String List = " ";
 	private int spF = 0;
-
+	
+	private IntBuffer oldChunk = IntBuffer.allocate((int)v.getAlfa());
 
 
 	private static String colorTruEnv ="#000000"; //#efe007";
@@ -78,7 +84,7 @@ public class VehicleThread implements Runnable {
 				v.updateState();
 				
 				
-				v.setSpatialEnvelope2(FreeAccess,smStopIndex);
+				//v.setSpatialEnvelope2(FreeAccess,smStopIndex);
 				v.setStoppingPoint();
 				
 
@@ -123,7 +129,9 @@ public class VehicleThread implements Runnable {
 				/*************************************
 				 ** ESTIMATE TEMPORAL PROFILE	 ** 
 				 *************************************/
-				v.setTimes();
+				v.updateState();
+				v.setSpatialEnvelope2(FreeAccess,smStopIndex);
+				 v.setTimes();
 
 				/*****************************************
 				 ** FUTURE STOPPING POINT AND BROADCAST	 ** 
