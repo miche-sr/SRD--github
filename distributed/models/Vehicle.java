@@ -118,6 +118,7 @@ public class Vehicle {
 				System.out.println("Unknown vehicle");
 		}
 		alfa = Math.max(tcCar, tcAmb) / this.Tc;
+		
 		double brakingDistanceMax = Math.pow(this.velMax, 2.0) / (2 * this.accMax);
 		this.radius = ((1 + alfa) * this.Tc * mill2sec) * this.velMax + brakingDistanceMax + 3 * side;
 		this.myDistanceToSend = this.radius;
@@ -144,7 +145,7 @@ public class Vehicle {
 		sendNewRr(0);
 		setVisualization(viz);
 		initViz();
-		this.traker = new Traker(this, velMax, accMax, Tc,100, wholeSe);
+		this.traker = new Traker(this, velMax, accMax, Tc,150, wholeSe);
 		
 	}
 
@@ -382,7 +383,7 @@ public class Vehicle {
 
 	public void setCriticalPoint(CriticalSection cs) {
 		if (cs.getTe1Start()== 0) this.criticalPoint = 0;
-		else this.criticalPoint = cs.getTe1Start()-2;
+		else this.criticalPoint = cs.getTe1Start()-3;
 	}
 
 	public double getSlowingPoint() {
@@ -401,19 +402,7 @@ public class Vehicle {
 		this.csTooClose = csTooClose;
 	}
 
-	// public void setSlowingPoint(){
 
-	// 	double distanceToCpAbsolute = computeDistance(path, 0, criticalPoint);
-	// 	double decMax = maxAcc;
-    //     double brakingFromVelMax = Math.pow(maxVel,2.0)/(decMax*2);
-    //     double braking;
-    //     double traveledInTc;
-    	
-	// 	braking = brakingFromVelMax;
-    // 	traveledInTc = 2*maxVel*controlPeriodInMillis*Vehicle.mill2sec;
-        
-	// 	this.slowingPoint =Math.max(0, (distanceToCpAbsolute-(braking+traveledInTc)));
-	// }
 
 	public double setSlowingPointTimes(){
 

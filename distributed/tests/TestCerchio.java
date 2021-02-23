@@ -29,13 +29,13 @@ public class TestCerchio {
 		Vehicle.Category a = Vehicle.Category.AMBULANCE;
 		Vehicle.Category c = Vehicle.Category.CAR;
 		
-		int NUMBER_ROBOTS = 80;
+		int NUMBER_ROBOTS = 110;
 		double radius = 40 ;
 
 
 		BrowserVisualizationDist viz = new BrowserVisualizationDist();
 		if (yamlFile != null) viz.setMap(yamlFile);
-		viz.setInitialTransform(12,radius+1, radius+1);
+		viz.setInitialTransform(25,radius+1, radius+1);
 
 		double theta = 0.0;
 		

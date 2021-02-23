@@ -27,7 +27,6 @@ public class Traker implements Runnable {
 	private int pathIndex = 0;
     private int criticalPoint = 0;
     private double slowingPoint = 0;
-    private int stoppingPoint = 0;
     private boolean FreeAccess = true;
 
     public Traker(Vehicle v,double VelMax, double AccMAx, int Tc, double temporalResolution,SpatialEnvelope wholeSe ) {
@@ -201,16 +200,17 @@ public class Traker implements Runnable {
 
     public void setCriticalPoint(int criticalPoint) {
         this.criticalPoint = criticalPoint;
-        setSlowingPointNew();
-        State st = new State(slowingPoint,0);
-        v.getVisualization().displayPoint(v, getPathIndex(path, st) ,"#457d00");
+        setSlowingPoint();
+        // State st = new State(slowingPoint,0);
+        // v.getVisualization().displayPoint(v, getPathIndex(path, st) ,"#457d00");
 
         if(! v.isTrakerEnable()){
-            elapsedTrackingTime =elapsedTrackingTime +v.getTc();
+           
             updateState(elapsedTrackingTime);
             pathIndex = getPathIndex(path, state);
             String infoCs = robotBehavior.toString();
             v.getVisualization().displayRealRobotState(wholeSe.getFootprint(), v,pathIndex,path,infoCs);
+            elapsedTrackingTime =elapsedTrackingTime +v.getTc();
         }
 
     }
@@ -236,7 +236,7 @@ public class Traker implements Runnable {
         double distanceToCpRelative = computeDistance(path, pathIndex,criticalPoint);
     
         double v0 = state.getVelocity();
-        double decMax = maxAcc;
+        double decMax = maxAcc*0.9;
         double timeToVelMax = (maxVel - v0)/maxAcc;
         double distToVelMax = v0*timeToVelMax + maxAcc*Math.pow(timeToVelMax,2.0)/2;
         double brakingFromVelMax = Math.pow(maxVel,2.0)/(decMax*2);

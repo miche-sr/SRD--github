@@ -88,13 +88,11 @@ public class VehicleThread implements Runnable {
 				 ****************************/
 				double startCs = System.currentTimeMillis();
 
-				
-				if(v.IsFilterCS())	filterCS();
-				else{
-					v.clearCs();
-					for (RobotReport vh : rrNears.values())
-						v.appendCs(vh);
-				}
+	
+				v.clearCs();
+				for (RobotReport vh : rrNears.values())
+					v.appendCs(vh);
+
 				double finishCs = System.currentTimeMillis();
 				if(v.getCs().size() != 0) timesCs.add((finishCs - startCs));
 
@@ -319,34 +317,6 @@ public class VehicleThread implements Runnable {
 				if(v.getCs().size() != 0) timesPrec.add(( endPrec  - startPrec));
 	}
 
-	private void filterCS(){
-		analysedVehiclesI.clear();
-		this.analysedCs.clear();
-		for (CriticalSection analysedCs : v.getCs()){
-			int v2Id = analysedCs.getVehicle2().getID();
-			if (rrNears.containsKey(v2Id)){
-				if (v.getPathIndex() < analysedCs.getTe1Start() && rrNears.get(v2Id).getPathIndex() < analysedCs.getTe2Start() // Cs non intrapresa
-							&&	analysedCs.getVehicle2().getTruncateTimes().get(analysedCs.getTe2Start()) == rrNears.get(v2Id).getTruncateTimes().get(analysedCs.getTe2Start())
-							&& v.isCsTooClose() !=true // no rischio deadlock
-							&& !analysedCs.isCsTruncated()) { // no cs troncata
-					this.analysedCs.add(analysedCs);
-					analysedVehiclesI.add( analysedCs.getVehicle2().getID());
-				}
-			}
-		}
-		
-		// re-add the cs already analysed and find the cs of other vehicles
-		v.clearCs();
-		for (CriticalSection analysedCs : this.analysedCs){
-			v.getCs().add(analysedCs);
-		}
-
-		for (RobotReport vh : rrNears.values()){
-			if (!analysedVehiclesI.contains(vh.getID())) {
-				v.appendCs(vh);
-			}
-			else System.out.print(">><<");
-		}
-	}
+	
 
 }
