@@ -34,8 +34,7 @@ public class VehicleThread implements Runnable {
 	private String List = " ";
 	private int spF = 0;
 	
-	private IntBuffer oldChunk = IntBuffer.allocate((int)v.getAlfa());
-
+	
 
 	private static String colorTruEnv ="#000000"; //#efe007";
 	private static String colorStp = "#047d00"; //"#0008f6"; //"#ffffff";
@@ -84,7 +83,8 @@ public class VehicleThread implements Runnable {
 				v.updateState();
 				
 				
-				//v.setSpatialEnvelope2(FreeAccess,smStopIndex);
+				// v.setTimes();
+				v.setSpatialEnvelope2(FreeAccess,smStopIndex);
 				v.setStoppingPoint();
 				
 
@@ -129,9 +129,8 @@ public class VehicleThread implements Runnable {
 				/*************************************
 				 ** ESTIMATE TEMPORAL PROFILE	 ** 
 				 *************************************/
-				v.updateState();
-				v.setSpatialEnvelope2(FreeAccess,smStopIndex);
-				 v.setTimes();
+				v.setTimes();
+
 
 				/*****************************************
 				 ** FUTURE STOPPING POINT AND BROADCAST	 ** 
@@ -311,10 +310,12 @@ public class VehicleThread implements Runnable {
 					if (csOld != null) v.setCsTooClose(intersect.csTooClose(v, csOld, cs));
 					if (prec == false && v.isCsTooClose() && csOld != null){		//calculate precedence as long as I have precedence
 						v.setCriticalPoint(csOld);
+						v.getVisualization().displayDependency(v, cs.getVehicle2(),"waiting"+v.getID());
 						break;
 					}
 					else if (prec == false){
 						v.setCriticalPoint(cs);
+						v.getVisualization().displayDependency(v, cs.getVehicle2(),"waiting"+v.getID());
 						break;
 					}
 					if (v.isCsTooClose() == false || csOld == null) 

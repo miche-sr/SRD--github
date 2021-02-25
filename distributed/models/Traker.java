@@ -96,7 +96,7 @@ public class Traker implements Runnable {
                 else if ( pathIndex< criticalPoint){
                     
                     robotBehavior = Behavior.minVel ;
-                    integrateRK4(state, elapsedTrackingTime, deltaT, false,0.9*deltaTc*maxAcc, 1.0, maxAcc*0.8); 
+                    integrateRK4(state, elapsedTrackingTime, deltaT, false,1.5*deltaTc*maxAcc, 1.0, maxAcc*0.8); 
                 }
                 else{
                     state.setVelocity(0.0);

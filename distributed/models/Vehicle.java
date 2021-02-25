@@ -120,7 +120,7 @@ public class Vehicle {
 		alfa = Math.max(tcCar, tcAmb) / this.Tc;
 		
 		double brakingDistanceMax = Math.pow(this.velMax, 2.0) / (2 * this.accMax);
-		this.radius = ((1 + alfa) * this.Tc * mill2sec) * this.velMax + brakingDistanceMax + 3 * side;
+		this.radius = ((2 + alfa) * this.Tc * mill2sec) * this.velMax + brakingDistanceMax + 3 * side;
 		this.myDistanceToSend = this.radius;
 		this.path = createWholePath(yamlFile);
 

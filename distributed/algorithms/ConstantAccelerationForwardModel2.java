@@ -77,7 +77,7 @@ public class ConstantAccelerationForwardModel2 {
 		double time = 0.0;
 		double deltaTime = v.getTc()*Vehicle.mill2sec;
 		double future = 0;
-		if (lookForward) future = 1+alfa;
+		if (lookForward) future = 2+alfa;
 
 		// considero ritardi dovuti a periodo di controllo e tempo di aggiornamento del ciclo //
 		double lookaheadInMillis = (1+future)*(v.getTc()*Vehicle.mill2sec);
