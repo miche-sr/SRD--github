@@ -54,11 +54,11 @@ public class VehicleThread implements Runnable {
 	public void run() {
 		double start = System.currentTimeMillis();
 		if(v.isTrakerEnable()) v.startTraker();
-		/*int alfa =(int) v.getAlfa();
-		int[] chunkArray = new int[alfa];
-		for (int k=0;k==alfa;k++){
-			chunkArray[k]=0;
-		}*/
+		// int alfa =(int) v.getAlfa();
+		// int[] chunkArray = new int[alfa];
+		// for (int k=0;k==alfa;k++){
+		// 	chunkArray[k]=0;
+		// }
 		
 		try{
 			while(v.getBehavior() != Behavior.reached && run){
@@ -87,7 +87,7 @@ public class VehicleThread implements Runnable {
 				
 				
 				// v.setTimes();
-				v.setSpatialEnvelope2(FreeAccess,smStopIndex);
+				v.setChunk(FreeAccess,smStopIndex);
 				v.setStoppingPoint();
 				
 
@@ -114,11 +114,11 @@ public class VehicleThread implements Runnable {
 				 ** CALCULATE THE PRECEDENCES ** 
 				 *******************************/
 				
-				/* v.setCriticalPoint(chunkArray[0]);
-				 	for (int k=1;k<(alfa);k++){
-				 	chunkArray[k-1]=chunkArray[k];
-				 }
-				chunkArray[alfa-1] = (v.getPathIndex() + v.getSpatialEnvelope().getPath().length-1);*/
+				//  v.setCriticalPoint(chunkArray[0]);
+				//  	for (int k=1;k<(alfa);k++){
+				//  	chunkArray[k-1]=chunkArray[k];
+				//  }
+				// chunkArray[alfa-1] = (v.getPathIndex() + v.getSpatialEnvelope().getPath().length-1);
 				v.setCriticalPoint(v.getPathIndex() + v.getSpatialEnvelope().getPath().length-1); 
 				
 				Precedence();
@@ -146,7 +146,12 @@ public class VehicleThread implements Runnable {
 				/*****************************************
 				 ** FUTURE STOPPING POINT AND BROADCAST	 ** 
 				 ***************************************/
-				spF = v.getFutureStoppingPoint();
+				v.updateState();
+				v.setChunk(FreeAccess,smStopIndex);
+				
+				
+				
+				 spF = v.getFutureStoppingPoint();
 				v.sendNewRr(spF);
 
 				/***********************************
@@ -174,7 +179,7 @@ public class VehicleThread implements Runnable {
 			********************************/
 			v.setStoppingPoint();
 			v.setTimes();
-			v.setSpatialEnvelope2(FreeAccess,smStopIndex);
+			v.setChunk(FreeAccess,smStopIndex);
 			visualization();
 			v.sendNewRr(spF);
 			double finish = System.currentTimeMillis();

@@ -29,7 +29,7 @@ public class TestCerchio {
 		Vehicle.Category a = Vehicle.Category.AMBULANCE;
 		Vehicle.Category c = Vehicle.Category.CAR;
 		
-		int NUMBER_ROBOTS = 70;
+		int NUMBER_ROBOTS = 60;
 		double radius = 40 ;
 
 

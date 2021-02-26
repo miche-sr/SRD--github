@@ -103,8 +103,8 @@ public class Vehicle {
 
 		switch (category) {
 			case CAR:
-				this.velMax = 1.5;
-				this.accMax = 0.6;
+				this.velMax = 1.5;//3;
+				this.accMax = 0.6;//1;
 				this.priority = 1;
 				this.Tc = tcCar;
 				this.side = sideCar;
@@ -148,7 +148,7 @@ public class Vehicle {
 		setCriticalPoint(path.length-1);
 		this.se = wholeSe;
 		setTimes();
-		setSpatialEnvelope2(true,0);
+		setChunk(true,0);
 		getNears();
 		sendNewRr(0);
 		setVisualization(viz);
@@ -258,7 +258,7 @@ public class Vehicle {
 		if (yamlFile != null) rsp.setMap(yamlFile);
 		rsp.setRadius(0.2);
 		rsp.setTurningRadius(4.0);
-		rsp.setDistanceBetweenPathPoints(side/PoseResolution); //3 (modifica anche set critical -3)
+		rsp.setDistanceBetweenPathPoints(side/PoseResolution); 
 		rsp.setFootprint(this.footprint);
 		rsp.setStart(this.start);
 		rsp.setGoals(this.goal);
@@ -304,7 +304,7 @@ public class Vehicle {
 
 	// // CALCOLO PATH TRAIETTORIA TRONCATA //
 
-	public void setSpatialEnvelope2(Boolean FreeAcces, int smStopIndex) {
+	public void setChunk(Boolean FreeAcces, int smStopIndex) {
 		this.truncatedPath.clear();
 		this.truncateTimes.clear();
 		
@@ -390,8 +390,9 @@ public class Vehicle {
 	}
 
 	public void setCriticalPoint(CriticalSection cs) {
+		
 		if (cs.getTe1Start()== 0) this.criticalPoint = 0;
-		else this.criticalPoint = cs.getTe1Start()-1; //3 (modifica in relazione alla distanza pose)
+		else this.criticalPoint = cs.getTe1Start()-PoseResolution; 
 	}
 
 	public double getSlowingPoint() {
@@ -544,7 +545,7 @@ public class Vehicle {
 	public void sendNewRr(int spFuture) {
 		HashMap<Integer,Double> TruTim = (HashMap<Integer,Double>) truncateTimes.clone();
 		
-		
+		//int sp = Math.min(spFuture, criticalPoint);
 		
 		RobotReport rr = new RobotReport(this.ID, this.priority,this.footprint, this.pathIndex, 
 				this.se, TruTim, spFuture,this.isCsTooClose(),behavior);
