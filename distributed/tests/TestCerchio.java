@@ -17,7 +17,7 @@ public class TestCerchio {
 	private static ArrayList<Thread> threads = new ArrayList<Thread>();
 
 	public static Thread initThread(int id, Vehicle.Category ctg, Pose start, Pose[] goal) {
-		Vehicle vehicle = new Vehicle(id, ctg, start, goal,yamlFile);
+		Vehicle vehicle = new Vehicle(id, ctg, start, goal, 350, 1, false,yamlFile);
 		Thread thread = new Thread(new VehicleThread(vehicle));
 		vehicleList.add(vehicle);
 		threads.add(thread);
@@ -29,7 +29,7 @@ public class TestCerchio {
 		Vehicle.Category a = Vehicle.Category.AMBULANCE;
 		Vehicle.Category c = Vehicle.Category.CAR;
 		
-		int NUMBER_ROBOTS = 60;
+		int NUMBER_ROBOTS = 70;
 		double radius = 40 ;
 
 
@@ -81,7 +81,7 @@ public class TestCerchio {
 		for(Thread tr : threads){
 			tr.start();
 			try {
-				TimeUnit.MILLISECONDS.sleep(2);
+				TimeUnit.MILLISECONDS.sleep(2000);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}

@@ -2,10 +2,7 @@ package se.oru.coordination.coordination_oru.distributed.models;
 
 import static org.junit.Assert.fail;
 
-// import java.util.ArrayList;
-// import java.util.Calendar;
-// import java.util.HashMap;
-// import java.util.TreeSet;
+
 import java.util.*;
 import java.nio.*;
 
@@ -34,6 +31,7 @@ public class VehicleThread implements Runnable {
 	private String List = " ";
 	private int spF = 0;
 	
+
 	
 
 	private static String colorTruEnv ="#000000"; //#efe007";
@@ -56,6 +54,11 @@ public class VehicleThread implements Runnable {
 	public void run() {
 		double start = System.currentTimeMillis();
 		if(v.isTrakerEnable()) v.startTraker();
+		/*int alfa =(int) v.getAlfa();
+		int[] chunkArray = new int[alfa];
+		for (int k=0;k==alfa;k++){
+			chunkArray[k]=0;
+		}*/
 		
 		try{
 			while(v.getBehavior() != Behavior.reached && run){
@@ -105,11 +108,19 @@ public class VehicleThread implements Runnable {
 				/**********************************
 				 		** SEMAPHORE **
 				 ++++++++++++++++++++++++++++++++*/
-				 TrafficLights();
+				TrafficLights();
 
 				/*******************************
 				 ** CALCULATE THE PRECEDENCES ** 
 				 *******************************/
+				
+				/* v.setCriticalPoint(chunkArray[0]);
+				 	for (int k=1;k<(alfa);k++){
+				 	chunkArray[k-1]=chunkArray[k];
+				 }
+				chunkArray[alfa-1] = (v.getPathIndex() + v.getSpatialEnvelope().getPath().length-1);*/
+				v.setCriticalPoint(v.getPathIndex() + v.getSpatialEnvelope().getPath().length-1); 
+				
 				Precedence();
 
 				/************************************

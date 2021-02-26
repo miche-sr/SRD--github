@@ -15,7 +15,7 @@ public class Test8Robot {
 	private static String yamlFile = null;
 
 	public static Thread initThread(int id, Vehicle.Category ctg, Pose start, Pose[] goal) {
-		Vehicle vehicle = new Vehicle(id, ctg, start, goal,yamlFile);
+		Vehicle vehicle = new Vehicle(id, ctg, start, goal, 50, 3, true,yamlFile);
 		Thread thread = new Thread(new VehicleThread(vehicle));
 		vehicleList.add(vehicle);
 		return thread;

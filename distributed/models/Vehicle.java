@@ -1,7 +1,7 @@
 package se.oru.coordination.coordination_oru.distributed.models;
 
 import se.oru.coordination.coordination_oru.distributed.algorithms.*;
-import se.oru.coordination.coordination_oru.distributed.algorithms.ConstantAccelerationForwardModel.Behavior;
+
 import se.oru.coordination.coordination_oru.util.BrowserVisualizationDist;
 import se.oru.coordination.coordination_oru.motionplanning.ompl.ReedsSheppCarPlanner;
 
@@ -52,6 +52,9 @@ public class Vehicle {
 	private double myDistanceToSend;
 
 	// VARIABILI DI PERCORSO E TRAIETTORIA
+	private int PoseResolution;
+	private int TcTraker;
+
 	ReedsSheppCarPlanner rsp = new ReedsSheppCarPlanner();
 	private Behavior behavior = Behavior.start;
 	private int pathIndex = 0; // index of the last pose passed
@@ -81,7 +84,7 @@ public class Vehicle {
 	private ArrayList<TrafficLights> trafficLightsNear = new ArrayList<TrafficLights>();
 	private HashMap<Integer, RobotReport> mainTable;
 
-	private ConstantAccelerationForwardModel2 forward;
+	private ConstantAccelerationForwardModel forward;
 	private BrowserVisualizationDist viz;
 	private PrecedencesFounder prec = new PrecedencesFounder();
 	private ArrayList<Integer> ListAllCS = new ArrayList<Integer>();
@@ -89,16 +92,19 @@ public class Vehicle {
 	private boolean trakerEnable = true;
 
 	// COSTRUTTORE
-	public Vehicle(int ID, Category category, Pose start, Pose[] goal, String yamlFile) {
+	public Vehicle(int ID, Category category, Pose start, Pose[] goal,int TcTraker, int PoseResolution,Boolean mrs, String yamlFile) {
 		this.ID = ID;
 		this.pose = start;
 		this.start = start;
 		this.goal = goal;
+		this.TcTraker = TcTraker;
+		this.PoseResolution = PoseResolution;
+
 
 		switch (category) {
 			case CAR:
-				this.velMax = 3; // 1.5;
-				this.accMax = 1;// 0.6;
+				this.velMax = 1.5;
+				this.accMax = 0.6;
 				this.priority = 1;
 				this.Tc = tcCar;
 				this.side = sideCar;
@@ -117,18 +123,20 @@ public class Vehicle {
 			default:
 				System.out.println("Unknown vehicle");
 		}
+		if(mrs)
 		alfa = Math.max(tcCar, tcAmb) / this.Tc;
+		else alfa = 1;
 		
 		double brakingDistanceMax = Math.pow(this.velMax, 2.0) / (2 * this.accMax);
 		this.radius = ((2 + alfa) * this.Tc * mill2sec) * this.velMax + brakingDistanceMax + 3 * side;
 		this.myDistanceToSend = this.radius;
 		this.path = createWholePath(yamlFile);
 
-		this.forward = new ConstantAccelerationForwardModel2(this);
+		this.forward = new ConstantAccelerationForwardModel(this);
 
 	}
 
-
+	
 
 	public void Init(double rMax, double tMax, ArrayList<Vehicle> vehicleList,
 			HashMap<Integer,
@@ -145,7 +153,7 @@ public class Vehicle {
 		sendNewRr(0);
 		setVisualization(viz);
 		initViz();
-		this.traker = new Traker(this, velMax, accMax, Tc,350, wholeSe);
+		this.traker = new Traker(this, velMax, accMax, Tc,TcTraker, wholeSe);
 		
 	}
 
@@ -250,7 +258,7 @@ public class Vehicle {
 		if (yamlFile != null) rsp.setMap(yamlFile);
 		rsp.setRadius(0.2);
 		rsp.setTurningRadius(4.0);
-		rsp.setDistanceBetweenPathPoints(side/1); //3 (modifica anche set critical -3)
+		rsp.setDistanceBetweenPathPoints(side/PoseResolution); //3 (modifica anche set critical -3)
 		rsp.setFootprint(this.footprint);
 		rsp.setStart(this.start);
 		rsp.setGoals(this.goal);
@@ -331,7 +339,7 @@ public class Vehicle {
 
 
 
-	public ConstantAccelerationForwardModel2 getForwardModel(){
+	public ConstantAccelerationForwardModel getForwardModel(){
 		return forward;
 	}
 

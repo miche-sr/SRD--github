@@ -261,9 +261,7 @@ public class Traker implements Runnable {
     
     }
 
-    public void setStoppingPoint(int stoppingPoint) {
-        this.stoppingPoint = stoppingPoint;
-    }
+
     public void setFreeAccess(boolean freeAccess) {
         FreeAccess = freeAccess;
     }
