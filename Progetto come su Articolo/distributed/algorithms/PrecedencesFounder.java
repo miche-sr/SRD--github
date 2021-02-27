@@ -34,9 +34,9 @@ public class PrecedencesFounder{
     	double braking1 = timeAtCsEnd2 - timeAtCsStart1;
         double braking2 = timeAtCsEnd1 - timeAtCsStart2;
         
-        if(timeAtCsEnd1 == -1 ){ braking1 = 0; braking2 = 1;} //sono fermo--> waitingTIme infinito--> non aggiungo altro tempo braking = 0
-        if(timeAtCsEnd2 == -1 ) {braking1 = 1; braking2 = 0;}//v2 è fermo non aggiunge tempo alla sua attesa
-        if(timeAtCsEnd1 == -1 && timeAtCsEnd2 == -1){ braking1 = 0; braking2 = 0;}//entrambi fermi
+        if(timeAtCsEnd1 == -1 ){ braking1 = 0; braking2 = 1;} //r1 is still with infinite waitingTime
+        if(timeAtCsEnd2 == -1 ) {braking1 = 1; braking2 = 0;}//r2 is still with infinite waitingTime
+        if(timeAtCsEnd1 == -1 && timeAtCsEnd2 == -1){ braking1 = 0; braking2 = 0;}//both still
 
 
         if (v1.getStoppingPoint() >= te1start && v2.getStoppingPoint() >= te2start){
@@ -85,7 +85,7 @@ public class PrecedencesFounder{
         if(v1.getBehavior()== Behavior.stop && replan) countPark = countPark+1;
         else {countPark=0;}
         if (countPark == 45 || v2.getBehavior()== Behavior.reached){
-            System.out.println("\u001B[35m" + "Provo a ricalcolare Percorso di R" + v1.getID() +"\u001B[0m");
+            System.out.println("\u001B[35m" + "Trying to re-plan path of R" + v1.getID() +"\u001B[0m");
             v1.setNewWholePath();
             debug = " Forced - Replan";
             countLock = 0;countPark = 0;

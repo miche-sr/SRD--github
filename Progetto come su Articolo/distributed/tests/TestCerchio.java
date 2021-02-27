@@ -92,8 +92,8 @@ public class TestCerchio {
 		
 		double finish = System.currentTimeMillis();
 		double timeElapsed = (finish - start)/1000;
-		System.out.println("\n Numero Robot  - " + NUMBER_ROBOTS );
-		System.out.println("\n Time Elapsed Complessivo - " + timeElapsed + "  ovvero in minuti: "+timeElapsed/60 );
+		System.out.println("\n Number of Robots - " + NUMBER_ROBOTS );
+		System.out.println("\n Totat Time Elapsed - " + timeElapsed + ", in minutes: "+timeElapsed/60 );
 	
 	}
 }

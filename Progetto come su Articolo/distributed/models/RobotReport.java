@@ -25,7 +25,7 @@ public class RobotReport {
 			HashMap<Integer, Double> truncateTimes, int stoppingPoint, Boolean isTooClose, Behavior behavior) {
 		this.ID = ID;
 		this.priority = priority;
-		this.footprint = footprint; // solo per check collisione
+		this.footprint = footprint; // used only to check collision
 		this.pathIndex = pathIndex;
 		this.se = se;
 		this.truncateTimes = truncateTimes;

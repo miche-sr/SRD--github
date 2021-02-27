@@ -16,7 +16,7 @@ import se.oru.coordination.coordination_oru.distributed.models.State;
 
 public class ConstantAccelerationForwardModel {
 		
-	private double maxAccel, maxVel, alfa;
+	private double maxAccel, maxVel, alpha;
 	
 	private int trackingPeriodInMillis = 0;
 	private int controlPeriodInMillis = -1;
@@ -29,7 +29,7 @@ public class ConstantAccelerationForwardModel {
 	public ConstantAccelerationForwardModel(Vehicle v) {
 		this.maxAccel = v.getAccMAx();
 		this.maxVel = v.getVelMax();
-		this.alfa = v.getAlfa();
+		this.alpha = v.getalpha();
 		
 		this.controlPeriodInMillis = v.getTc();
 //		this.trackingPeriodInMillis = trackingPeriodInMillis;
@@ -71,15 +71,15 @@ public class ConstantAccelerationForwardModel {
 		return currentPathIndex;
 	}
 	
-	// fornisce il path index sul quale ci si fermerà date le condizioni attuali
+	// compute either stopping point braking from next period, or the decision point
 	public int getEarliestStoppingPathIndex(Vehicle v,boolean lookForward) {
 		State auxState = new State(v.getDistanceTraveled(), v.getVelocity());
 		double time = 0.0;
 		double deltaTime = v.getTc()*Vehicle.mill2sec;
 		double future = 0;
-		if (lookForward) future = 1+alfa;
+		if (lookForward) future = 1+alpha;
 
-		// considero ritardi dovuti a periodo di controllo e tempo di aggiornamento del ciclo //
+
 		double lookaheadInMillis = (1+future)*(v.getTc()*Vehicle.mill2sec);
 		if (lookaheadInMillis > 0 && v.getBehavior() == Behavior.moving ) {
 			while (time < lookaheadInMillis) {
@@ -88,7 +88,7 @@ public class ConstantAccelerationForwardModel {
 			}
 		}
 		
-		//Frenata
+		// braking
 		while (auxState.getVelocity() > v.getTc()*Vehicle.mill2sec*v.getAccMAx()) {
 			integrateRK4(auxState, time, deltaTime, true, maxVel, 1.0, maxAccel);
 			time += deltaTime;
@@ -96,7 +96,7 @@ public class ConstantAccelerationForwardModel {
 		return getPathIndex(v.getWholePath(), auxState);
 	}
 	
-	// from integrateRK4 in TrajectoryEnvelopeTrackerRK4: line 337
+	// from integrateRK4 in TrajectoryEnvelopeTrackerRK4 of Centralized CoordinationOru project: line 337
 	public static void integrateRK4(State state, double time, double deltaTime, boolean slowDown, double MAX_VELOCITY, double MAX_VELOCITY_DAMPENING_FACTOR, double MAX_ACCELERATION) {
 		
 		Derivative a = Derivative.evaluate(state, time, 0.0, new Derivative(), slowDown, MAX_VELOCITY, MAX_VELOCITY_DAMPENING_FACTOR, MAX_ACCELERATION);
@@ -122,7 +122,7 @@ public class ConstantAccelerationForwardModel {
 		return ret;
 	}
 
-	// calcola una previsione dei tempi della traiettoria futura, considera anche le saturazioni di velocità
+	// compute estimation of future trajectory, taking saturation into account
 	public  HashMap<Integer,Double> computeTs(Vehicle v) {
 
 		HashMap<Integer,Double> times = new HashMap<Integer, Double>();
@@ -157,12 +157,12 @@ public class ConstantAccelerationForwardModel {
 			}
 			time += deltaTime;
 		
-			//inserisco la previsione fatta in un hashMap(PathiIndex,TIme)
+			//create a hashMap(PathIndex,Time) where to insert computed data
 			currentPathIndex = getPathIndex(v.getWholePath(), state);
 			if (!times.containsKey(currentPathIndex)) {
 				times.put(currentPathIndex, time);
 				
-				//inserisco anche gli eventuali pathIndex saltati
+				// adding time estimation of possibly skipped path indices
 				int i = 1;
 				while (i > 0){
 					if (!times.containsKey(currentPathIndex-i) && (currentPathIndex-i)!=0) {

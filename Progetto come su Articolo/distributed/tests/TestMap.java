@@ -26,7 +26,7 @@ public class TestMap {
 		Vehicle.Category a = Vehicle.Category.AMBULANCE;
 		Vehicle.Category c = Vehicle.Category.CAR;
 
-		/* Mappa */
+		/* Map With Random Obstacles */
 		yamlFile = "maps/map-partial-2.yaml";	
 		Pose start1 = new Pose(8, 20, Math.PI); Pose[] goal1 = { new Pose(75, 20, Math.PI) };
 		Pose start2 = new Pose(8, 15, Math.PI); Pose[] goal2 = { new Pose(75, 10, Math.PI) };

@@ -31,7 +31,6 @@ public class Test4Grid {
 		viz.setInitialTransform(20, 10, 2);
 
 
-		/* pose libere */
 		Pose start1 = new Pose(1, 11.2, Math.PI); 	Pose[] goal1 = { new Pose(16, 11.2, Math.PI) };	
 		Pose start2 = new Pose(1, 1.2, Math.PI); 	Pose[] goal2 = { new Pose(16, 1.2, Math.PI) };
 		Pose start3 = new Pose(1, 3.7, Math.PI); 		Pose[] goal3 = { new Pose(16, 3.7, Math.PI) };

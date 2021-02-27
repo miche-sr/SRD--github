@@ -9,7 +9,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.metacsp.multi.spatioTemporal.paths.Pose;
 
-public class TestCorridoio {
+public class TestCorridor {
 
 	private static ArrayList<Vehicle> vehicleList = new ArrayList<Vehicle>();
 	private static ArrayList<TrafficLights> trafficLightsList = new ArrayList<TrafficLights>();
@@ -36,12 +36,11 @@ public class TestCorridoio {
 
 		Pose CorrStart = new Pose(9.0,5.0,0);
 		Pose CorrEnd  = new Pose(25.5,5.0,0);
-		TrafficLights corridoio = new TrafficLights(1, CorrStart, CorrEnd, 2, viz);
-		trafficLightsList.add(corridoio);
+		TrafficLights corridor = new TrafficLights(1, CorrStart, CorrEnd, 2, viz);
+		trafficLightsList.add(corridor);
 
 		Thread.sleep(4000);
 
-		/* corridioio */
 		Pose start1 = new Pose(2.0,4.0,Math.PI);
 		Pose goal11 = new Pose(10.0,6.0,Math.PI);
 		Pose goal12 = new Pose(25.0,6.0,Math.PI);

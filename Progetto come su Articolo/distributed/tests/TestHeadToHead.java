@@ -28,9 +28,9 @@ public class TestHeadToHead {
 
 
 
-		// /*Head-To-Head*/
-		 Pose start1 = new Pose(1, 5, Math.PI); Pose[] goal1 = { new Pose(26, 5, Math.PI) };
-		 Pose start2 = new Pose(25 , 5, 0); Pose[] goal2 = { new Pose(2, 5, 0) };
+		/*Head-To-Head*/
+		Pose start1 = new Pose(1, 5, Math.PI); Pose[] goal1 = { new Pose(26, 5, Math.PI) };
+		Pose start2 = new Pose(25 , 5, 0); Pose[] goal2 = { new Pose(2, 5, 0) };
 
 
 

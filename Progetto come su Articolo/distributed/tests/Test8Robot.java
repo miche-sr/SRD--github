@@ -28,7 +28,7 @@ public class Test8Robot {
 
 
 
-		/* pose libere */
+		/* Random poses in obstacle-free environment */
 		Pose start1 = new Pose(-1, 0, Math.PI); Pose[] goal1 = { new Pose(20, 0, Math.PI) };
 		Pose start2 = new Pose(3, 5, -Math.PI/2); Pose[] goal2 = {new Pose(3, -13, -Math.PI/2) };
 		Pose start3 = new Pose(10, -12, 3*Math.PI/2); Pose[] goal3 = {new Pose(10, 8, 3*Math.PI/2) };

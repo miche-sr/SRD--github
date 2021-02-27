@@ -72,13 +72,13 @@ public class Traker implements Runnable {
         
         if (pathIndex >= criticalPoint && state.getVelocity() <= 0.0 ) { //-3
             skipIntegration = true;
-            robotBehavior = Behavior.stop; // sono fermo
+            robotBehavior = Behavior.stop; // robot is still
         }	
         
         if (!skipIntegration) {
  
 
-            //saturazioni velocità+
+            //velocity saturation
             if ( ((state.getVelocity() <= 1.1*deltaTc*maxAcc && robotBehavior == Behavior.slowing) 
                 || robotBehavior == Behavior.minVel)
                 && state.getPosition() >= slowingPoint){
@@ -100,7 +100,7 @@ public class Traker implements Runnable {
                 }
                 else{
                     state.setVelocity(0.0);
-                    robotBehavior = Behavior.stop; // fermo
+                    robotBehavior = Behavior.stop; // still
                     state.setPosition(distanceTraveled);
                 }
                 
@@ -108,11 +108,11 @@ public class Traker implements Runnable {
             } 
 
             else{
-                // caso accelerazione - vMax
+                // accelerating case - vMax
                 boolean slowingDown = false;
                 robotBehavior = Behavior.moving;
             
-                // caso Frenata
+                // braking case
                 if(state.getPosition() >= slowingPoint) {
                     slowingDown = true; 
                     robotBehavior = Behavior.slowing; 
@@ -167,7 +167,6 @@ public class Traker implements Runnable {
                 v.getVisualization().displayRealRobotState(wholeSe.getFootprint(), v,pathIndex,path,infoCs);
                 
                 end = System.currentTimeMillis();
-                //if(end - start > temporalResolution)System.out.println("NNNNNNNOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO");
                 Thread.sleep( (long) temporalResolution); // sleep
                 elapsedTrackingTime += temporalResolution*Vehicle.mill2sec;
             }

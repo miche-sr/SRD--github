@@ -54,9 +54,9 @@ public class VehicleThread implements Runnable {
 	public void run() {
 		double start = System.currentTimeMillis();
 		if(v.isTrakerEnable()) v.startTraker();
-		// int alfa =(int) v.getAlfa();
-		// int[] chunkArray = new int[alfa];
-		// for (int k=0;k==alfa;k++){
+		// int alpha =(int) v.getalpha();
+		// int[] chunkArray = new int[alpha];
+		// for (int k=0;k==alpha;k++){
 		// 	chunkArray[k]=0;
 		// }
 		
@@ -64,7 +64,7 @@ public class VehicleThread implements Runnable {
 			while(v.getBehavior() != Behavior.reached && run){
 				long startTc = System.currentTimeMillis();
 				/*********************
-				 * RECIVE MESSAGES *
+				 * RECEIVE MESSAGES *
 				 ********************/
 				rrNears.clear();
 				List = " ";
@@ -72,7 +72,7 @@ public class VehicleThread implements Runnable {
 					rrNears.put(vh,v.getMainTable().get(vh));
 					List = (List + vh + " " );
 					if (v.checkCollision(vh) ) {
-						System.out.println("\u001B[31m" + "ATTENZIONE COLLISIONE  R" + v.getID() +" E R" +vh + "\u001B[0m");
+						System.out.println("\u001B[31m" + "ATTENTION! COLLISION OCCURRED  R" + v.getID() +" E R" +vh + "\u001B[0m");
 						printLog(List, prec);
 						run = false;
 					}
@@ -108,32 +108,32 @@ public class VehicleThread implements Runnable {
 				/**********************************
 				 		** SEMAPHORE **
 				 ++++++++++++++++++++++++++++++++*/
-				TrafficLights();
+				trafficLights();
 
 				/*******************************
-				 ** CALCULATE THE PRECEDENCES ** 
+				 ** COMPUTE THE PRECEDENCES ** 
 				 *******************************/
 				
 				//  v.setCriticalPoint(chunkArray[0]);
-				//  	for (int k=1;k<(alfa);k++){
+				//  	for (int k=1;k<(alpha);k++){
 				//  	chunkArray[k-1]=chunkArray[k];
 				//  }
-				// chunkArray[alfa-1] = (v.getPathIndex() + v.getSpatialEnvelope().getPath().length-1);
+				// chunkArray[alpha-1] = (v.getPathIndex() + v.getSpatialEnvelope().getPath().length-1);
 				v.setCriticalPoint(v.getPathIndex() + v.getSpatialEnvelope().getPath().length-1); 
 				
-				Precedence();
+				precedence();
 
 				/************************************
-				 ** 	SET CRITICAL AISLE		 ** 
+				 ** 	SET CRITICAL AISLE	 ** 
 				 ************************************/
 
-				if(FreeAccess== false && v.getStoppingPoint() != -1 && smStopIndex >= 0) //Aisle menagment
+				if(FreeAccess== false && v.getStoppingPoint() != -1 && smStopIndex >= 0) // Aisle management
 					v.setCriticalPoint( Math.min(v.getCriticalPoint(),smStopIndex) );
 
 				
-				/*************************************
-				 ** FORWARD CP TO LOW LEV CONTROL	 ** 
-				 *************************************/
+				/*****************************************
+				 ** FORWARD CP TO LOW LEVELE CONTROLLER ** 
+				 *****************************************/
 				v.getTraker().setCriticalPoint(v.getCriticalPoint());
 				v.getTraker().setFreeAccess(FreeAccess);
 
@@ -196,7 +196,7 @@ public class VehicleThread implements Runnable {
 
 		}	
 		catch (InterruptedException e) {
-			System.out.println("Thread interrotto");
+			System.out.println("Thread interrupted");
 		}	
 	}
 
@@ -232,26 +232,26 @@ public class VehicleThread implements Runnable {
 		if (v.getCs().size() != 0){
 			int i = 0;
 			for (CriticalSection cs : v.getCs()) {
-				CsString = CsString + (i+1 +"° Sezione Critica" +
-				"\t Mia: " + cs.getTe1Start()+"-"+cs.getTe1End() +
+				CsString = CsString + (i+1 +"° Critical Section" +
+				"\t Mine: " + cs.getTe1Start()+"-"+cs.getTe1End() +
 				"\t R" + cs.getVehicle2().getID() + ":" +
 				"\t" + cs.getTe2Start()+"-"+cs.getTe2End()) + 
-				"\t precedenza:" + cs.isPrecedenza() + "\n";
+				"\t Precedence:" + cs.isPrecedenza() + "\n";
 				i += 1;
 			}
 		}
-		else	CsString = ("0 Sezioni Critiche\n");
+		else	CsString = ("0 Critical Sections\n");
 				
 		System.out.println(
 			"============================================================\n"+
 			"Info R" + this.v.getID() + " : \n" + 
 			"Last Index: "+ (v.getWholePath().length-1) + "\t \t " + infoCs + "\n" + 
-			"Vicini: "  + List + "\t \t Precedence: " + prec +  "\n" + 
+			"Neighbors: "  + List + "\t \t Precedence: " + prec +  "\n" + 
 			"Path Index: " 	+ v.getPathIndex() + "\t \t Stopping Point: " + v.getStoppingPoint() + "\n" +
 			"Distance: "+ Dist  + "\t \t Velocity: " + Vel + "\n" +
 			"Slowing Point: " + Slow +"\t Critical Point: " + v.getCriticalPoint()+ "\n" + 
 			CsString + "\n" +
-			"Traiettoria Attuale \n" +v.getTruncateTimes() + "\n"+
+			"Current Trajectory \n" +v.getTruncateTimes() + "\n"+
 			"============================================================"
 			);
 	}
@@ -268,29 +268,29 @@ public class VehicleThread implements Runnable {
 			if(t > v.getTc()) countEx = countEx +1;
 			if(t > tmax) tmax = t;
 		}
-		double media = sum/ count ;
+		double mean = sum/ count ;
 
-		String string = " " + String.format("%.2f", media)+ " " + String.format("%.2f", tmax) + " " ;
+		String string = " " + String.format("%.2f", mean)+ " " + String.format("%.2f", tmax) + " " ;
 		if (Cex == true) string = string  + countEx + " ";
 		return string;
 	}
 
 
 
-	public void TrafficLights(){
+	public void trafficLights(){
 		for (TrafficLights TL : v.getTrafficLightsNears()){
 			synchronized(TL){
 				if (v.getWholeSpatialEnvelope().getPolygon().intersects(TL.getCorridorPath().getPolygon())){
 
 					if (!TL.getRobotInsideCorridor().contains(v.getID()) ){
-						if (TL.checkSemophore(v) ){ // entro nel corridioi
+						if (TL.checkSemophore(v) ){ // entering the corridor
 								FreeAccess = true;				v.clearCs();
 								for (RobotReport vh : rrNears.values())
 									v.appendCs(vh);
 								if(v.getSpatialEnvelope().getPolygon().intersects(TL.getCorridorPath().getPolygon()))
 									TL.addVehicleInside(v);
 						}
-						else { // semaforo rosso
+						else { // red semaphore
 							
 							if (FreeAccess == true) smStopIndex = intersect.SmStopIndex(v, TL) - 18; //30pathIndex = 3 footPrint
 							FreeAccess = false;
@@ -298,11 +298,11 @@ public class VehicleThread implements Runnable {
 					}
 				}
 				if (!v.getSpatialEnvelope().getPolygon().intersects(TL.getCorridorPath().getPolygon())) {
-					 if (FreeAccess == true) {//lo stavo attraversando e sono uscito
+					if (FreeAccess == true) { // exiting the corridor
 						if (TL.getRobotInsideCorridor().contains(v.getID()))
 							TL.removeVehicleInside(v);
 					}
-					else if (v.getPathIndex() >= intersect.SmStopIndex(v, TL)) FreeAccess = true; // sono oltre
+					else if (v.getPathIndex() >= intersect.SmStopIndex(v, TL)) FreeAccess = true; // robot is outside
 			
 				}
 				
@@ -312,7 +312,7 @@ public class VehicleThread implements Runnable {
 	}
 
 
-	public void Precedence(){
+	public void precedence(){
 		double startPrec = System.currentTimeMillis();
 				prec = true;
 				

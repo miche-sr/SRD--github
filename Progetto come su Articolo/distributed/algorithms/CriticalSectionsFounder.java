@@ -97,7 +97,7 @@ public class CriticalSectionsFounder {
 	}
 	
 	/************************
-	 * FIND CRITCAL SECTION *
+	 * FIND CRITICAL SECTION *
 	 ************************/
 	public CriticalSection[] findCriticalSections(Vehicle v1, RobotReport v2) {
 
@@ -146,12 +146,12 @@ public class CriticalSectionsFounder {
 				boolean csTruncated = false;
 				for (int j = 0; j < path1.length; j++) {
 					Geometry placement1 = TrajectoryEnvelope.getFootprint(se1.getFootprint(), path1[j].getPose().getX(), path1[j].getPose().getY(), path1[j].getPose().getTheta());
-					int jAbs = j+v1.getPathIndex();		// LO SI RIPORTA RISPETTO A INDICE ASSOLUTO
-					if (!started && placement1.intersects(g)) {		// CALCOLO INIZIO S.C.
+					int jAbs = j+v1.getPathIndex();		// RE-WRITTEN W.R.T. CURRENT PATH INDEX
+					if (!started && placement1.intersects(g)) {		// COMPUTE CS BEGINNING
 						started = true;
 						te1Starts.add(jAbs);
 					}
-					else if (started && !placement1.intersects(g)) {// NON INTERSECA XK IMPRONTA È USCITA DA SC
+					else if (started && !placement1.intersects(g)) {// WHEN THE FOOTPRINT EXITS CS
 						te1Ends.add(jAbs-1 > 0 ? jAbs-1 : 0);
 						started = false;
 					}
@@ -227,8 +227,8 @@ public class CriticalSectionsFounder {
 		int te1Start = -1;
 		for (int j = v.getPathIndex(); j < path1.length; j++) {
 			Geometry placement1 = TrajectoryEnvelope.getFootprint(se1.getFootprint(), path1[j].getPose().getX(), path1[j].getPose().getY(), path1[j].getPose().getTheta());
-			int jAbs = j ;//+v.getPathIndex();		// LO SI RIPORTA RISPETTO A INDICE ASSOLUTO
-			if (!started && placement1.intersects(g)) {		// CALCOLO INIZIO S.C.
+			int jAbs = j ;//+v.getPathIndex();		
+			if (!started && placement1.intersects(g)) {	
 				started = true;
 				te1Start = jAbs;
 				break;
@@ -283,13 +283,13 @@ public class CriticalSectionsFounder {
 						boolean started = false;
 						for (int j = 0; j < path1.length; j++) {
 							Geometry placement1 = TrajectoryEnvelope.getFootprint(se1.getFootprint(), path1[j].getPose().getX(), path1[j].getPose().getY(), path1[j].getPose().getTheta());
-							int jAbs = j;//+v1.getPathIndex();		// LO SI RIPORTA RISPETTO A INDICE ASSOLUTO
-							if (!started && placement1.intersects(g)) {		// CALCOLO INIZIO S.C.
+							int jAbs = j;//+v1.getPathIndex();		
+							if (!started && placement1.intersects(g)) {		
 								started = true;
 								te1Starts.add(jAbs);
 								totalTe1start.add(jAbs);
 							}
-							else if (started && !placement1.intersects(g)) {// NON INTERSECA XK IMPRONTA È USCITA DA SC
+							else if (started && !placement1.intersects(g)) {
 								te1Ends.add(jAbs-1 > 0 ? jAbs-1 : 0);
 								totalTe1Ends.add(jAbs-1 > 0 ? jAbs-1 : 0);
 								started = false;

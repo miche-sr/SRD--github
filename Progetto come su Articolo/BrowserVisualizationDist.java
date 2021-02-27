@@ -394,8 +394,8 @@ public int periodicEnvelopeRefreshInMillis() {
 	return 1000;
 }
 
-/************************************* 
- // Funzioni per flotte distribuite //
+/************************************ 
+*** Methods for distributed fleet ***
 *************************************/
 public void displayRealRobotState(Polygon fp, Vehicle v,int pathIndex, PoseSteering[] path,String... extraStatusInfo) {
 	double x = path[pathIndex].getPose().getX();
@@ -413,9 +413,8 @@ public void displayRealRobotState(Polygon fp, Vehicle v,int pathIndex, PoseSteer
 	this.updateRobotFootprintArea(geom);
 	String jsonString = "{ \"operation\" : \"addGeometry\", \"data\" : " + this.geometryToJSONString(name, geom, "#ff0000d2", -1, true, extraData) + "}";
 	enqueueMessage(jsonString);
-
-
 }
+
 
 public void displayRobotState(Polygon fp, Vehicle v,String... extraStatusInfo) {
 	double x = v.getSpatialEnvelope().getPath()[0].getPose().getX();
@@ -429,7 +428,6 @@ public void displayRobotState(Polygon fp, Vehicle v,String... extraStatusInfo) {
 			extraData += (" | " + st);
 		}
 	}
-	
 	
 	Geometry geom = TrajectoryEnvelope.getFootprint(fp, x, y, theta);
 	this.updateRobotFootprintArea(geom);

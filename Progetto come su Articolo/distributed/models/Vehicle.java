@@ -17,10 +17,10 @@ import java.util.*;
 
 public class Vehicle {
 
+	// CONSTANTS
 	public static enum Category {
 		CAR, AMBULANCE
 	};
-
 	private static final double front = 0.5;
 	private static final double sideCar = front;
 	private static final double sideAmb = 2 * front;
@@ -30,28 +30,27 @@ public class Vehicle {
 	private static final Coordinate[] fpAmb = { new Coordinate(-sideAmb, front), new Coordinate(sideAmb, front),
 			new Coordinate(sideAmb, -front), new Coordinate(-sideAmb, -front) };
 	private static int tcAmb = 150;
-	// CONSTANT
 	public static double mill2sec = 0.001;
-
 	public static enum Behavior {
 		start, moving, slowing, minVel, stop, waiting, reached,
 	};
 
-	// VARIABILI FISICHE E PROPRIE DEL VEICOLO
+	// DISTINCTIVE VARIABLES 
 	private int ID = -1;
 	private int priority = -1;
 	private double radius = -1.0;
-	private double secForSafety = -1.0; // length of trajectory to share
 	private int Tc; // [ ms ]
-	private double alfa;
+	private double alpha;
 	private double velocity = 0.0; // [ m/s ]
 	private double velMax = 0.0; // [ m/s ]
 	private double accMax = 0.0; // [ m/s^2 ]
 	private Coordinate[] footprint;
 	private double side;
-	private double myDistanceToSend;
 
-	// VARIABILI DI PERCORSO E TRAIETTORIA
+
+	// VARIABLES OF CHUNK & TRAJECTORY
+	private double secForSafety = -1.0; // length of trajectory to share
+	private double myDistanceToSend;
 	private int PoseResolution;
 	private int TcTraker;
 
@@ -69,15 +68,16 @@ public class Vehicle {
 	private HashMap<Integer, Double> times = new HashMap<Integer, Double>();
 	private HashMap<Integer, Double> truncateTimes = new HashMap<Integer, Double>();
 
-	// VARIABILI PER LE SEZIONI CRITICHE
+	// VARIABLES OF CRITICAL SECTIONS
 	private int criticalPoint = 0;
 	private boolean csTooClose = false;
-	private int stoppingPoint = 0; // punto di fermata, a ogni ciclo: al quale mi fermo da dove sono
-	private double slowingPoint = 0; // punto di frenata, unico: per fermarsi prima del p. critico
+	private int stoppingPoint = 0; // decision point
+	private double slowingPoint = 0; // point where to slow in order to stop at critical point
 	private TreeSet<CriticalSection> cs = new TreeSet<CriticalSection>();
 	private CriticalSectionsFounder intersect = new CriticalSectionsFounder();
 	private Traker traker;
-	// DA USARE PER I VICINI
+	
+	// VARIABLES USED FOR NEIGHBORHOOD COMMUNICATION
 	private ArrayList<Vehicle> vehicleList = new ArrayList<Vehicle>();
 	private ArrayList<Integer> vehicleNear = new ArrayList<Integer>();
 	private ArrayList<TrafficLights> trafficLightsList = new ArrayList<TrafficLights>();
@@ -91,7 +91,7 @@ public class Vehicle {
 	private boolean filterCs = true;
 	private boolean trakerEnable = true;
 
-	// COSTRUTTORE
+
 	public Vehicle(int ID, Category category, Pose start, Pose[] goal,int TcTraker, int PoseResolution,Boolean mrs, String yamlFile) {
 		this.ID = ID;
 		this.pose = start;
@@ -124,11 +124,11 @@ public class Vehicle {
 				System.out.println("Unknown vehicle");
 		}
 		if(mrs)
-		alfa = Math.max(tcCar, tcAmb) / this.Tc;
-		else alfa = 1;
+			alpha = Math.max(tcCar, tcAmb) / this.Tc;
+		else alpha = 1;
 		
 		double brakingDistanceMax = Math.pow(this.velMax, 2.0) / (2 * this.accMax);
-		this.radius = ((2 + alfa) * this.Tc * mill2sec) * this.velMax + brakingDistanceMax + 3 * side;
+		this.radius = ((2 + alpha) * this.Tc * mill2sec) * this.velMax + brakingDistanceMax + 3 * side;
 		this.myDistanceToSend = this.radius;
 		this.path = createWholePath(yamlFile);
 
@@ -140,7 +140,7 @@ public class Vehicle {
 
 	public void Init(double rMax, double tMax, ArrayList<Vehicle> vehicleList,
 			HashMap<Integer,
-					 RobotReport> mainTable,BrowserVisualizationDist viz){
+								 RobotReport> mainTable,BrowserVisualizationDist viz){
 		setRadius(rMax);
 		setSecForSafety(tMax);
 		setVehicleList(vehicleList);
@@ -158,7 +158,7 @@ public class Vehicle {
 	}
 
 	/**********************************************
-	 ** SET & GET PER VARIABILI FISICHE E PROPRIE **
+	 ** SET & GET OF DISTINCTIVE VARIABLES  **
 	 ***********************************************/
 	public int getID() {
 		return ID;
@@ -168,8 +168,8 @@ public class Vehicle {
 		return ID;
 	}
 
-	public double getAlfa(){
-		return alfa;
+	public double getalpha(){
+		return alpha;
 	}
 
 	public int getTc() {
@@ -224,9 +224,9 @@ public class Vehicle {
 		return this.side;
 	}
 
-	/*****************************************
-	 ** SET & GET PER PERCORSO E TRAIETTORIA **
-	 ******************************************/
+	/************************************************
+	 ** SET & GET OF CHUNK AND TRAJECTORY VARIABLES **
+	 ************************************************/
 	 public void setBehavior(Behavior robotBehavior){
 		this.behavior=robotBehavior;
 	 }
@@ -302,8 +302,7 @@ public class Vehicle {
 		return se;
 	}
 
-	// // CALCOLO PATH TRAIETTORIA TRONCATA //
-
+	// COMPUTE CHUNK ENVELOPE //
 	public void setChunk(Boolean FreeAcces, int smStopIndex) {
 		this.truncatedPath.clear();
 		this.truncateTimes.clear();
@@ -363,14 +362,14 @@ public class Vehicle {
 		return truncateTimes;
 	}
 
-	/**************************************
-	 ** SET & GET PER LE SEZIONI CRITICHE **
-	 ***************************************/
+	/**********************************************
+	 ** SET & GET OF CRITICAL SECTIONS' VARIABLES **
+	 **********************************************/
 	public TreeSet<CriticalSection> getCs() {
 		return cs;
 	}
 
-	// CALCOLO NUOVE SEZIONI CRITICHE //
+	// COMPUTE NEW CS
 	public void appendCs(RobotReport v2) {
 		CriticalSection[] cs = intersect.findCriticalSections(this, v2);
 		for (CriticalSection c : cs)
@@ -454,9 +453,7 @@ public class Vehicle {
 		return forward.getEarliestStoppingPathIndex(this,true);
 	}
 
-		/********************************
-	** SET & GET PER LE PRECEDENZE **
-	*********************************/
+
 	public Boolean ComputePrecedences(CriticalSection cs) {
 		return prec.ComputePrecedences(cs);
 	}
@@ -483,7 +480,6 @@ public class Vehicle {
 	}
 
 
-	// CALCOLO QUALI SONO I ROBOT VICINI //
 	public ArrayList<Integer> getNears() {
 		this.vehicleNear.clear();
 		double vhX, vhY, dist;
@@ -544,9 +540,7 @@ public class Vehicle {
 
 	public void sendNewRr(int spFuture) {
 		HashMap<Integer,Double> TruTim = (HashMap<Integer,Double>) truncateTimes.clone();
-		
 		//int sp = Math.min(spFuture, criticalPoint);
-		
 		RobotReport rr = new RobotReport(this.ID, this.priority,this.footprint, this.pathIndex, 
 				this.se, TruTim, spFuture,this.isCsTooClose(),behavior);
 		
@@ -554,7 +548,7 @@ public class Vehicle {
 	}
 
 	/**************************************
-	 ** SET & GET PER LA VISUALIZZAZIONE **
+	 ** SET & GET FOR VISUALIZATION **
 	 ***************************************/
 
 	public void setVisualization(BrowserVisualizationDist viz){
